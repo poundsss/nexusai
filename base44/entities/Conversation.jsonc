@@ -1,0 +1,28 @@
+{
+  "name": "Conversation",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "agent_name": {
+      "type": "string",
+      "description": "P0 Agent-chat UI mirror: the workspace agent this sidebar row belongs to (e.g. NexusAgent). Rows with a conversation_id are sidebar UI state, not run threads."
+    },
+    "conversation_id": {
+      "type": "string",
+      "description": "P0 Agent-chat UI mirror: the platform conversation id this row mirrors. The platform conversation row stays the source of truth for messages; this entity only persists the sidebar title/archive state that the platform conversation API cannot update (no update endpoint)."
+    },
+    "is_archived": {
+      "type": "boolean",
+      "default": false,
+      "description": "P0 Agent-chat UI mirror: whether the mirrored conversation is archived in the sidebar. Archive hides the conversation from the Active list; restore returns it."
+    }
+  },
+  "required": [
+    "project_id"
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "name": "WorkflowStepRun",
+  "type": "object",
+  "properties": {
+    "workflow_run_id": {
+      "type": "string",
+      "description": "Run this step execution belongs to. Every read is filtered by this field together with the project."
+    },
+    "workflow_id": {
+      "type": "string"
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "workspace_id": {
+      "type": "string"
+    },
+    "step_id": {
+      "type": "string"
+    },
+    "step_type": {
+      "type": "string"
+    },
+    "operation_key": {
+      "type": "string",
+      "description": "DETERMINISTIC identity of this logical step operation ('wf:<run>:<step>'). It is the same across replays and retries, which is what lets a completed side-effecting step be recognised and SKIPPED instead of executed twice."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "running",
+        "waiting",
+        "succeeded",
+        "failed",
+        "skipped"
+      ],
+      "default": "running",
+      "description": "Only 'succeeded' is replayable: a failed step never blocks a genuine retry, and a completed one is never re-executed."
+    },
+    "attempt": {
+      "type": "number",
+      "default": 1,
+      "description": "Attempts spent on this step, persisted so a worker restart cannot reset the retry budget."
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The step's bounded, scrubbed output, stored so a replay returns the same value instead of repeating the work."
+    },
+    "error_code": {
+      "type": "string"
+    },
+    "error_category": {
+      "type": "string"
+    },
+    "retryable": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the failure is a property of the moment. Authorization, validation and deterministic policy failures are never marked retryable."
+    },
+    "error_message": {
+      "type": "string",
+      "description": "Scrubbed, caller-safe failure message. Never a stack trace and never a secret."
+    },
+    "primitive_invocation_id": {
+      "type": "string",
+      "description": "The #27 PrimitiveInvocation this step executed through, when the step invoked a primitive. The primitive layer stays authoritative for its own record, usage and billing."
+    },
+    "function_invocation_id": {
+      "type": "string"
+    },
+    "job_id": {
+      "type": "string"
+    },
+    "usage": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Usage/cost metadata copied from the underlying invocation for reporting. The primitive/billing records remain authoritative; the workflow layer opens no ledger."
+    },
+    "resume_at": {
+      "type": "string",
+      "description": "For a durable delay step: when the wait elapses."
+    },
+    "latency_ms": {
+      "type": "number",
+      "default": 0
+    },
+    "trace_id": {
+      "type": "string"
+    },
+    "started_at": {
+      "type": "string"
+    },
+    "completed_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "workflow_run_id",
+    "project_id",
+    "step_id",
+    "operation_key",
+    "status"
+  ]
+}

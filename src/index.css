@@ -1,0 +1,216 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 9%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+    --accent: 0 0% 96%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 217 91% 58%;
+    --brand: 217 91% 58%;
+    --brand-foreground: 0 0% 100%;
+    --brand-muted: 217 60% 95%;
+    --chart-1: 217 91% 58%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
+    --font-heading: ui-sans-serif, system-ui, sans-serif;
+    --font-body: ui-sans-serif, system-ui, sans-serif;
+    --font-display: ui-sans-serif, system-ui, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    --sidebar-background: 0 0% 96.5%;
+    --sidebar-foreground: 0 0% 9%;
+    --sidebar-primary: 0 0% 9%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 0 0% 96%;
+    --sidebar-accent-foreground: 0 0% 9%;
+    --sidebar-border: 0 0% 90%;
+    --sidebar-ring: 217 91% 58%;
+  }
+
+  /* Dark-first — Bolt-like neutral palette, tight radius, subtle borders. */
+  .dark {
+    --background: 0 0% 4.5%;
+    --foreground: 0 0% 93%;
+    --card: 0 0% 6%;
+    --card-foreground: 0 0% 93%;
+    --popover: 0 0% 6%;
+    --popover-foreground: 0 0% 93%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 11%;
+    --secondary-foreground: 0 0% 93%;
+    --muted: 0 0% 10%;
+    --muted-foreground: 0 0% 58%;
+    --accent: 0 0% 12%;
+    --accent-foreground: 0 0% 95%;
+    --destructive: 0 62% 42%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 217 91% 62%;
+    --brand: 217 91% 62%;
+    --brand-foreground: 0 0% 100%;
+    --brand-muted: 217 40% 12%;
+    --chart-1: 217 91% 62%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+    --sidebar-background: 0 0% 4%;
+    --sidebar-foreground: 0 0% 93%;
+    --sidebar-primary: 0 0% 98%;
+    --sidebar-primary-foreground: 0 0% 9%;
+    --sidebar-accent: 0 0% 10%;
+    --sidebar-accent-foreground: 0 0% 93%;
+    --sidebar-border: 0 0% 12%;
+    --sidebar-ring: 217 91% 62%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body antialiased tracking-[-0.011em];
+  }
+
+  /* Tighter scrollbars to match the compact tool feel. */
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground)); }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* Fade the content itself into the shared backdrop, never a separate footer band. */
+  .grow-chat-scroll {
+    padding-bottom: calc(var(--grow-composer-height, 15rem) + 3rem);
+    scroll-padding-bottom: calc(var(--grow-composer-height, 15rem) + 3rem);
+    -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 calc(100% - var(--grow-composer-height, 15rem) - 2rem), transparent calc(100% - var(--grow-composer-height, 15rem) + 0.75rem), transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 0, #000 calc(100% - var(--grow-composer-height, 15rem) - 2rem), transparent calc(100% - var(--grow-composer-height, 15rem) + 0.75rem), transparent 100%);
+  }
+
+  .fade-right {
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 72px), transparent calc(100% - 20px));
+    mask-image: linear-gradient(to right, #000 calc(100% - 72px), transparent calc(100% - 20px));
+  }
+  .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+  .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+  .scrollbar-thin::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 3px; }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground)); }
+
+  /* A single measured outline joins the project band to the input in either state. */
+  .grow-project-composer {
+    --grow-project-surface: color-mix(in srgb, hsl(var(--foreground)) 4%, hsl(var(--card)));
+    isolation: isolate;
+  }
+  .grow-composer-outline { z-index: -1; }
+  .grow-composer-surface { fill: hsl(var(--card)); }
+  .grow-project-surface { fill: var(--grow-project-surface); }
+
+  .grow-project-composer .grow-project-tab,
+  .grow-project-composer .grow-composer-body {
+    border-color: transparent;
+  }
+  .grow-project-composer .grow-project-tab {
+    background: var(--grow-project-surface);
+  }
+  .grow-project-composer .grow-composer-body {
+    background: transparent;
+  }
+  .grow-composer-body {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    backdrop-filter: none;
+  }
+  .grow-composer-body.oled-border::before {
+    clip-path: polygon(0 2px, 100% 2px, 100% 100%, 0 100%);
+  }
+  @media (min-width: 768px) {
+    .grow-composer-body { border-top-right-radius: 1.5rem; }
+    .grow-composer-body.oled-border::before {
+      clip-path: polygon(0 2px, calc(50% + 0.75rem) 2px, calc(50% + 0.75rem) 0, 100% 0, 100% 100%, 0 100%);
+    }
+  }
+
+  /* OLED-style flowing border: a blue arc travels around the element's perimeter. */
+  @property --oled-angle {
+    syntax: "<angle>";
+    initial-value: 0deg;
+    inherits: false;
+  }
+  .oled-border::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1.5px;
+    /* Half-length arc with soft falloff on both ends — the glow eases out instead of a hard cut. */
+    background: conic-gradient(from var(--oled-angle),
+      transparent 0deg, transparent 6deg,
+      rgba(59, 130, 246, 0.45) 18deg, #3b82f6 26deg, #60a5fa 32deg, rgba(147, 197, 253, 0.85) 38deg,
+      rgba(96, 165, 250, 0.4) 46deg, transparent 56deg, transparent 360deg);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: oled-spin 3.5s linear infinite;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .oled-border::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: 0 0 14px -2px rgba(59, 130, 246, 0.35);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+  .oled-border:focus-within::after { opacity: 1; }
+  @keyframes oled-spin {
+    to { --oled-angle: 360deg; }
+  }
+
+  /* Pleasant-blue shimmer for the Publish button — a moving gradient sweep + soft glow. */
+  .btn-blue-shimmer {
+    background-image: linear-gradient(110deg, #2563eb 0%, #3b82f6 30%, #60a5fa 50%, #3b82f6 70%, #2563eb 100%);
+    background-size: 200% 100%;
+    animation: blue-shimmer 3s linear infinite;
+    box-shadow: 0 0 10px -2px rgba(59, 130, 246, 0.5);
+  }
+  @keyframes blue-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* RGB blue→teal pan for the gradient strip atop the preview panel. */
+  @keyframes gradient-pan {
+    0% { background-position: 0% 0; }
+    100% { background-position: 200% 0; }
+  }
+}

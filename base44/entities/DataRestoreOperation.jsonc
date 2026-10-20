@@ -1,0 +1,61 @@
+{
+  "name": "DataRestoreOperation",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Project the restore belongs to. Every read is filtered by this field server-side."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side from the project."
+    },
+    "batch_id": {
+      "type": "string",
+      "description": "The restore batch this per-entity operation belongs to."
+    },
+    "entity_name": {
+      "type": "string",
+      "description": "The entity this operation restores. A RUNNING operation pauses editing of exactly this entity (the documented edit pause) and makes further restores of it skip."
+    },
+    "checkpoint_id": {
+      "type": "string",
+      "description": "The checkpoint this operation restores from \u2014 for an undo batch, the operation's own pre-restore checkpoint."
+    },
+    "pre_restore_checkpoint_id": {
+      "type": "string",
+      "description": "DOCUMENTED (Get data restore status): the checkpoint captured immediately before this operation's first write \u2014 its undo source."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "running",
+        "succeeded",
+        "failed"
+      ],
+      "default": "running",
+      "description": "Created as running (the 202 is returned before the worker picks it up), then terminal. A RUNNING operation older than the staleness bound no longer pauses edits and is healed by the next status/restore call."
+    },
+    "counts": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "DOCUMENTED shape { deleted, reinserted, reverted }: deleted = live records not in the checkpoint (moved to Entity Trash), reinserted = checkpoint records brought back, reverted = records rewritten to their checkpoint values."
+    },
+    "error": {
+      "type": "string",
+      "description": "Safe, truncated error when the operation failed."
+    },
+    "completed_at": {
+      "type": "string",
+      "description": "When the operation reached its terminal state."
+    }
+  },
+  "required": [
+    "project_id",
+    "workspace_id",
+    "batch_id",
+    "entity_name",
+    "checkpoint_id",
+    "status"
+  ]
+}

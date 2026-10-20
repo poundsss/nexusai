@@ -1,0 +1,78 @@
+{
+  "name": "DesignSystem",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Owning project. One design system per project; every read is filtered by this field so a project can never inherit another project's visual language."
+    },
+    "workspace_id": {
+      "type": "string"
+    },
+    "tokens": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Structured design tokens: colors (light + dark), typography, spacing scale, radius scale, shadows, borders, breakpoints, motion, icon/imagery rules, accessibility floors, and component variant class recipes. This is the authoritative visual state of the project \u2014 generated code must consume it instead of inventing styles."
+    },
+    "components": {
+      "type": "array",
+      "description": "Reusable UI components discovered in the project, so a later run reuses an existing component instead of creating a near-duplicate.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "props": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "role": {
+            "type": "string",
+            "description": "Semantic role inferred from the component: card, button, table, form, nav, layout, chart, dialog, list, other."
+          },
+          "variants": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "path"
+        ]
+      }
+    },
+    "imported": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Present ONLY on an imported design system (Phase 2). Bounded import metadata: source (github | npm | files), source_name, ref, version, fetched_at, reference_tokens (the raw extracted CSS custom properties as bounded {name, value} entries), usage (bounded usage/docs excerpt). An imported row is GUIDANCE, never project visual state: loadDesignSystem skips it, styles.css keeps being emitted from the project's own tokens, and the Build pipeline consumes it solely through importedDesignSystemBlock in NEW Build output."
+    },
+    "revision": {
+      "type": "number",
+      "default": 1,
+      "description": "Increments on every accepted token change. Used to detect that a run actually mutated the visual language."
+    },
+    "version_number": {
+      "type": "number",
+      "description": "Project version this design state was committed with, so a rollback can restore the matching visual language."
+    },
+    "updated_by_run_id": {
+      "type": "string"
+    },
+    "css_hash": {
+      "type": "string",
+      "description": "Hash of the stylesheet emitted from these tokens. Lets the pipeline skip rewriting styles.css when the visual language did not change."
+    }
+  },
+  "required": [
+    "project_id",
+    "tokens"
+  ]
+}

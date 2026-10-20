@@ -1,0 +1,103 @@
+{
+  "name": "LaunchpadSubmission",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Project this submission belongs to. Resolved SERVER-side from the authorized project, never from a client, and every read and mutation is filtered by this field, so one project's submissions can never be read or changed from another. One ACTIVE submission per project \u2014 the invariant is enforced server-side with a post-create dedup."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side from the project."
+    },
+    "user_id": {
+      "type": "string",
+      "description": "Authenticated caller the submission is attributed to. Authorization was resolved before the submission ran."
+    },
+    "tagline": {
+      "type": "string",
+      "description": "Short launch tagline, at most 200 characters. Validated server-side at submit and at every edit."
+    },
+    "description": {
+      "type": "string",
+      "description": "Launch description explaining what the app does and why people should try it, at most 4000 characters. Validated server-side at submit and at every edit."
+    },
+    "categories": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Launch categories, at most 3, each at most 60 characters. Validated server-side."
+    },
+    "media": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "Public URL of the uploaded showcase file (the existing public upload primitive)."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "screenshot",
+              "video"
+            ]
+          },
+          "width": {
+            "type": "number",
+            "description": "Screenshots only: server-parsed image width in pixels. Screenshots must be at least 1280x720; the server reads the real dimensions, never a client claim."
+          },
+          "height": {
+            "type": "number",
+            "description": "Screenshots only: server-parsed image height in pixels."
+          },
+          "bytes": {
+            "type": "number",
+            "description": "Videos only: server-probed byte size. Videos must be at most 50 MB."
+          },
+          "mime": {
+            "type": "string",
+            "description": "Server-observed content type. Screenshots: png/jpeg/webp only. Videos: mp4/webm only."
+          }
+        },
+        "required": [
+          "url",
+          "kind"
+        ]
+      },
+      "default": [],
+      "description": "Showcase media, at most 5 items. Screenshots are dimension-verified by the server against the real bytes; videos are probed for type and size. Every URL is SSRF-checked through the existing outbound guard."
+    },
+    "terms_accepted_at": {
+      "type": "string",
+      "description": "ISO timestamp when the caller accepted the submission terms. Submit refuses without acceptance; stamped server-side, never taken as a value from the client."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "submitted",
+        "withdrawn"
+      ],
+      "default": "submitted",
+      "description": "NexusAI-NATIVE lifecycle, explicitly NON-PARITY: Base44 documents a review step (approved/not approved) but publishes no review-state contract, so no approved/declined states are claimed or implemented here. 'submitted' is the single active state; 'withdrawn' removes it from any future listing without ever deleting the project. The one-active-per-project invariant applies to 'submitted' rows only, so a withdrawn submission can be superseded by a fresh one."
+    },
+    "submitted_at": {
+      "type": "string",
+      "description": "ISO timestamp of the original submission."
+    },
+    "status_updated_at": {
+      "type": "string",
+      "description": "ISO timestamp of the last status or content change."
+    }
+  },
+  "required": [
+    "project_id",
+    "workspace_id",
+    "tagline",
+    "description",
+    "status"
+  ]
+}

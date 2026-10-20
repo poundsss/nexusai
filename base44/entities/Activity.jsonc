@@ -1,0 +1,32 @@
+{
+  "name": "Activity",
+  "type": "object",
+  "properties": {
+    "customerId": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "Call",
+        "Email",
+        "Meeting",
+        "Note"
+      ]
+    },
+    "notes": {
+      "type": "string"
+    },
+    "created_by": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "customerId",
+    "type",
+    "notes"
+  ]
+}

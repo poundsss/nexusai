@@ -1,0 +1,50 @@
+{
+  "name": "RateLimitBucket",
+  "type": "object",
+  "properties": {
+    "identity": {
+      "type": "string",
+      "description": "Who the limit applies to \u2014 a user id, workspace id, or workspace+ip pair. Server-derived from the authenticated request, never taken from client input, or a caller could rate-limit someone else (or exempt itself)."
+    },
+    "action": {
+      "type": "string",
+      "description": "Limited operation class (ai_run, deploy, billing_write, invite). Each class has its own budget so an expensive action cannot be funded by an unused cheap one."
+    },
+    "window_key": {
+      "type": "string",
+      "description": "Fixed window this counter covers (e.g. 2026-09-13T03:45). A new window is a new row, which is what makes the counter self-expiring instead of needing a reset job."
+    },
+    "window_start": {
+      "type": "string"
+    },
+    "window_ms": {
+      "type": "number",
+      "default": 60000
+    },
+    "count": {
+      "type": "number",
+      "default": 0,
+      "description": "Requests recorded in this window. Enforced server-side; a client cannot read or influence it."
+    },
+    "limit": {
+      "type": "number",
+      "description": "Ceiling for this identity and action in this window, resolved from server configuration and the account's plan."
+    },
+    "blocked": {
+      "type": "number",
+      "default": 0,
+      "description": "Requests refused after the ceiling was reached. Kept for abuse investigation."
+    },
+    "workspace_id": {
+      "type": "string"
+    },
+    "last_request_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "identity",
+    "action",
+    "window_key"
+  ]
+}

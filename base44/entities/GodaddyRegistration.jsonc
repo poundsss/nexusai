@@ -1,0 +1,133 @@
+{
+  "name": "GodaddyRegistration",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Project the purchase belongs to. Every read and mutation is filtered by this field server-side, so one project's registrations can never be read or resumed from another."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side from the authorized project."
+    },
+    "domain": {
+      "type": "string",
+      "description": "The domain name being purchased, punycode A-label form. Normalized server-side, never taken verbatim from a client."
+    },
+    "period": {
+      "type": "number",
+      "default": 1,
+      "description": "Registration period in years (1-10), locked by the quote."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "quoted",
+        "pending",
+        "completed",
+        "failed"
+      ],
+      "default": "quoted",
+      "description": "NexusAI-native lifecycle: quoted (offer held, not purchased), pending (registration in flight at the registrar \u2014 resumable), completed (registered and attached), failed (terminal, human error stored). The UI never receives these raw states, only a human stage derived from them."
+    },
+    "auto_renew": {
+      "type": "boolean",
+      "default": true,
+      "description": "Auto-renew preference quoted for this registration. Part of the quote's profile \u2014 a changed preference re-quotes rather than diverging from the purchase."
+    },
+    "profile": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The registrar registration profile this offer was quoted with (auto-renew, WHOIS privacy). Must be re-supplied IDENTICALLY when executing the quote; persisted server-side only."
+    },
+    "quote_token": {
+      "type": "string",
+      "description": "The registrar's single-use offer token (10-minute TTL). A capability credential: stored here server-side only, NEVER returned to the UI, logged or audited."
+    },
+    "quote_expires_at": {
+      "type": "string",
+      "description": "When the offer expires, verbatim from the quote. An expired offer fails closed with a human 'search again' error."
+    },
+    "price_value": {
+      "type": "number",
+      "description": "Locked registration price in minor currency units, verbatim from the quote."
+    },
+    "price_currency": {
+      "type": "string",
+      "description": "ISO-4217 currency of the locked price."
+    },
+    "renewal_value": {
+      "type": "number",
+      "description": "Indicative renewal price in minor units, verbatim from the quote."
+    },
+    "renewal_currency": {
+      "type": "string",
+      "description": "ISO-4217 currency of the indicative renewal price."
+    },
+    "agreements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "default": [],
+      "description": "Legal agreements required by the quote (agreement_type, title, url), verbatim. The execute step's consent must reference exactly these types."
+    },
+    "fees": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "default": [],
+      "description": "Purchase fees on the quote, verbatim. Passed through as consent.acknowledgedFees at execute; never modified here."
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "The Idempotency-Key sent on the registration call \u2014 minted once per offer and reused for every retry, so a replayed registration can never buy the domain twice."
+    },
+    "registration_id": {
+      "type": "string",
+      "description": "Registrar-side registration record id, server-side only, never returned to the UI."
+    },
+    "operation_id": {
+      "type": "string",
+      "description": "Registrar-side async operation id used for polling, server-side only, never returned to the UI."
+    },
+    "attempts": {
+      "type": "number",
+      "default": 0,
+      "description": "Poll attempts so far, for observability. Polling itself is unbounded-safe: the registrar's operation polling is idempotent."
+    },
+    "last_polled_at": {
+      "type": "string",
+      "description": "ISO timestamp of the last poll."
+    },
+    "error": {
+      "type": "string",
+      "description": "HUMAN-READABLE terminal error, never a raw API error. Safe to show to the user verbatim."
+    },
+    "expires_at": {
+      "type": "string",
+      "description": "The domain's expiry date once registration completed, verbatim from the registrar's operation result."
+    },
+    "dns_ok": {
+      "type": "boolean",
+      "description": "Whether serving DNS was provisioned with the registrar after registration completed. False leaves the attached domain in 'error' with a retryable connect step."
+    },
+    "started_at": {
+      "type": "string",
+      "description": "When the registration call was made."
+    },
+    "completed_at": {
+      "type": "string",
+      "description": "When the registration reached its terminal registrar state."
+    }
+  },
+  "required": [
+    "project_id",
+    "workspace_id",
+    "domain",
+    "status"
+  ]
+}

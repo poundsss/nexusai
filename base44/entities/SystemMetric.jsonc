@@ -1,0 +1,54 @@
+{
+  "name": "SystemMetric",
+  "type": "object",
+  "properties": {
+    "metric": {
+      "type": "string",
+      "description": "Metric name in dotted form (job.completed, job.failed, cache.hit, ratelimit.blocked, http.latency_ms)."
+    },
+    "window_key": {
+      "type": "string",
+      "description": "Minute bucket the samples are aggregated into. Aggregation is what keeps observability from costing one record per request."
+    },
+    "window_start": {
+      "type": "string"
+    },
+    "scope": {
+      "type": "string",
+      "default": "platform",
+      "description": "platform | workspace | project \u2014 the granularity the samples were recorded at."
+    },
+    "scope_id": {
+      "type": "string"
+    },
+    "labels": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Low-cardinality dimensions (queue, job_type, status). Never a user id, email, IP or any other identifying value."
+    },
+    "count": {
+      "type": "number",
+      "default": 0
+    },
+    "sum": {
+      "type": "number",
+      "default": 0
+    },
+    "min": {
+      "type": "number"
+    },
+    "max": {
+      "type": "number"
+    },
+    "last_value": {
+      "type": "number"
+    },
+    "last_sample_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "metric",
+    "window_key"
+  ]
+}

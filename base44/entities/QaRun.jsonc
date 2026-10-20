@@ -1,0 +1,178 @@
+{
+  "name": "QaRun",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Project this QA run validated. Resolved SERVER-side from the authorized project, never from a client, and every read is filtered by it, so one project's QA history can never be read from another."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side from the project."
+    },
+    "user_id": {
+      "type": "string",
+      "description": "Authenticated caller the run is attributed to. Authorization was resolved before the run started."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "PASSED",
+        "FAILED",
+        "REPAIRED",
+        "REPAIR_FAILED"
+      ],
+      "description": "Terminal verdict. PASSED = every executed test passed on the first pass. FAILED = tests failed and no repair was attempted. REPAIRED = a bounded repair made the failing tests pass and the fix was committed as a new version. REPAIR_FAILED = the repair budget was exhausted; nothing was committed and the known-good version still stands."
+    },
+    "terminated_by": {
+      "type": "string",
+      "description": "The deterministic stop condition that ended the run: all_passed | no_repair_requested | repaired | attempts_exhausted | fixer_declined | not_repairable. A QA run always ends for exactly one stated reason, never by running out of time."
+    },
+    "base_version_number": {
+      "type": "number",
+      "description": "The project version the tests were executed against."
+    },
+    "known_good_version_id": {
+      "type": "string",
+      "description": "The immutable version that was the project's canonical state when the run started. A failed repair NEVER replaces it \u2014 this is what the project is still at when status is REPAIR_FAILED."
+    },
+    "known_good_version_number": {
+      "type": "number"
+    },
+    "final_version_number": {
+      "type": "number",
+      "description": "Version the project is at after the run. Equal to known_good_version_number unless a repair actually succeeded and was committed."
+    },
+    "plan": {
+      "type": "array",
+      "description": "The bounded test plan that was generated, in execution order.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "results": {
+      "type": "array",
+      "description": "One structured result per planned test. A test that could not be reached is 'skipped' rather than reported as passing.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "error": {
+            "type": "string"
+          },
+          "error_category": {
+            "type": "string"
+          },
+          "file": {
+            "type": "string"
+          },
+          "trace_id": {
+            "type": "string"
+          },
+          "run_id": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "test_count": {
+      "type": "number",
+      "default": 0
+    },
+    "passed": {
+      "type": "number",
+      "default": 0
+    },
+    "failed": {
+      "type": "number",
+      "default": 0
+    },
+    "skipped": {
+      "type": "number",
+      "default": 0
+    },
+    "categories_failed": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "repair_attempts": {
+      "type": "number",
+      "default": 0,
+      "description": "Bounded repair attempts actually spent. Never exceeds max_repair_attempts, which is what makes an infinite repair loop unrepresentable."
+    },
+    "max_repair_attempts": {
+      "type": "number",
+      "default": 3
+    },
+    "repair_log": {
+      "type": "array",
+      "description": "One entry per repair attempt: what it changed and whether the affected tests then passed.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "attempt": {
+            "type": "number"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "applied": {
+            "type": "boolean"
+          },
+          "resolved": {
+            "type": "boolean"
+          },
+          "failed_after": {
+            "type": "number"
+          },
+          "run_id": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "trace_id": {
+      "type": "string",
+      "description": "The platform's EXISTING correlation id for this operation. QA mints no second trace system."
+    },
+    "duration_ms": {
+      "type": "number",
+      "default": 0
+    },
+    "completed_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "project_id",
+    "workspace_id",
+    "status"
+  ]
+}

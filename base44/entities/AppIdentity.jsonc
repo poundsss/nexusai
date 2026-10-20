@@ -1,0 +1,48 @@
+{
+  "name": "AppIdentity",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string"
+    },
+    "app_user_id": {
+      "type": "string"
+    },
+    "provider": {
+      "type": "string",
+      "description": "Provider-neutral key of the external identity provider (configured per project). No provider is hardcoded."
+    },
+    "provider_subject": {
+      "type": "string",
+      "description": "The provider's stable subject id for this identity. Unique per project + provider."
+    },
+    "email": {
+      "type": "string"
+    },
+    "profile": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Bounded, scrubbed public profile returned by the provider. Never a provider token or client secret."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "linked",
+        "unlinked"
+      ],
+      "default": "linked"
+    },
+    "linked_at": {
+      "type": "string"
+    },
+    "last_login_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "project_id",
+    "app_user_id",
+    "provider",
+    "provider_subject"
+  ]
+}

@@ -1,0 +1,101 @@
+{
+  "name": "SsoConnection",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization this connection belongs to. Every lookup is filtered by this field."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Denormalized owning workspace for authorization checks."
+    },
+    "protocol": {
+      "type": "string",
+      "enum": [
+        "saml",
+        "oidc"
+      ],
+      "description": "SSO protocol. SAML 2.0 for enterprise IdPs (Okta, Azure AD); OIDC for providers that support it."
+    },
+    "name": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "disabled"
+      ],
+      "default": "active",
+      "description": "Only an active connection is offered at sign-in. A disabled connection is retained for audit but never authenticates."
+    },
+    "saml_entity_id": {
+      "type": "string",
+      "description": "IdP Entity ID / issuer."
+    },
+    "saml_acs_url": {
+      "type": "string",
+      "description": "Assertion Consumer Service URL the IdP posts to."
+    },
+    "saml_cert_encrypted": {
+      "type": "string",
+      "description": "IdP X.509 certificate, encrypted at rest with the platform secret key. Decrypted only server-side at assertion-validation time."
+    },
+    "saml_cert_fingerprint": {
+      "type": "string",
+      "description": "SHA-256 fingerprint of the IdP cert, for display and rotation detection."
+    },
+    "saml_metadata_xml_encrypted": {
+      "type": "string",
+      "description": "Optional IdP metadata XML, encrypted at rest."
+    },
+    "oidc_issuer": {
+      "type": "string"
+    },
+    "oidc_client_id": {
+      "type": "string"
+    },
+    "oidc_client_secret_encrypted": {
+      "type": "string",
+      "description": "OIDC client secret, encrypted at rest. Never returned to the client."
+    },
+    "oidc_scopes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "oidc_authorize_url": {
+      "type": "string"
+    },
+    "oidc_token_url": {
+      "type": "string"
+    },
+    "oidc_userinfo_url": {
+      "type": "string"
+    },
+    "attribute_mapping": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Maps IdP attribute names to platform fields (email, full_name, groups)."
+    },
+    "sign_in_url": {
+      "type": "string",
+      "description": "Computed SP-initiated entry point for this connection."
+    },
+    "last_used_at": {
+      "type": "string"
+    },
+    "created_by": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "organization_id",
+    "workspace_id",
+    "protocol",
+    "name",
+    "status"
+  ]
+}

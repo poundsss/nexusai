@@ -1,0 +1,116 @@
+{
+  "name": "MCPConnection",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string",
+      "description": "Account/workspace that owns this connection. MCP connections are account-scoped builder infrastructure, never project artifacts."
+    },
+    "name": {
+      "type": "string",
+      "description": "Display name, unique per workspace, e.g. 'DeepWiki'"
+    },
+    "server_url": {
+      "type": "string",
+      "description": "Absolute https URL of the MCP endpoint (Streamable HTTP)"
+    },
+    "transport": {
+      "type": "string",
+      "enum": [
+        "http"
+      ],
+      "default": "http",
+      "description": "Only MCP Streamable HTTP is supported"
+    },
+    "auth_type": {
+      "type": "string",
+      "enum": [
+        "none",
+        "bearer",
+        "header"
+      ],
+      "default": "none"
+    },
+    "auth_header_name": {
+      "type": "string",
+      "description": "Header name when auth_type is 'header', e.g. X-API-Key"
+    },
+    "secret_name": {
+      "type": "string",
+      "description": "Name of the account-scoped WorkspaceSecret holding the credential. Reference only \u2014 never a value."
+    },
+    "enabled": {
+      "type": "boolean",
+      "default": true
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "never_connected",
+        "connected",
+        "error",
+        "disabled"
+      ],
+      "default": "never_connected"
+    },
+    "last_connected_at": {
+      "type": "string"
+    },
+    "last_error": {
+      "type": "string",
+      "description": "Safe, redacted error message from the last connection attempt"
+    },
+    "last_error_code": {
+      "type": "string"
+    },
+    "server_name": {
+      "type": "string"
+    },
+    "server_version": {
+      "type": "string"
+    },
+    "protocol_version": {
+      "type": "string"
+    },
+    "capabilities": {
+      "type": "string",
+      "description": "JSON text of the server's advertised capabilities"
+    },
+    "instructions": {
+      "type": "string",
+      "description": "Server-provided usage instructions, truncated"
+    },
+    "tool_count": {
+      "type": "number",
+      "default": 0
+    },
+    "tools": {
+      "type": "array",
+      "description": "Normalized tool metadata discovered from the server",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "input_schema": {
+            "type": "string",
+            "description": "JSON text of the tool's inputSchema"
+          },
+          "read_only": {
+            "type": "boolean",
+            "description": "True only when the server declares annotations.readOnlyHint"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "workspace_id",
+    "name",
+    "server_url"
+  ]
+}

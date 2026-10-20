@@ -1,0 +1,57 @@
+{
+  "name": "ProjectBranch",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string",
+      "description": "Working-line name shown in the Builder's branch panel."
+    },
+    "is_default": {
+      "type": "boolean",
+      "default": false,
+      "description": "The single 'Main' branch every project implicitly has. Created lazily on first touch; its snapshot is written the first time the working files leave it."
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": false,
+      "description": "Exactly one branch per project may hold this: the line the project's WORKING files currently represent. Maintained server-side only \u2014 a client never chooses the active branch directly."
+    },
+    "snapshot_url": {
+      "type": "string",
+      "description": "Storage URL of the branch's file snapshot { files: [{ path, content, frozen }] }, written out-of-band because real project files exceed the inline field ceiling."
+    },
+    "files_count": {
+      "type": "number",
+      "default": 0
+    },
+    "created_by": {
+      "type": "string",
+      "description": "Workspace member who created the branch; project authorization was resolved server-side at creation time."
+    }
+  },
+  "required": [
+    "project_id",
+    "name"
+  ],
+  "rls": {
+    "read": false,
+    "create": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "system"
+      }
+    }
+  }
+}

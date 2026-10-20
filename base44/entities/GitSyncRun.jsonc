@@ -1,0 +1,210 @@
+{
+  "name": "GitSyncRun",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string"
+    },
+    "workspace_id": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "App user that authorized this operation; authorization was resolved at enqueue time. Null for webhook-triggered imports."
+    },
+    "link_id": {
+      "type": "string"
+    },
+    "direction": {
+      "type": "string",
+      "enum": [
+        "export",
+        "import"
+      ],
+      "description": "export = internal version \u2192 GitHub commit. import = GitHub commit \u2192 new internal version."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "QUEUED",
+        "RUNNING",
+        "FETCHING",
+        "VALIDATING",
+        "COMMITTING",
+        "COMPLETED",
+        "FAILED",
+        "CANCELLED",
+        "STALE"
+      ],
+      "default": "QUEUED"
+    },
+    "current_phase": {
+      "type": "string",
+      "description": "Short user-safe label of what the worker is doing"
+    },
+    "repo_full_name": {
+      "type": "string"
+    },
+    "branch": {
+      "type": "string"
+    },
+    "subdirectory": {
+      "type": "string"
+    },
+    "commit_sha": {
+      "type": "string",
+      "description": "Export: the commit this run created. Import: the commit this run read. Never assumed equal to an internal version id."
+    },
+    "base_commit_sha": {
+      "type": "string",
+      "description": "Parent commit the export was built on"
+    },
+    "commit_message": {
+      "type": "string"
+    },
+    "version_id": {
+      "type": "string",
+      "description": "Export: the immutable internal version that was exported. Import: the new internal version created from the commit."
+    },
+    "version_number": {
+      "type": "number"
+    },
+    "source_version_id": {
+      "type": "string",
+      "description": "Export only: requested internal version"
+    },
+    "conflict_strategy": {
+      "type": "string",
+      "enum": [
+        "fast_forward",
+        "merge",
+        "rebase",
+        "force"
+      ],
+      "default": "fast_forward",
+      "description": "How to handle a branch that diverged from the last export base. 'fast_forward' refuses on divergence; 'merge' creates a 3-way merge commit; 'rebase' replays changes on top of the new head; 'force' overwrites the branch (requires force_confirm)."
+    },
+    "force_confirm": {
+      "type": "boolean",
+      "default": false,
+      "description": "Explicit confirmation for force strategy. A force export without this flag is refused, so force can never be accidental."
+    },
+    "divergence_info": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "When divergence is detected, stores the base sha, head sha, ahead/behind counts, and any conflict file list. Surfaced to the Builder UI so the user can choose a reconciliation strategy."
+    },
+    "checkpoint_url": {
+      "type": "string",
+      "description": "Storage URL for the incremental-sync checkpoint. Holds the tree metadata, blob list, blobs-read cursor and accumulated files so a large-repository import can resume after a worker interruption without re-reading from the start."
+    },
+    "token_validated_at": {
+      "type": "string",
+      "description": "When the GitHub token was last validated before long-running work. A stale validation is re-checked on resume."
+    },
+    "changed_files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "change": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "File-level change summary for this operation"
+    },
+    "file_count": {
+      "type": "number",
+      "default": 0
+    },
+    "build_status": {
+      "type": "string",
+      "enum": [
+        "success",
+        "failed",
+        "skipped",
+        "unknown"
+      ],
+      "default": "unknown"
+    },
+    "build_error_count": {
+      "type": "number",
+      "default": 0
+    },
+    "build_diagnostics": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "security_scan": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "fail",
+        "unknown"
+      ],
+      "default": "unknown"
+    },
+    "security_findings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Redacted findings; never a credential value"
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "Identifies the logical operation. A duplicate request with the same key is refused or answered with the existing run instead of doing the work twice."
+    },
+    "credential_ref": {
+      "type": "string",
+      "description": "NAME of the backend-only secret row holding this run's short-lived GitHub token. A reference, never a value; deleted when the run reaches a terminal state."
+    },
+    "cancel_requested": {
+      "type": "boolean",
+      "default": false
+    },
+    "recovery_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Bounded worker recoveries before the run fails terminally"
+    },
+    "lease_token": {
+      "type": "string",
+      "description": "Identifies the single worker advancing this run"
+    },
+    "lease_expires_at": {
+      "type": "string"
+    },
+    "heartbeat_at": {
+      "type": "string"
+    },
+    "failure_code": {
+      "type": "string",
+      "description": "GITHUB_AUTH_INVALID | GITHUB_PERMISSION_DENIED | GITHUB_RATE_LIMITED | GITHUB_NETWORK_ERROR | GITHUB_API_ERROR | REPO_NOT_FOUND | BRANCH_NOT_FOUND | MALFORMED_REPOSITORY | BUILD_FAILED | SECURITY_FAILED | DIVERGENCE_DETECTED | CONFLICT_DETECTED | FORCE_NOT_CONFIRMED | WORKER_LOST | CANCELLED | SYNC_ERROR"
+    },
+    "failure_summary": {
+      "type": "string"
+    },
+    "started_at": {
+      "type": "string"
+    },
+    "completed_at": {
+      "type": "string"
+    },
+    "duration_ms": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "project_id",
+    "workspace_id",
+    "direction",
+    "status"
+  ]
+}

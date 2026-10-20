@@ -1,0 +1,127 @@
+{
+  "name": "IntegrationBreaker",
+  "type": "object",
+  "properties": {
+    "breaker_key": {
+      "type": "string",
+      "description": "Deterministic identity of ONE breaker: project + integration + host. Two projects calling the same upstream host hold DIFFERENT breakers, and the same host reached through two integrations is tracked separately \u2014 so one project's outage can never trip another's calls."
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Project the breaker belongs to. Resolved SERVER-side from the executing project, never from a client, and every read is filtered by it together with the integration and host."
+    },
+    "workspace_id": {
+      "type": "string"
+    },
+    "integration_name": {
+      "type": "string",
+      "description": "The project's own integration name. The platform hardcodes no provider names."
+    },
+    "host": {
+      "type": "string",
+      "description": "Hostname the breaker guards. Host only \u2014 never a URL, which could carry an api_key in its query string."
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "CLOSED",
+        "OPEN",
+        "HALF_OPEN"
+      ],
+      "default": "CLOSED",
+      "description": "CLOSED lets every call through. OPEN refuses before the upstream is contacted, and always for a BOUNDED duration \u2014 a breaker can never latch open forever. HALF_OPEN admits a bounded number of probes: one success closes it, one failure returns it to OPEN."
+    },
+    "failure_times": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Timestamps of the COUNTED failures inside the rolling observation window, pruned on every write. Only configured upstream failures (repeated 5xx, timeout, connection failure) appear here \u2014 auth, validation, 4xx business errors, rate-limit refusals and platform/policy refusals never do."
+    },
+    "failure_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Counted failures currently inside the window. Denormalized from failure_times for reporting."
+    },
+    "threshold": {
+      "type": "number",
+      "description": "Counted failures inside the window that trip the breaker, as resolved from bounded server-side configuration."
+    },
+    "window_ms": {
+      "type": "number",
+      "description": "Length of the rolling observation window. A failure older than this is forgotten rather than accumulating forever."
+    },
+    "open_ms": {
+      "type": "number",
+      "description": "How long the breaker stays OPEN before a probe is allowed."
+    },
+    "opened_at": {
+      "type": "string"
+    },
+    "open_until": {
+      "type": "string",
+      "description": "When the OPEN period ends and a probe becomes admissible. Always set when OPEN, which is what makes the state self-recovering."
+    },
+    "half_open_max_probes": {
+      "type": "number",
+      "default": 1,
+      "description": "Probes admitted at once in HALF_OPEN. Bounded, so recovery can never become a flood of concurrent probes against a struggling upstream."
+    },
+    "probe_token": {
+      "type": "string",
+      "description": "The token of the ONE call currently holding a half-open probe slot. Written and then re-read, so two concurrent callers cannot both believe they won the probe."
+    },
+    "probe_expires_at": {
+      "type": "string",
+      "description": "When an unfinished probe slot may be reclaimed, so a caller that died mid-probe never strands the breaker in HALF_OPEN."
+    },
+    "probe_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Probes admitted since this breaker last opened."
+    },
+    "writer_token": {
+      "type": "string",
+      "description": "Token of the last writer. Written and then re-read: a concurrent writer that finds another token knows it lost and re-applies its own outcome onto the winner's state, so two simultaneous failures cannot corrupt the count."
+    },
+    "version": {
+      "type": "number",
+      "default": 0,
+      "description": "Monotonic write counter, for optimistic concurrency."
+    },
+    "trips": {
+      "type": "number",
+      "default": 0,
+      "description": "How many times this breaker has opened. Kept for diagnostics."
+    },
+    "refusals": {
+      "type": "number",
+      "default": 0,
+      "description": "Calls refused BEFORE contacting the upstream because the breaker was OPEN \u2014 the requests it prevented."
+    },
+    "last_failure_at": {
+      "type": "string"
+    },
+    "last_success_at": {
+      "type": "string"
+    },
+    "last_error_code": {
+      "type": "string",
+      "description": "Code of the most recent counted failure, from the EXISTING integration error vocabulary."
+    },
+    "trace_id": {
+      "type": "string",
+      "description": "The existing correlation id of the operation that last changed this state."
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "breaker_key",
+    "project_id",
+    "integration_name",
+    "host",
+    "state"
+  ]
+}

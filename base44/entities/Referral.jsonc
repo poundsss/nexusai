@@ -1,0 +1,34 @@
+{
+  "name": "Referral",
+  "type": "object",
+  "properties": {
+    "referrer_user_id": {
+      "type": "string",
+      "description": "The account that owns the referral code. Server-side only \u2014 a client may never name a referrer; it can only hand back a code for resolution."
+    },
+    "code": {
+      "type": "string",
+      "description": "The shareable referral code. Deterministically derived from the referrer's account id, so issuance is race-free and the same account always mints the same code. Rows exist as either an ISSUANCE (no referred fields) or a REDEMPTION (referred fields set)."
+    },
+    "referred_user_id": {
+      "type": "string",
+      "description": "Redemption rows only: the account the code was attributed to. Attribution is one-time per referred account (query-first + post-create dedup), so a code can be redeemed by many friends but never twice by one."
+    },
+    "referred_workspace_id": {
+      "type": "string",
+      "description": "Redemption rows only: the referred account's internal workspace, which received the one-time 30-credit grant."
+    },
+    "attributed_at": {
+      "type": "string",
+      "description": "Redemption rows only: ISO timestamp of the attribution."
+    },
+    "granted_credits": {
+      "type": "number",
+      "description": "Redemption rows only: promotional credits granted to the referred workspace (30 in this slice). The ledger remains the authoritative record; this is denormalized provenance."
+    }
+  },
+  "required": [
+    "referrer_user_id",
+    "code"
+  ]
+}

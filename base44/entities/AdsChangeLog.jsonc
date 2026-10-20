@@ -1,0 +1,54 @@
+{
+  "name": "AdsChangeLog",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Project the change belongs to. Every read is filtered by this field server-side."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side from the authorized project."
+    },
+    "scope": {
+      "type": "string",
+      "enum": [
+        "account",
+        "campaign",
+        "brief",
+        "asset",
+        "conversion"
+      ],
+      "description": "Which Google Ads domain the change touched."
+    },
+    "resource_id": {
+      "type": "string",
+      "description": "The row the change applied to."
+    },
+    "actor": {
+      "type": "string",
+      "enum": [
+        "member",
+        "system",
+        "provider"
+      ],
+      "description": "DOCUMENTED (Base44): the campaign history includes changes Base44 made on its own \u2014 member changes are attributed to the authenticated caller, system/provider changes are stamped server-side."
+    },
+    "action": {
+      "type": "string",
+      "description": "What changed, e.g. campaign.budget_changed, account.disconnected, asset.accepted."
+    },
+    "detail": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Structured before/after detail. Secrets and provider credentials are never written here."
+    }
+  },
+  "required": [
+    "project_id",
+    "workspace_id",
+    "scope",
+    "action",
+    "actor"
+  ]
+}

@@ -1,0 +1,180 @@
+{
+  "name": "Reward",
+  "type": "object",
+  "properties": {
+    "reward_policy_version": {
+      "type": "string",
+      "description": "Version of the reward policy that produced this record. The formula lives in a versioned registry, so a historical reward stays reproducible: a later policy never reinterprets an earlier record, it produces a NEW one alongside it."
+    },
+    "trajectory_id": {
+      "type": "string",
+      "description": "The sealed episode this reward belongs to. Read-only input \u2014 the reward never writes back to it."
+    },
+    "evaluation_id": {
+      "type": "string",
+      "description": "The Judge evaluation this reward converts. The reward engine does NOT decide whether the code worked; that verdict is read from here and from the authoritative execution records the evaluation cites."
+    },
+    "run_id": {
+      "type": "string",
+      "description": "AIRun the episode describes, copied for correlation."
+    },
+    "trace_id": {
+      "type": "string",
+      "description": "The operation's existing correlation id, reused verbatim \u2014 the reward engine mints no new trace."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side from the project \u2014 never taken from a client."
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Project the reward belongs to. Every read is filtered by this field after the caller is authorized against the project, so one project can never read another's rewards."
+    },
+    "version_id": {
+      "type": "string",
+      "description": "Immutable ProjectVersion the episode produced, when it produced one. The reference a consumer resolves to recover exactly what was rewarded; contents are never copied."
+    },
+    "version_number": {
+      "type": "number"
+    },
+    "revision": {
+      "type": "number",
+      "default": 1,
+      "description": "Position of this reward in the episode's reward history. A recalculation under a new policy, or after an authoritative input changed, is a NEW record with the next revision \u2014 earlier rewards are preserved, never rewritten."
+    },
+    "supersedes_reward_id": {
+      "type": "string",
+      "description": "The reward this one follows for the same episode, making the history a chain rather than an unordered set."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "superseded",
+        "insufficient_evidence"
+      ],
+      "default": "active",
+      "description": "At most ONE active reward exists per (trajectory, policy version): recalculating supersedes the previous record for that policy instead of leaving two active rewards. 'insufficient_evidence' marks a record that carries no reward value because no evaluation dimension was measurable."
+    },
+    "evaluator_version": {
+      "type": "string",
+      "description": "Evaluator version of the evaluation that was consumed, so a reward is attributable to the exact judge that produced its inputs."
+    },
+    "evaluation_inputs_hash": {
+      "type": "string",
+      "description": "The evaluation's own input fingerprint, carried through so a change in the underlying execution evidence is visible at the reward layer."
+    },
+    "inputs_hash": {
+      "type": "string",
+      "description": "Fingerprint of the authoritative inputs and policy this reward was derived from. Identical inputs and policy therefore yield an identical reward, which is what makes recalculation deterministic and duplicate-free."
+    },
+    "final_reward": {
+      "type": "number",
+      "description": "Normalized reward in 0..1, computed from the components by the policy's documented formula. Null when the evidence was insufficient \u2014 never zero as a stand-in for unknown."
+    },
+    "objective_reward": {
+      "type": "number",
+      "description": "Normalized reward from the evaluation's objective dimensions alone, before any user outcome is applied. Kept separately so the objective signal stays inspectable."
+    },
+    "outcome_reward": {
+      "type": "number",
+      "description": "Normalized reward from the authoritative user/product outcome alone. Null when no outcome is known."
+    },
+    "outcome_status": {
+      "type": "string",
+      "enum": [
+        "known",
+        "partial",
+        "unknown"
+      ],
+      "default": "unknown",
+      "description": "Whether a user outcome was available. 'unknown' means no human outcome exists yet \u2014 it is NOT rejection, and it never reduces the objective signal; it only removes the outcome term from the formula."
+    },
+    "user_outcome": {
+      "type": "string",
+      "description": "The authoritative outcome read from the trajectory (accepted, rejected, abandoned, edited_after_generation, deployed, reverted). Absent when unknown; never inferred."
+    },
+    "components": {
+      "type": "array",
+      "description": "Every reward component kept SEPARATE from the final value: its source dimension or outcome, its normalized score, the policy weight applied, its signed contribution, its polarity and its provenance.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "description": "evaluation_dimension | user_outcome"
+          },
+          "score": {
+            "type": "number"
+          },
+          "weight": {
+            "type": "number"
+          },
+          "contribution": {
+            "type": "number"
+          },
+          "polarity": {
+            "type": "string",
+            "description": "positive | negative | neutral"
+          },
+          "status": {
+            "type": "string"
+          },
+          "explanation": {
+            "type": "string"
+          },
+          "provenance": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Where the component came from: the evaluation dimension, the authoritative outcome, the trajectory event and the version/run record. A component with no provenance is not scored."
+          }
+        }
+      }
+    },
+    "positive_components": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Names of components that contributed positively, kept for inspection alongside the separate component list."
+    },
+    "negative_components": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Names of components that contributed negatively."
+    },
+    "unavailable_components": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Signals the evaluation could not measure. They are excluded from the formula rather than scored as zero, so unknown never reads as bad."
+    },
+    "formula": {
+      "type": "string",
+      "description": "Human-readable statement of the deterministic formula this policy version applied. Fixed per policy version; never adjusted dynamically and never produced by a model."
+    },
+    "explanations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Scrubbed, objective statements of how the reward was reached. Derived from the components' own evidence, never from model self-reporting."
+    },
+    "calculated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "reward_policy_version",
+    "trajectory_id",
+    "evaluation_id",
+    "project_id",
+    "workspace_id"
+  ]
+}

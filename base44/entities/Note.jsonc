@@ -1,0 +1,26 @@
+{
+  "name": "Note",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Short note title, used for search and listing."
+    },
+    "content": {
+      "type": "string",
+      "description": "Note body text."
+    },
+    "created_at": {
+      "type": "string",
+      "description": "ISO timestamp set when the note is created."
+    },
+    "is_pinned": {
+      "type": "boolean",
+      "default": false,
+      "description": "Pinned notes are listed before unpinned ones."
+    }
+  },
+  "required": [
+    "title"
+  ]
+}

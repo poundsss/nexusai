@@ -1,0 +1,72 @@
+{
+  "name": "MCPInvocation",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string"
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "trace_id": {
+      "type": "string",
+      "description": "Correlation id of the operation that made this call, carried in from the run or manual test. An MCP failure therefore remains attributable to the originating AI operation."
+    },
+    "user_id": {
+      "type": "string"
+    },
+    "connection_id": {
+      "type": "string"
+    },
+    "connection_name": {
+      "type": "string"
+    },
+    "tool_name": {
+      "type": "string"
+    },
+    "trigger": {
+      "type": "string",
+      "enum": [
+        "builder_run",
+        "manual_test"
+      ],
+      "default": "builder_run"
+    },
+    "mode": {
+      "type": "string"
+    },
+    "ok": {
+      "type": "boolean",
+      "default": true
+    },
+    "error_code": {
+      "type": "string"
+    },
+    "error_message": {
+      "type": "string",
+      "description": "Safe message with every secret value redacted"
+    },
+    "duration_ms": {
+      "type": "number"
+    },
+    "arguments_preview": {
+      "type": "string",
+      "description": "Truncated, redacted JSON of the arguments"
+    },
+    "result_preview": {
+      "type": "string",
+      "description": "Truncated, redacted preview of the result"
+    },
+    "result_bytes": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "workspace_id",
+    "connection_name",
+    "tool_name"
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "name": "Google Watch Renewal",
+  "description": "Every 30 minutes, re-watches Google Calendar / Drive channels (GoogleWatchChannel) whose expiration is within the renewal lead window. Each renewal re-issues a watch and updates the existing row, never creating a duplicate channel. Drive's ~24h ceiling is why this runs frequently.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "*/30 * * * *",
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "google_watch_renewal",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "renew": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "googleWatchRenew"
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Renew expiring Google channels",
+            "description": "Re-watch Calendar/Drive channels before their expiration"
+          }
+        }
+      }
+    ]
+  }
+}

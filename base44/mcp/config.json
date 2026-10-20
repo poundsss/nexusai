@@ -1,0 +1,230 @@
+{
+  "auth": "oauth",
+  "consent_path": "/oauth/consent",
+  "login_path": "/login",
+  "tools": {
+    "entity_overrides": {
+      "AIRun": { "operations": [] },
+      "AppEntity": { "operations": [] },
+      "AppRecord": { "operations": [] },
+      "AuditLog": { "operations": [] },
+      "Build": { "operations": [] },
+      "Conversation": { "operations": [] },
+      "CreditTransaction": { "operations": [] },
+      "FunctionInvocation": { "operations": [] },
+      "MCPConnection": { "operations": [] },
+      "MCPInvocation": { "operations": [] },
+      "Message": { "operations": [] },
+      "Project": { "operations": [] },
+      "ProjectFile": { "operations": [] },
+      "ProjectSecret": { "operations": [] },
+      "ProjectVersion": { "operations": [] },
+      "UsageEvent": { "operations": [] },
+      "User": { "operations": [] },
+      "Workspace": { "operations": [] },
+      "WorkspaceSecret": { "operations": [] }
+    },
+    "functions": [
+      {
+        "name": "list_projects",
+        "title": "List projects",
+        "description": "List every project in the signed-in account's workspace, with name, status, current version number and last build status. Read-only. Call this first to discover project_id values for the other tools.",
+        "input_schema": { "type": "object", "properties": {} },
+        "handler": "mcpListProjects",
+        "annotations": { "read_only_hint": true, "destructive_hint": false, "idempotent_hint": true }
+      },
+      {
+        "name": "get_project",
+        "title": "Get project",
+        "description": "Get one project's metadata: status, current version, latest version and latest build result. Read-only. Never returns secret values. Requires project_id from list_projects; a project belonging to another account is refused with FORBIDDEN.",
+        "input_schema": { "type": "object", "properties": { "project_id": { "type": "string", "description": "Project id from list_projects." } }, "required": ["project_id"] },
+        "handler": "mcpGetProject",
+        "annotations": { "read_only_hint": true, "destructive_hint": false, "idempotent_hint": true }
+      },
+      {
+        "name": "get_project_context",
+        "title": "Get project context",
+        "description": "Get the structured state of a project: file index, pages, database entities and their fields, backend functions, external integrations, recent versions and the latest build result. Read-only. Secrets appear as names and whether a value is set — VALUES ARE NEVER RETURNED. File contents are not included; use read_project_file for those.",
+        "input_schema": { "type": "object", "properties": { "project_id": { "type": "string", "description": "Project id from list_projects." } }, "required": ["project_id"] },
+        "handler": "mcpGetProjectContext",
+        "annotations": { "read_only_hint": true, "destructive_hint": false, "idempotent_hint": true }
+      },
+      {
+        "name": "list_project_files",
+        "title": "List project files",
+        "description": "List a project's file paths with size and frozen flag. Read-only. Content is omitted by default; set include_content true to also receive bounded content for at most the first 25 matching files (60000 characters each). Use path_prefix (e.g. 'src/pages/') to narrow the listing.",
+        "input_schema": { "type": "object", "properties": { "project_id": { "type": "string", "description": "Project id from list_projects." }, "path_prefix": { "type": "string", "description": "Optional path prefix filter, e.g. 'functions/'." }, "include_content": { "type": "boolean", "description": "Include bounded file content. Defaults to false; capped at 25 files and 60000 characters each." } }, "required": ["project_id"] },
+        "handler": "mcpListProjectFiles",
+        "annotations": { "read_only_hint": true, "destructive_hint": false, "idempotent_hint": true }
+      },
+      {
+        "name": "read_project_file",
+        "title": "Read project file",
+        "description": "Read the persisted content of one file in a project, by exact path (e.g. 'src/pages/Customers.js'). Read-only. Content over 60000 characters is truncated and flagged with truncated=true.",
+        "input_schema": { "type": "object", "properties": { "project_id": { "type": "string", "description": "Project id from list_projects." }, "path": { "type": "string", "description": "Exact file path as returned by list_project_files." } }, "required": ["project_id", "path"] },
+        "handler": "mcpReadProjectFile",
+        "annotations": { "read_only_hint": true, "destructive_hint": false, "idempotent_hint": true }
+      },
+      {
+        "name": "get_project_versions",
+        "title": "Get project versions",
+        "description": "List a project's version history (version_id, number, message, originating run and changed-file count), newest first. Read-only. Use a version_id here as the input to restore_project_version.",
+        "input_schema": { "type": "object", "properties": { "project_id": { "type": "string", "description": "Project id from list_projects." } }, "required": ["project_id"] },
+        "handler": "mcpGetProjectVersions",
+        "annotations": { "read_only_hint": true, "destructive_hint": false, "idempotent_hint": true }
+      },
+      {
+        "name": "get_run_status",
+        "title": "Get AI run status",
+        "description": "Get the status of an AI run started by edit_project or create_project: status, current phase, changed files, resulting version and safe error text. Read-only. Poll this until status is COMPLETED or FAILED — runs execute in the background and typically take tens of seconds.",
+        "input_schema": { "type": "object", "properties": { "run_id": { "type": "string", "description": "Run id returned by edit_project or create_project." } }, "required": ["run_id"] },
+        "handler": "mcpGetRunStatus",
+        "annotations": { "read_only_hint": true, "destructive_hint": false, "idempotent_hint": true }
+      },
+      {
+        "name": "get_build_status",
+        "title": "Get build status",
+        "description": "Get the latest build record for a project: status, error count, file count and up to 20 safe structured build errors. Read-only — this reports an existing build, it never starts one.",
+        "input_schema": { "type": "object", "properties": { "project_id": { "type": "string", "description": "Project id from list_projects." } }, "required": ["project_id"] },
+        "handler": "mcpGetBuildStatus",
+        "annotations": { "read_only_hint": true, "destructive_hint": false, "idempotent_hint": true }
+      },
+      {
+        "name": "create_project",
+        "title": "Create project",
+        "description": "SIDE EFFECT: creates a new project in the signed-in account's workspace, with an initial scaffold version. When prompt is supplied it also starts a background AI run that builds the described application, and returns run_id — poll get_run_status for progress. Retrying with the same name returns the existing project instead of creating a duplicate (reused_existing=true).",
+        "input_schema": { "type": "object", "properties": { "name": { "type": "string", "description": "Project name, 1-80 characters. Also the idempotency key for retries." }, "prompt": { "type": "string", "description": "Optional description of the application to build, up to 8000 characters. When present, a background AI run is started." } }, "required": ["name"] },
+        "handler": "mcpCreateProject",
+        "annotations": { "read_only_hint": false, "destructive_hint": false, "idempotent_hint": true }
+      },
+      {
+        "name": "edit_project",
+        "title": "Edit project with AI",
+        "description": "SIDE EFFECT: changes project state and may create a new version. Enqueues a background AI run that plans, edits files and entities, builds, repairs and commits a new version. Returns immediately with run_id and status QUEUED — it does NOT wait for the build; poll get_run_status until COMPLETED or FAILED. Set mode to 'discuss' for a read-only answer that changes nothing. Retrying the same prompt while a run is still in progress returns that run (reused_existing=true) instead of starting a second one. Limits: 2 concurrent runs per project, 30 runs per project per hour. Each run consumes the account's AI credits.",
+        "input_schema": { "type": "object", "properties": { "project_id": { "type": "string", "description": "Project id from list_projects." }, "prompt": { "type": "string", "description": "What to change, in plain language. Up to 8000 characters." }, "mode": { "type": "string", "enum": ["default", "discuss"], "description": "'default' modifies the project; 'discuss' answers read-only without changing anything. Defaults to 'default'." } }, "required": ["project_id", "prompt"] },
+        "handler": "mcpEditProject",
+        "annotations": { "read_only_hint": false, "destructive_hint": false, "idempotent_hint": false }
+      },
+      {
+        "name": "restore_project_version",
+        "title": "Restore project version",
+        "description": "SIDE EFFECT: changes project state and creates a NEW version while preserving history — nothing is deleted. Restores the files and entity declarations of the given version_id. The restore is refused with RESTORE_BUILD_FAILED if the snapshot does not build, and with SCHEMA_MIGRATION_UNSAFE if the app's existing data could not be migrated. Pass expected_version (the project's current_version you last observed) to be protected against a concurrent change: a stale value is refused with VERSION_CONFLICT and nothing is modified. Use get_project_versions to obtain version_id.",
+        "input_schema": { "type": "object", "properties": { "project_id": { "type": "string", "description": "Project id from list_projects." }, "version_id": { "type": "string", "description": "Version id from get_project_versions." }, "expected_version": { "type": "number", "description": "Optional. The project's current_version as you last observed it. If the project has advanced since, the restore is refused with VERSION_CONFLICT instead of overwriting newer work." } }, "required": ["project_id", "version_id"] },
+        "handler": "mcpRestoreProjectVersion",
+        "annotations": { "read_only_hint": false, "destructive_hint": true, "idempotent_hint": false }
+      },
+      {
+        "name": "get_project_version",
+        "title": "Get project version",
+        "description": "Inspect ONE immutable version: its message, lineage, changed files, the file paths it contains (with sizes) and its entity declarations. Read-only. File CONTENTS are not included — use read_project_file for those — and secrets appear as names only. A version_id belonging to another project is refused with VERSION_NOT_FOUND.",
+        "input_schema": { "type": "object", "properties": { "project_id": { "type": "string", "description": "Project id from list_projects." }, "version_id": { "type": "string", "description": "Version id from get_project_versions." } }, "required": ["project_id", "version_id"] },
+        "handler": "mcpGetProjectVersion",
+        "annotations": { "read_only_hint": true, "destructive_hint": false, "idempotent_hint": true }
+      },
+      {
+        "name": "write_project_file",
+        "title": "Write project file",
+        "description": "SIDE EFFECT: changes project state and creates a NEW version. Writes the full content of one file (or deletes it with delete true). The change is refused if it does not build (BUILD_FAILED), if the file is frozen, or if expected_version no longer matches the project's current version (VERSION_CONFLICT) — in every refusal nothing is modified. A write that produces identical content commits nothing and returns unchanged=true. Pass the same edit_id when retrying so a retry cannot create a second version. Requires write permission; a viewer is refused with INSUFFICIENT_ROLE.",
+        "input_schema": { "type": "object", "properties": { "project_id": { "type": "string", "description": "Project id from list_projects." }, "path": { "type": "string", "description": "Exact file path, e.g. 'src/pages/Home.js'." }, "content": { "type": "string", "description": "Full new content of the file. Required unless delete is true." }, "delete": { "type": "boolean", "description": "Delete the file instead of writing it. Defaults to false." }, "expected_version": { "type": "number", "description": "Optional. The project's current_version as you last observed it; a stale value is refused with VERSION_CONFLICT." }, "edit_id": { "type": "string", "description": "Optional idempotency key. Retrying with the same edit_id returns the original result instead of committing twice." } }, "required": ["project_id", "path"] },
+        "handler": "mcpWriteProjectFile",
+        "annotations": { "read_only_hint": false, "destructive_hint": false, "idempotent_hint": true }
+      },
+      {
+        "name": "list_entity_schemas",
+        "title": "List entity schemas",
+        "description": "List the database entities the project declares, with their field definitions. Read-only. This is the app's SCHEMA, not its data — use query_entity_records for records.",
+        "input_schema": { "type": "object", "properties": { "project_id": { "type": "string", "description": "Project id from list_projects." } }, "required": ["project_id"] },
+        "handler": "mcpListEntitySchemas",
+        "annotations": { "read_only_hint": true, "destructive_hint": false, "idempotent_hint": true }
+      },
+      {
+        "name": "get_entity_schema",
+        "title": "Get entity schema",
+        "description": "Get one entity's field definitions (type, required, enum values). Read-only. An entity the project does not declare is refused with ENTITY_NOT_FOUND, which also lists the declared entity names.",
+        "input_schema": { "type": "object", "properties": { "project_id": { "type": "string", "description": "Project id from list_projects." }, "entity": { "type": "string", "description": "Entity name as returned by list_entity_schemas." } }, "required": ["project_id", "entity"] },
+        "handler": "mcpGetEntitySchema",
+        "annotations": { "read_only_hint": true, "destructive_hint": false, "idempotent_hint": true }
+      },
+      {
+        "name": "query_entity_records",
+        "title": "Query entity records",
+        "description": "Read the records of one of the project's entities. Read-only and bounded: at most 100 records per call, paged with limit and skip. filter supports equality plus $in, $ne, $gt, $gte, $lt, $lte and $contains on the entity's own fields. Records are always scoped to the authorized project.",
+        "input_schema": { "type": "object", "properties": { "project_id": { "type": "string", "description": "Project id from list_projects." }, "entity": { "type": "string", "description": "Entity name from list_entity_schemas." }, "filter": { "type": "object", "description": "Optional field conditions, e.g. { \"status\": \"open\" } or { \"count\": { \"$gte\": 3 } }." }, "sort": { "type": "string", "description": "Sort field, prefix with '-' for descending. Defaults to '-created_date'." }, "limit": { "type": "number", "description": "Records to return, 1-100. Defaults to 25." }, "skip": { "type": "number", "description": "Records to skip, for paging. Defaults to 0." } }, "required": ["project_id", "entity"] },
+        "handler": "mcpQueryEntityRecords",
+        "annotations": { "read_only_hint": true, "destructive_hint": false, "idempotent_hint": true }
+      },
+      {
+        "name": "mutate_entity_record",
+        "title": "Create, update or delete a record",
+        "description": "SIDE EFFECT: changes the application's DATA (not its code, and no new version). Creates, updates or deletes ONE record of one entity. The record is validated against the entity's schema, so an unknown field or a wrong type is refused with DATABASE_VALIDATION_FAILED and nothing is written. record_id is required for update and delete. Pass idempotency_key so a retry replays the first result instead of mutating twice. Requires write permission; a viewer is refused with INSUFFICIENT_ROLE.",
+        "input_schema": { "type": "object", "properties": { "project_id": { "type": "string", "description": "Project id from list_projects." }, "entity": { "type": "string", "description": "Entity name from list_entity_schemas." }, "operation": { "type": "string", "enum": ["create", "update", "delete"], "description": "What to do with the record." }, "data": { "type": "object", "description": "Field values for create, or the fields to change for update." }, "record_id": { "type": "string", "description": "Record id. Required for update and delete." }, "idempotency_key": { "type": "string", "description": "Optional. Retrying with the same key returns the first result instead of performing the mutation again." } }, "required": ["project_id", "entity", "operation"] },
+        "handler": "mcpMutateEntityRecord",
+        "annotations": { "read_only_hint": false, "destructive_hint": true, "idempotent_hint": true }
+      },
+      {
+        "name": "start_project_build",
+        "title": "Build the project",
+        "description": "SIDE EFFECT: validates the project's CURRENT state and records a build result. It never changes files, entities, data or versions. Returns the build id, status and up to 20 structured errors; use get_build_result for the full log. Requires write permission.",
+        "input_schema": { "type": "object", "properties": { "project_id": { "type": "string", "description": "Project id from list_projects." } }, "required": ["project_id"] },
+        "handler": "mcpStartBuild",
+        "annotations": { "read_only_hint": false, "destructive_hint": false, "idempotent_hint": true }
+      },
+      {
+        "name": "get_build_result",
+        "title": "Get build result",
+        "description": "Get one build by id: status, error count, file count, duration and its log. Read-only. A build_id belonging to another account's project is refused.",
+        "input_schema": { "type": "object", "properties": { "build_id": { "type": "string", "description": "Build id from start_project_build or get_build_status." } }, "required": ["build_id"] },
+        "handler": "mcpGetBuildResult",
+        "annotations": { "read_only_hint": true, "destructive_hint": false, "idempotent_hint": true }
+      },
+      {
+        "name": "list_integrations",
+        "title": "List integrations",
+        "description": "List the external integrations the project declares, with their type, base URL, auth type, declared operations and the NAMES of the project secrets they use. Read-only. CREDENTIAL VALUES ARE NEVER RETURNED.",
+        "input_schema": { "type": "object", "properties": { "project_id": { "type": "string", "description": "Project id from list_projects." } }, "required": ["project_id"] },
+        "handler": "mcpListIntegrations",
+        "annotations": { "read_only_hint": true, "destructive_hint": false, "idempotent_hint": true }
+      },
+      {
+        "name": "get_integration",
+        "title": "Get integration",
+        "description": "Get one integration's full metadata: operations with their methods, paths and parameters, retry policy, quota and secret NAME references. Read-only. CREDENTIAL VALUES ARE NEVER RETURNED.",
+        "input_schema": { "type": "object", "properties": { "project_id": { "type": "string", "description": "Project id from list_projects." }, "name": { "type": "string", "description": "Integration name from list_integrations." } }, "required": ["project_id", "name"] },
+        "handler": "mcpGetIntegration",
+        "annotations": { "read_only_hint": true, "destructive_hint": false, "idempotent_hint": true }
+      },
+      {
+        "name": "test_integration_call",
+        "title": "Test an integration call",
+        "description": "SIDE EFFECT: performs a REAL outbound request to the third-party service. Executes one declared operation of one integration through the project's runtime, so the project's quota, rate limiting and circuit breaker all apply — a refused call reports QUOTA_EXCEEDED or the breaker's state rather than contacting the upstream. The credential is resolved server-side and never returned. Returns the upstream status and a bounded response preview.",
+        "input_schema": { "type": "object", "properties": { "project_id": { "type": "string", "description": "Project id from list_projects." }, "name": { "type": "string", "description": "Integration name from list_integrations." }, "operation": { "type": "string", "description": "Operation name declared by that integration." }, "args": { "type": "object", "description": "Arguments for the operation: its declared parameters and, where the operation takes one, a request body." }, "idempotency_key": { "type": "string", "description": "Optional. Retrying with the same key returns the first result instead of calling the upstream again." } }, "required": ["project_id", "name", "operation"] },
+        "handler": "mcpTestIntegrationCall",
+        "annotations": { "read_only_hint": false, "destructive_hint": false, "idempotent_hint": true }
+      },
+      {
+        "name": "list_workflows",
+        "title": "List workflows",
+        "description": "List the project's workflow definitions: name, version, status, trigger and step names. Read-only. Set include_runs true to also receive recent runs. Workflows can be INSPECTED over MCP but not created, finalized, triggered, retried or cancelled.",
+        "input_schema": { "type": "object", "properties": { "project_id": { "type": "string", "description": "Project id from list_projects." }, "include_runs": { "type": "boolean", "description": "Also return recent workflow runs. Defaults to false." }, "limit": { "type": "number", "description": "Maximum definitions (and runs) to return. Defaults to 50." } }, "required": ["project_id"] },
+        "handler": "mcpListWorkflows",
+        "annotations": { "read_only_hint": true, "destructive_hint": false, "idempotent_hint": true }
+      },
+      {
+        "name": "get_workflow",
+        "title": "Get workflow",
+        "description": "Get one workflow definition: its trigger, full step list, validation result and recent runs. Read-only — it can never start or change a workflow.",
+        "input_schema": { "type": "object", "properties": { "workflow_definition_id": { "type": "string", "description": "Workflow definition id from list_workflows." } }, "required": ["workflow_definition_id"] },
+        "handler": "mcpGetWorkflow",
+        "annotations": { "read_only_hint": true, "destructive_hint": false, "idempotent_hint": true }
+      },
+      {
+        "name": "get_workflow_run",
+        "title": "Get workflow run",
+        "description": "Get one workflow run: its status, the outcome of each step and any safe error text. Read-only. A run belonging to another account's project is refused.",
+        "input_schema": { "type": "object", "properties": { "workflow_run_id": { "type": "string", "description": "Workflow run id from list_workflows with include_runs true." } }, "required": ["workflow_run_id"] },
+        "handler": "mcpGetWorkflowRun",
+        "annotations": { "read_only_hint": true, "destructive_hint": false, "idempotent_hint": true }
+      }
+    ]
+  }
+}

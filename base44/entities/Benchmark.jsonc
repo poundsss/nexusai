@@ -1,0 +1,194 @@
+{
+  "name": "Benchmark",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Human-readable benchmark name. A name plus scope identifies a benchmark LINEAGE, not one benchmark: changing any benchmark-defining input (task set, candidate set, evaluation policy, environment) produces the NEXT version under the same name rather than rewriting the previous one."
+    },
+    "description": {
+      "type": "string"
+    },
+    "version": {
+      "type": "number",
+      "default": 1,
+      "description": "Monotonic version within name + scope. Assigned at creation and never reused, so a historical benchmark stays reproducible while a new measurement lands beside it."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "DRAFT",
+        "RUNNING",
+        "COMPLETED",
+        "FAILED",
+        "FINALIZED"
+      ],
+      "default": "DRAFT",
+      "description": "Lifecycle. DRAFT is the only state in which the definition (tasks, candidates, policies) may change. RUNNING means executions are in flight. COMPLETED means every task x candidate reached a terminal state. FAILED marks a benchmark that could not complete. FINALIZED is reachable only from COMPLETED and makes the benchmark and its results immutable."
+    },
+    "scope": {
+      "type": "string",
+      "enum": [
+        "project",
+        "platform"
+      ],
+      "default": "project",
+      "description": "'project' is isolated to one authorized project's workspace. 'platform' compares candidates across the platform and may only use EXPLICITLY approved benchmark fixtures, so private project data can never become a global benchmark task."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved SERVER-side from the authorized owner project \u2014 never taken from a client. Scratch benchmark projects are created inside this workspace only."
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Owner project a benchmark is authorized against. Every read and every execution re-authorizes the caller against this project, so one workspace can never read or run another's benchmark."
+    },
+    "approved_task_keys": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "For a platform benchmark: the benchmark fixture task keys explicitly approved for platform-level use. A task outside this whitelist is refused rather than silently admitted."
+    },
+    "task_set_fingerprint": {
+      "type": "string",
+      "description": "Deterministic hash over every included task's key, version and checksum. Two benchmarks with the same fingerprint measured the same tasks."
+    },
+    "candidates": {
+      "type": "array",
+      "description": "The model/configuration candidates being compared. Provider-neutral: a candidate names a catalog model id and its configuration, and nothing here hardcodes a specific provider.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "candidate_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "candidate_version": {
+            "type": "string"
+          },
+          "model_id": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string",
+            "description": "Upstream provider resolved from the model catalog, recorded for reporting only."
+          },
+          "gateway_provider": {
+            "type": "string"
+          },
+          "candidate_config": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Model-level configuration of the candidate (quality tier, declared capabilities, mode, max steps, time budget)."
+          },
+          "routing_config": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Routing configuration handed to the existing router (strategy, budget ceiling, preferred model). The router still validates capability and budget."
+          },
+          "execution_path": {
+            "type": "string",
+            "description": "Which real execution path this candidate runs through: 'run' (the AI run pipeline, which honours the candidate's preferred model) or 'agent' (the agent loop, which delegates its mutations to that same pipeline)."
+          },
+          "config_checksum": {
+            "type": "string",
+            "description": "Deterministic fingerprint of the candidate's full configuration. Changing any of it changes this value, which changes the benchmark's definition checksum."
+          }
+        }
+      }
+    },
+    "candidate_set_fingerprint": {
+      "type": "string",
+      "description": "Deterministic hash over every candidate's configuration checksum."
+    },
+    "evaluation_policy_version": {
+      "type": "string",
+      "description": "Evaluator version every result is judged with. Pinned per benchmark, so all candidates are measured by IDENTICAL evaluation rules \u2014 no candidate can be judged more leniently than another."
+    },
+    "reward_policy_version": {
+      "type": "string",
+      "description": "Reward policy version used where a reward is available. Recorded for reproducibility; a reward is never required for a result to be scored."
+    },
+    "runtime_environment_version": {
+      "type": "string",
+      "description": "Version of the benchmark harness + runtime contract the executions ran under."
+    },
+    "tool_config_fingerprint": {
+      "type": "string",
+      "description": "Fingerprint of the tool availability every candidate received. Identical for all candidates of one benchmark, which is what makes tool access an equal condition rather than a hidden advantage."
+    },
+    "environment_fingerprint": {
+      "type": "string",
+      "description": "Composite fingerprint of the harness version, evaluator version, reward policy, runtime contract and tool configuration. Part of every result's deterministic run key."
+    },
+    "dataset_reference": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Optional reference to a finalized Dataset whose items supplied the task fixtures, with its checksum \u2014 READ-ONLY lineage. The dataset is never written to by the harness."
+    },
+    "definition_checksum": {
+      "type": "string",
+      "description": "Deterministic fingerprint of everything that DEFINES the benchmark: name, scope, task set, candidate set, evaluation/reward policy and environment. Two benchmarks with the same value are the same measurement definition."
+    },
+    "checksum": {
+      "type": "string",
+      "description": "Content hash over the ordered terminal result run keys and their result checksums. Computed at completion and re-checked at finalization, so a result added or altered behind the benchmark's back is detected instead of shipping silently."
+    },
+    "item_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of task x candidate executions the benchmark comprises (tasks x candidates)."
+    },
+    "completed_count": {
+      "type": "number",
+      "default": 0
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Aggregation over the raw results: per-model, per-task, per-category and overall metrics, kept as SEPARATE metrics (task/build/runtime success rates, regression rate, repair rate, latency, cost, judge and reward scores) rather than one opaque number. Raw task-level results are preserved in BenchmarkResult so every aggregate can be recomputed."
+    },
+    "failure_summary": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Counts per failure classification, separating scored model failures from unscored infrastructure, fixture and authorization failures \u2014 so an infrastructure outage is never reported as a model deficiency."
+    },
+    "finalized": {
+      "type": "boolean",
+      "default": false,
+      "description": "True once FINALIZED. From that moment the benchmark, its task versions and its results are immutable: a change requires a NEW benchmark version and every mutating path refuses."
+    },
+    "error": {
+      "type": "string",
+      "description": "Scrubbed reason the benchmark could not complete."
+    },
+    "created_by": {
+      "type": "string",
+      "description": "Authenticated caller who created the benchmark, stamped server-side."
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "started_at": {
+      "type": "string"
+    },
+    "completed_at": {
+      "type": "string"
+    },
+    "finalized_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "version",
+    "status",
+    "scope",
+    "workspace_id",
+    "project_id",
+    "evaluation_policy_version"
+  ]
+}

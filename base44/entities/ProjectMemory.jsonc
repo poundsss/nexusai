@@ -1,0 +1,76 @@
+{
+  "name": "ProjectMemory",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Owning project. Memory is never read across projects or workspaces."
+    },
+    "workspace_id": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "decision",
+        "convention",
+        "constraint",
+        "implementation",
+        "limitation",
+        "integration",
+        "issue"
+      ],
+      "default": "decision"
+    },
+    "text": {
+      "type": "string",
+      "description": "One durable architectural fact about this project, in plain language. Redacted before storage: never a password, API key, token or any secret VALUE."
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Retrieval hints: file paths, entity names, function names, integration names."
+    },
+    "source_run_id": {
+      "type": "string",
+      "description": "The AI run this memory was extracted from."
+    },
+    "confidence": {
+      "type": "number",
+      "default": 0.6,
+      "description": "0-1. Raised when the same fact is observed again in a later successful run."
+    },
+    "hits": {
+      "type": "number",
+      "default": 1,
+      "description": "How many successful runs produced this fact. Used for dedup and ranking."
+    },
+    "content_hash": {
+      "type": "string",
+      "description": "Hash of the normalized text; the dedup key within a project."
+    },
+    "embedding": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      }
+    },
+    "embedding_dim": {
+      "type": "number"
+    },
+    "embedding_model": {
+      "type": "string"
+    },
+    "last_seen_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "project_id",
+    "kind",
+    "text",
+    "content_hash"
+  ]
+}

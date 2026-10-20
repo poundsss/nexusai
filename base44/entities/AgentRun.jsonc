@@ -1,0 +1,188 @@
+{
+  "name": "AgentRun",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string"
+    },
+    "workspace_id": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "User who started the agent; authorization was resolved at enqueue time"
+    },
+    "agent_name": {
+      "type": "string",
+      "description": "OPTIONAL declared agent (base44/agents/<agent_name>.jsonc) this run executes as. Validated against the project's own files at enqueue time and re-resolved at every iteration for its tool grants, skills, model tier and step limit. Absent means the default, unnamed agent, which behaves exactly as before."
+    },
+    "trace_id": {
+      "type": "string",
+      "description": "OPTIONAL correlation id of this agent run, minted once and carried through every iteration, routed tool call and MCP call. Runs without it are back-filled on their next iteration."
+    },
+    "trigger_source": {
+      "type": "string",
+      "enum": [
+        "chat",
+        "schedule"
+      ],
+      "description": "Superagent parity: how this run was started. 'schedule' marks runs enqueued by a Scheduled Superagent automation (its due-time sweep or an explicit Run Now) \u2014 the loop applies the agent's AUTOMATIONS model to these runs instead of the General model. Absent reads as 'chat', so legacy runs behave exactly as before."
+    },
+    "goal": {
+      "type": "string",
+      "description": "High-level goal in the user's own words"
+    },
+    "image_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "OPTIONAL reference images the user attached to this goal. Normalized http(s) file URLs produced by the platform's existing upload \u2014 never raw image data, and capped at enqueue time. They accompany the goal on the agent's own decision calls and are handed to every builder run the agent delegates, so the same visual reference survives the whole episode. Absent means a text-only agent run, which behaves exactly as before."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "QUEUED",
+        "RUNNING",
+        "PLANNING",
+        "EXECUTING",
+        "OBSERVING",
+        "VERIFYING",
+        "COMPLETED",
+        "FAILED",
+        "CANCELLED",
+        "STALE"
+      ],
+      "default": "QUEUED"
+    },
+    "current_phase": {
+      "type": "string",
+      "description": "Short, user-safe label of what the agent is doing right now"
+    },
+    "current_step": {
+      "type": "number",
+      "default": 0
+    },
+    "max_steps": {
+      "type": "number",
+      "default": 20,
+      "description": "Hard step ceiling; exceeding it fails the run with MAX_STEPS_EXCEEDED"
+    },
+    "cancel_requested": {
+      "type": "boolean",
+      "default": false,
+      "description": "Cooperative cancellation flag; the loop stops at its next safe checkpoint"
+    },
+    "recovery_count": {
+      "type": "number",
+      "default": 0,
+      "description": "How many times a lost worker was recovered from the persisted checkpoint. Bounded, so a repeatedly dying worker ends terminal instead of retrying forever."
+    },
+    "lease_token": {
+      "type": "string",
+      "description": "Identifies the worker currently advancing this run. Exactly one worker may hold it, so duplicate invocations cannot interleave steps."
+    },
+    "lease_expires_at": {
+      "type": "string",
+      "description": "When the current worker's lease expires; a crashed worker's run becomes claimable again after this instant"
+    },
+    "parent_ai_run_id": {
+      "type": "string",
+      "description": "AI run the agent is currently waiting on (mutations are delegated to the existing run pipeline)"
+    },
+    "parent_agent_run_id": {
+      "type": "string",
+      "description": "Sub-agent parity (docs.base44.com/superagents/subagents): the parent AgentRun that delegated this background task. Absent means a top-level run, which behaves exactly as before."
+    },
+    "delegation_depth": {
+      "type": "number",
+      "default": 0,
+      "description": "Sub-agent parity: depth in a delegation chain. A child may not delegate further (the loop refuses with DELEGATION_DEPTH_EXCEEDED), so delegation cannot recurse."
+    },
+    "ai_run_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Every AI run this agent delegated to"
+    },
+    "version_id": {
+      "type": "string",
+      "description": "Final project version produced by this agent run"
+    },
+    "version_number": {
+      "type": "number"
+    },
+    "build_status": {
+      "type": "string",
+      "enum": [
+        "success",
+        "failed",
+        "unknown"
+      ],
+      "default": "unknown",
+      "description": "Result of the agent's own verification build"
+    },
+    "verification": {
+      "type": "string",
+      "description": "Concise verification result"
+    },
+    "result_summary": {
+      "type": "string",
+      "description": "Concise user-facing summary of what the agent did. Never model chain-of-thought."
+    },
+    "failure_code": {
+      "type": "string",
+      "description": "MAX_STEPS_EXCEEDED | AGENT_LOOP_DETECTED | VERIFICATION_FAILED | AGENT_ERROR | WORKER_LOST | CANCELLED"
+    },
+    "error": {
+      "type": "string"
+    },
+    "model": {
+      "type": "string"
+    },
+    "input_tokens": {
+      "type": "number",
+      "default": 0
+    },
+    "output_tokens": {
+      "type": "number",
+      "default": 0
+    },
+    "cached_input_tokens": {
+      "type": "number",
+      "description": "OPTIONAL running total of cached input tokens across every iteration of this agent run. Persisted whenever an iteration ends, so a paused or resumed run keeps its earlier usage. Absent reads as 0."
+    },
+    "reasoning_tokens": {
+      "type": "number",
+      "description": "OPTIONAL running total of reasoning tokens across every iteration of this agent run. Persisted whenever an iteration ends, so a paused or resumed run keeps its earlier usage. Absent reads as 0."
+    },
+    "usage_by_model": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "OPTIONAL per-model token breakdown of the agent's own model calls: { [model_id]: { input_tokens, cached_input_tokens, output_tokens, reasoning_tokens } }, keyed by the model that actually served each call (after any fallback). Persisted with the running totals. Attribution only \u2014 pricing still uses the totals. Absent means no breakdown was recorded."
+    },
+    "usage_event_id": {
+      "type": "string",
+      "description": "Set once the agent's own reasoning usage has been billed; prevents double charging"
+    },
+    "heartbeat_at": {
+      "type": "string"
+    },
+    "started_at": {
+      "type": "string"
+    },
+    "completed_at": {
+      "type": "string"
+    },
+    "duration_ms": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "project_id",
+    "workspace_id",
+    "goal",
+    "status"
+  ]
+}

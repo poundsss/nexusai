@@ -1,0 +1,199 @@
+{
+  "name": "SyntheticTask",
+  "type": "object",
+  "properties": {
+    "task_key": {
+      "type": "string",
+      "description": "Stable identity of the generated task, derived deterministically from template key/version, seed and parameter set. Re-generating the same inputs resolves the SAME key instead of creating a second task."
+    },
+    "task_version": {
+      "type": "number",
+      "default": 1,
+      "description": "Monotonic version within task_key. A regeneration under a newer generator or template version lands as the next version beside the previous one."
+    },
+    "template_id": {
+      "type": "string"
+    },
+    "template_key": {
+      "type": "string"
+    },
+    "template_version": {
+      "type": "number",
+      "description": "Template version the task was generated from. Frozen at generation, so the task stays reproducible after the template is re-versioned."
+    },
+    "generator_version": {
+      "type": "string",
+      "description": "Generator contract version that produced the task. Part of the fingerprint, so a task built by a different generator is never mistaken for the same task."
+    },
+    "seed": {
+      "type": "string",
+      "description": "The generation seed. Same template + version + seed + parameters must produce a byte-identical task definition, which is what makes every variation reproducible."
+    },
+    "parameters": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The resolved parameter set actually used (the template's defaults merged with the caller's explicit variation). Frozen at generation and part of the fingerprint."
+    },
+    "fingerprint": {
+      "type": "string",
+      "description": "Deterministic fingerprint of the generated task's content plus its lineage inputs. Two tasks with the same fingerprint are semantically identical: the second is detected as a DUPLICATE rather than silently finalized twice."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "DRAFT",
+        "VALID",
+        "INVALID",
+        "FINALIZED",
+        "DUPLICATE"
+      ],
+      "default": "DRAFT",
+      "description": "Lifecycle. Only VALID may be finalized, and only FINALIZED may be exported into a benchmark task set \u2014 so an unvalidated or invalid task can never enter a finalized benchmark. DUPLICATE marks a generation that reproduced an already-finalized task."
+    },
+    "category": {
+      "type": "string"
+    },
+    "difficulty": {
+      "type": "string"
+    },
+    "complexity": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The RECORDED complexity knobs the difficulty resolved to (entity count, component count, operation count, dependency depth, constraint count, acceptance-check count, step and time budgets). Complexity is never raised without appearing here."
+    },
+    "definition": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The task handed to a model: the generated goal text, the human-readable success description and the expected outcome type. Synthetic content only, scrubbed before storage."
+    },
+    "initial_state": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The isolated synthetic fixture in the SAME shape #23 already consumes: files plus entity declarations. Seed data, configuration and test inputs are materialized as fixture files, so no second fixture format exists."
+    },
+    "initial_state_fingerprint": {
+      "type": "string"
+    },
+    "fixture": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The fixture's own inspectable description: seed entities, seed data rows, required configuration and test inputs, plus its version. Synthetic by construction \u2014 never a copy of a user or production project."
+    },
+    "acceptance_criteria": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "MACHINE-READABLE acceptance checks. Every check carries a check_id, a type from the generator's registry (file_exists, entity_schema, route_exists, function_exists, api_behavior, build_succeeds, runtime_behavior, data_invariant, authorization_behavior, workflow_transition), an explicit target and an explicit assertion. Natural-language success text never substitutes for these."
+    },
+    "invariants": {
+      "type": "array",
+      "description": "Explicit machine-checkable invariants the solution must preserve.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "invariant_id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          },
+          "assert": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "required_capabilities": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "verification_criteria": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The #23-compatible projection of the acceptance criteria (must_build, must_pass_runtime, expect_entities, expect_files, required_dimensions), so a generated task exports into the EXISTING BenchmarkTask contract without a second schema."
+    },
+    "targets": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "What the task expects the model to create: entity names, file paths, routes and functions. Used to resolve every acceptance reference \u2014 a check pointing at neither a fixture artifact nor a declared target is an unresolved reference and fails validation."
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The per-check validation report (schema correctness, acceptance completeness, fixture integrity, fingerprint determinism, unresolved references, secret scan, private-data scan, isolated executability). Stored so a refusal is explainable, and re-run at finalization so a stale pass cannot be reused."
+    },
+    "validated_at": {
+      "type": "string"
+    },
+    "duplicate_of_task_id": {
+      "type": "string",
+      "description": "The already-finalized task this generation turned out to reproduce exactly."
+    },
+    "benchmark_task_refs": {
+      "type": "array",
+      "description": "Where this task has been exported as a #23 BenchmarkTask. Reference only \u2014 the benchmark record stays authoritative.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "benchmark_id": {
+            "type": "string"
+          },
+          "benchmark_task_id": {
+            "type": "string"
+          },
+          "task_version": {
+            "type": "number"
+          },
+          "checksum": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "trace_id": {
+      "type": "string",
+      "description": "Correlation id of the generation operation, reusing the platform's existing tracing system \u2014 the generator mints no second trace."
+    },
+    "run_id": {
+      "type": "string",
+      "description": "AI run the generation was performed on behalf of, when there was one."
+    },
+    "workspace_id": {
+      "type": "string"
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Owner project the task is authorized against. Every read is filtered by this field after the caller is authorized against the project."
+    },
+    "finalized": {
+      "type": "boolean",
+      "default": false
+    },
+    "created_by": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "finalized_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "task_key",
+    "template_id",
+    "template_version",
+    "generator_version",
+    "seed",
+    "fingerprint",
+    "status"
+  ]
+}

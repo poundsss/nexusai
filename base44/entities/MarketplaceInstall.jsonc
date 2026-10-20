@@ -1,0 +1,61 @@
+{
+  "name": "MarketplaceInstall",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string",
+      "description": "Workspace that installed the listing. Every install lookup is filtered by this field, so one workspace's installs can never be read or modified by another."
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Project the install is scoped to, when the listing kind is project-scoped (template, component, plugin). Absent for workspace-scoped kinds (integration, agent, workflow)."
+    },
+    "listing_id": {
+      "type": "string"
+    },
+    "version_id": {
+      "type": "string",
+      "description": "The exact published version pinned by this install. An upgrade moves this pointer; the version record is immutable so a pinned install always resolves to the same artifact."
+    },
+    "version_number": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "disabled",
+        "uninstalled"
+      ],
+      "default": "active",
+      "description": "Only 'active' grants the listing's capabilities. 'disabled' is a trust suspension pause; 'uninstalled' is a terminal removal retained for audit."
+    },
+    "installed_by": {
+      "type": "string"
+    },
+    "config": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "User-supplied configuration validated against the version's manifest config schema. Stored per-install so two installs of the same listing can have different configs."
+    },
+    "capabilities_granted": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "The capabilities the user explicitly consented to at install time. A later version requesting more capabilities requires re-consent, never silent escalation."
+    },
+    "installed_at": {
+      "type": "string"
+    },
+    "uninstalled_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "workspace_id",
+    "listing_id",
+    "version_id",
+    "status"
+  ]
+}

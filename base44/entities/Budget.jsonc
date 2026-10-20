@@ -1,0 +1,70 @@
+{
+  "name": "Budget",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string"
+    },
+    "scope": {
+      "type": "string",
+      "enum": [
+        "workspace",
+        "user",
+        "project",
+        "run",
+        "operation"
+      ],
+      "description": "What the limit constrains. Limits at different scopes all apply \u2014 the tightest one wins."
+    },
+    "scope_id": {
+      "type": "string",
+      "description": "Id of the scoped subject (user id, project id, run id). Absent for workspace scope."
+    },
+    "limit_credits": {
+      "type": "number",
+      "description": "Maximum credits consumable within this scope and period. Enforced server-side before execution and again at reconciliation."
+    },
+    "period": {
+      "type": "string",
+      "enum": [
+        "total",
+        "daily",
+        "monthly"
+      ],
+      "default": "total"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    },
+    "created_by": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "workspace_id",
+    "scope",
+    "limit_credits"
+  ],
+  "rls": {
+    "read": false,
+    "create": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "system"
+      }
+    }
+  }
+}

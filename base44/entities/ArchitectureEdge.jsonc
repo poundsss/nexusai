@@ -1,0 +1,106 @@
+{
+  "name": "ArchitectureEdge",
+  "type": "object",
+  "properties": {
+    "architecture_id": {
+      "type": "string",
+      "description": "Architecture version this relationship belongs to. Every read is filtered by this field together with the project."
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "workspace_id": {
+      "type": "string"
+    },
+    "edge_key": {
+      "type": "string",
+      "description": "Deterministic identity of the directed relationship within its version: '<from>|<relationship>|<to>'. Unique per version, so repeated reconciliation cannot duplicate a relationship."
+    },
+    "relationship": {
+      "type": "string",
+      "enum": [
+        "depends_on",
+        "reads",
+        "writes",
+        "calls",
+        "renders",
+        "triggers",
+        "authorizes",
+        "belongs_to",
+        "transforms",
+        "publishes",
+        "consumes"
+      ],
+      "description": "Directed relationship type, from_node_key \u2192 to_node_key."
+    },
+    "from_node_key": {
+      "type": "string"
+    },
+    "to_node_key": {
+      "type": "string"
+    },
+    "from_node_type": {
+      "type": "string"
+    },
+    "to_node_type": {
+      "type": "string"
+    },
+    "external": {
+      "type": "boolean",
+      "default": false,
+      "description": "True when the target is outside the project (an external dependency or a third-party integration), so 'which of my dependencies are external' is answerable without inspecting every node."
+    },
+    "provenance_state": {
+      "type": "string",
+      "enum": [
+        "verified",
+        "user_decision",
+        "inferred"
+      ],
+      "default": "inferred",
+      "description": "How the relationship is known. A relationship parsed from authoritative content is verified; a name-matching heuristic stays inferred and is never promoted silently."
+    },
+    "provenance_source": {
+      "type": "string",
+      "enum": [
+        "project_file",
+        "entity_schema",
+        "function",
+        "page_component",
+        "integration",
+        "workflow",
+        "permission",
+        "project_version",
+        "user_decision",
+        "system_fact",
+        "memory_decision"
+      ]
+    },
+    "provenance_reference": {
+      "type": "string"
+    },
+    "provenance_detail": {
+      "type": "string",
+      "description": "Short scrubbed statement of the evidence for the relationship."
+    },
+    "confidence": {
+      "type": "number",
+      "default": 1,
+      "description": "0..1, clamped by provenance state. Inferred relationships carry an explicit sub-1 confidence."
+    },
+    "content_hash": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "architecture_id",
+    "project_id",
+    "edge_key",
+    "relationship",
+    "from_node_key",
+    "to_node_key"
+  ]
+}

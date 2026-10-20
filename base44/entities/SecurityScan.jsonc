@@ -1,0 +1,103 @@
+{
+  "name": "SecurityScan",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Project this scan covers. Every read and mutation is filtered by this field server-side, so one project's scan can never be read or started from another. ONE row per project \u2014 the contract documents only a 'latest result', no scan history."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side from the authorized project."
+    },
+    "user_id": {
+      "type": "string",
+      "description": "Authenticated caller who started the scan. Authorization was resolved before the scan ran."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "scanning",
+        "completed",
+        "failed"
+      ],
+      "default": "pending",
+      "description": "STORED lifecycle. The DOCUMENTED (Base44) status surface (none / pending / scanning / up_to_date / out_of_date / scan_failed) is COMPUTED by the GET/read path from this row plus the project's current version \u2014 never stored verbatim."
+    },
+    "language": {
+      "type": "string",
+      "enum": [
+        "en",
+        "ja",
+        "de",
+        "es",
+        "fr",
+        "pt"
+      ],
+      "default": "en",
+      "description": "DOCUMENTED (Base44): language of the generated text, a lowercase two-letter code; an unsupported value is rejected with a 422."
+    },
+    "scanner_version": {
+      "type": "string",
+      "default": "1",
+      "description": "Version of the scanner that produced the result. DOCUMENTED (Base44): on out_of_date the result is ABSENT when the last scan came from a different version of the scanner \u2014 this field is what distinguishes those cases."
+    },
+    "static_code_enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "DOCUMENTED (Base44): whether code-reading analysis is switched on \u2014 the only way to tell an analysis that found nothing from one that never ran. Static code analysis is always on in this implementation; no plan/policy gate is documented, so none is invented."
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The full findings document (analysis_summary, the finding groups, core_integration_recommendation, ignored_fingerprints, scanned_at), stored including IGNORED findings; the projected view filters them out by fingerprint. Carried while a replacement scan is pending/scanning, per the documented 'can carry an earlier result while you wait'."
+    },
+    "ignored_fingerprints": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Fingerprints of findings the member chose to ignore (restorable). Findings themselves are never deleted by ignoring."
+    },
+    "version_number": {
+      "type": "number",
+      "default": 0,
+      "description": "The project's latest ProjectVersion number at scan start \u2014 the staleness marker: a newer version makes the scan out_of_date."
+    },
+    "content_updated_at": {
+      "type": "string",
+      "description": "The newest ProjectFile updated_date at scan start \u2014 the second staleness marker, covering direct file edits that did not create a version."
+    },
+    "production_version_number": {
+      "type": "number",
+      "description": "The project's production version at scan time, denormalized for provenance (may be absent for an unpublished project)."
+    },
+    "production_deployment_id": {
+      "type": "string",
+      "description": "The production deployment at scan time, denormalized for provenance."
+    },
+    "started_at": {
+      "type": "string",
+      "description": "When the executor began running the scan."
+    },
+    "completed_at": {
+      "type": "string",
+      "description": "When the scan reached a terminal state (completed or failed)."
+    },
+    "duration_ms": {
+      "type": "number",
+      "default": 0
+    },
+    "error": {
+      "type": "string",
+      "description": "Truncated safe error when the scan failed; the DOCUMENTED scan_failed state, resolved by running another scan."
+    }
+  },
+  "required": [
+    "project_id",
+    "workspace_id",
+    "status"
+  ]
+}

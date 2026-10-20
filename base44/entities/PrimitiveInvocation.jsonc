@@ -1,0 +1,155 @@
+{
+  "name": "PrimitiveInvocation",
+  "type": "object",
+  "properties": {
+    "primitive": {
+      "type": "string",
+      "description": "Canonical primitive name that was invoked (InvokeAI, SendEmail, \u2026). Together with `version` it identifies EXACTLY which immutable contract executed, so a later contract version can never be mistaken for the one this invocation ran under."
+    },
+    "version": {
+      "type": "string",
+      "description": "The primitive contract version that executed. Frozen at invocation time: changing a primitive produces a NEW version rather than reinterpreting this record."
+    },
+    "contract_version": {
+      "type": "string",
+      "description": "Version of the primitive PLATFORM contract (input/output/error envelope) the invocation ran under."
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Project the invocation is scoped to. Resolved SERVER-side from an authorized project \u2014 never taken from a client \u2014 and every read is filtered by it, so one project can never read another's invocations."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side from the project."
+    },
+    "actor": {
+      "type": "string",
+      "enum": [
+        "user",
+        "app",
+        "system"
+      ],
+      "default": "user",
+      "description": "Who invoked: an authenticated platform user, a generated application's server-side code, or the platform itself (a queued job continuing an earlier authorized invocation)."
+    },
+    "user_id": {
+      "type": "string",
+      "description": "Authenticated platform user the invocation is attributed to, stamped server-side. Absent for app and system actors."
+    },
+    "end_user_id": {
+      "type": "string",
+      "description": "The generated application's own end-user, when one was present. A project-scoped identity, never a platform account."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "running",
+        "succeeded",
+        "failed"
+      ],
+      "default": "running",
+      "description": "Only 'succeeded' may be replayed for an idempotency key: a failed invocation never blocks a genuine retry."
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "Caller-supplied logical identity of a side-effecting operation. A repeat with the same key inside the same project returns the FIRST successful result instead of producing the side effect twice."
+    },
+    "input_fingerprint": {
+      "type": "string",
+      "description": "Deterministic hash of the validated input. Lets a replay be recognised as the same logical operation, and a different payload under a reused key be refused."
+    },
+    "trace_id": {
+      "type": "string",
+      "description": "The operation's existing correlation id, carried through verbatim \u2014 the primitive layer mints no second trace system."
+    },
+    "run_id": {
+      "type": "string",
+      "description": "AI run or agent run the invocation was performed on behalf of, when there was one."
+    },
+    "job_id": {
+      "type": "string",
+      "description": "Background job this invocation was executed by, for asynchronous primitives that run through the existing queue."
+    },
+    "cost_class": {
+      "type": "string",
+      "enum": [
+        "ai",
+        "platform",
+        "external"
+      ],
+      "default": "platform",
+      "description": "What KIND of cost the invocation can incur. 'ai' may consume AI credits; 'platform' is ordinary platform execution governed by plan usage rules; 'external' reaches a configured external provider. Kept explicit so a non-AI primitive is never billed as model usage."
+    },
+    "consumes_ai_credits": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this invocation could consume AI credits. False for Search, email, notification, job and schedule primitives."
+    },
+    "ai_charge_path": {
+      "type": "string",
+      "description": "Which existing billing path settled the AI cost: 'ai_operation' (the platform's reserve/settle credit path) or 'platform_integration_credits' (charged by the platform integration itself). Never a second ledger."
+    },
+    "ai_operation_id": {
+      "type": "string",
+      "description": "The single AIOperation this invocation settled, when it settled one. Exactly one per invocation, which is what makes a double AI charge impossible."
+    },
+    "credits_charged": {
+      "type": "number",
+      "default": 0,
+      "description": "Credits the settled operation charged, copied for display. The ledger remains authoritative."
+    },
+    "model_id": {
+      "type": "string"
+    },
+    "provider": {
+      "type": "string",
+      "description": "Upstream provider that served an AI invocation, recorded for reporting only. Never a credential or endpoint."
+    },
+    "external_reference": {
+      "type": "string",
+      "description": "Safe external/internal handle the caller can correlate with (a job id, a scheduled trigger id, a message audit id). Never a provider secret."
+    },
+    "usage": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Usage/cost metadata for this invocation: token counts where available, latency, and the cost classification. Absent values stay absent rather than being reported as zero."
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The primitive's validated OUTPUT, exactly as the caller received it. Scrubbed by the platform's existing redaction, so no credential or secret can enter it. Stored so an idempotent replay returns the same answer."
+    },
+    "error_code": {
+      "type": "string"
+    },
+    "error_category": {
+      "type": "string",
+      "description": "validation | authorization | not_found | rate_limit | provider | timeout | conflict | internal"
+    },
+    "retryable": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the failure is a property of the moment. A validation, authorization or policy failure is deterministic and is never marked retryable."
+    },
+    "error_message": {
+      "type": "string",
+      "description": "Scrubbed, caller-safe failure message. Never a stack trace and never a secret."
+    },
+    "latency_ms": {
+      "type": "number",
+      "default": 0
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "completed_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "primitive",
+    "version",
+    "project_id",
+    "status"
+  ]
+}

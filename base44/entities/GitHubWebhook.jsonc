@@ -1,0 +1,81 @@
+{
+  "name": "GitHubWebhook",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Project this webhook belongs to. Resolved SERVER-side from the receiver's URL, never from a client, and every read is filtered by it, so one project's webhook can never be resolved or used from another."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side from the project."
+    },
+    "github_link_id": {
+      "type": "string",
+      "description": "The GitHubLink this webhook was registered against. A webhook serves exactly one link."
+    },
+    "repo_full_name": {
+      "type": "string",
+      "description": "owner/repo the webhook watches. Must match the link's repo."
+    },
+    "branch": {
+      "type": "string",
+      "description": "Branch filter. Push events on other branches are rejected by the receiver."
+    },
+    "webhook_secret_name": {
+      "type": "string",
+      "description": "NAME of the ProjectSecret holding the GitHub webhook secret (used for HMAC verification). A reference only \u2014 the value is encrypted at rest and decrypted only server-side at verification time, never returned to any client."
+    },
+    "webhook_token_name": {
+      "type": "string",
+      "description": "NAME of the WorkspaceSecret holding the GitHub OAuth token for webhook-triggered imports. A reference only \u2014 the token is encrypted at rest, read only by the import worker, and refreshed when the user re-registers the webhook."
+    },
+    "github_hook_id": {
+      "type": "number",
+      "description": "GitHub's own webhook ID, used for deletion via the GitHub API."
+    },
+    "webhook_url": {
+      "type": "string",
+      "description": "The public URL GitHub delivers to. Stored so re-registration can detect a stale URL."
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Only an active webhook is accepted by the receiver. Inactive webhooks are rejected before signature verification."
+    },
+    "last_delivery_id": {
+      "type": "string",
+      "description": "GitHub delivery ID of the most recent delivery. Diagnostics only."
+    },
+    "last_delivery_at": {
+      "type": "string"
+    },
+    "last_delivery_status": {
+      "type": "string",
+      "enum": [
+        "accepted",
+        "rejected",
+        "enqueued",
+        "failed"
+      ],
+      "description": "Outcome of the most recent delivery."
+    },
+    "last_error": {
+      "type": "string",
+      "description": "Safe, redacted message from the last failed delivery or registration."
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "project_id",
+    "github_link_id",
+    "repo_full_name",
+    "branch",
+    "active"
+  ]
+}

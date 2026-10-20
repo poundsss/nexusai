@@ -1,0 +1,51 @@
+{
+  "name": "AeoResult",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Project the measurement belongs to. Every read is filtered by this field server-side."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side from the authorized project."
+    },
+    "probe_id": {
+      "type": "string",
+      "description": "The AeoProbe row this measurement was taken for."
+    },
+    "question": {
+      "type": "string",
+      "description": "Denormalized question, so a report never needs a probe lookup."
+    },
+    "run_key": {
+      "type": "string",
+      "description": "The idempotency key of the measuring run \u2014 a re-run of the SAME run key returns the stored measurements instead of charging again."
+    },
+    "mentioned": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the project's name appeared among the answer's recommendations."
+    },
+    "rank": {
+      "type": "number",
+      "description": "1-based position of the first mention among the recommendations; null when not mentioned."
+    },
+    "excerpt": {
+      "type": "string",
+      "description": "The bounded reason line around the mention (or the first recommendation when unmentioned), truncated at write time."
+    },
+    "checked_at": {
+      "type": "string",
+      "description": "When this measurement was taken (ISO)."
+    }
+  },
+  "required": [
+    "project_id",
+    "workspace_id",
+    "probe_id",
+    "question",
+    "run_key",
+    "mentioned"
+  ]
+}

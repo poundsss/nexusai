@@ -1,0 +1,205 @@
+{
+  "name": "Trajectory",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "number",
+      "default": 1,
+      "description": "Version of the trajectory representation this record was written in. Frozen at creation, so a later change to the shape never silently reinterprets historical episodes."
+    },
+    "run_id": {
+      "type": "string",
+      "description": "The AIRun this episode describes. AT MOST ONE trajectory exists per run: creation resolves an existing record by this field instead of inserting a second one, which is what makes a retried phase or a recovered worker unable to duplicate the episode."
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Project the episode belongs to. Every read is filtered by this field after the caller is authorized against the project, so one project can never read another's trajectories."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side from the project \u2014 never taken from a client."
+    },
+    "trace_id": {
+      "type": "string",
+      "description": "The run's existing correlation id, reused verbatim. The trajectory is a view over the platform's own execution records, not a second trace system."
+    },
+    "actor_user_id": {
+      "type": "string",
+      "description": "User who requested the run, where recording it is permitted. Nullable: an episode with no attributable actor is still a valid training record."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ACTIVE",
+        "COMPLETED",
+        "FAILED",
+        "CANCELLED"
+      ],
+      "default": "ACTIVE",
+      "description": "Episode lifecycle. ACTIVE is the only mutable state; the three terminal states seal the record. An interrupted run simply stays ACTIVE with the events it managed to emit, which is an incomplete episode rather than a corrupt one."
+    },
+    "sealed": {
+      "type": "boolean",
+      "default": false,
+      "description": "True once the episode reached a terminal state. A sealed trajectory's task, context, execution and mutation summaries are append-only: later information arrives as a new event and a bumped revision, never as a rewrite of what was already recorded."
+    },
+    "revision": {
+      "type": "number",
+      "default": 1,
+      "description": "Incremented whenever information is added after sealing (a correction, a user outcome). Provenance therefore shows that history was extended, not edited."
+    },
+    "prompt": {
+      "type": "string",
+      "description": "The user's request, truncated and passed through the shared scrubber."
+    },
+    "mode": {
+      "type": "string",
+      "description": "Run mode (default, discuss, edit)."
+    },
+    "requested_at": {
+      "type": "string",
+      "description": "When the episode's task was created."
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Bounded execution context: base version reference, file/entity counts, retrieval counts, tool availability and a context_hash. A hash and immutable references stand in for the project's contents \u2014 the episode points at state the platform already stores rather than copying it."
+    },
+    "context_hash": {
+      "type": "string",
+      "description": "Stable fingerprint of the context the run executed against. Two episodes with the same hash saw the same context, without either of them storing that context."
+    },
+    "model_id": {
+      "type": "string",
+      "description": "Model the router selected."
+    },
+    "model_provider": {
+      "type": "string"
+    },
+    "routing_decision": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Scrubbed copy of the router's own decision record (strategy, candidates, rejection reasons, budget ceiling, fallbacks used). Metadata only \u2014 never a prompt or a provider credential."
+    },
+    "plan_summary": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Concise structured plan metadata: step count, planned file actions, declared entities/integrations, assumption count. NEVER hidden chain-of-thought or private model reasoning."
+    },
+    "phases": {
+      "type": "array",
+      "description": "Phase transitions in order, with attempt numbers, so retries are visible as further attempts of one phase.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "phase": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "attempt": {
+            "type": "number"
+          },
+          "duration_ms": {
+            "type": "number"
+          },
+          "at": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "tool_calls": {
+      "type": "array",
+      "description": "Per-tool result metadata (name, outcome, redacted one-line summary). The run's own tool_log remains authoritative; this is the learning-shaped projection of it.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "tool": {
+            "type": "string"
+          },
+          "ok": {
+            "type": "boolean"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "phase": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "retries": {
+      "type": "number",
+      "default": 0,
+      "description": "Bounded phase retries observed for this episode."
+    },
+    "fallbacks": {
+      "type": "array",
+      "description": "Provider/model fallbacks that actually executed.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "mutations": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "References and summaries only: changed file paths with their change kind, entity/schema changes, the immutable version created, and a deployment when one followed. The version reference is what a consumer resolves to recover exact contents, so project contents are never duplicated here."
+    },
+    "outcomes": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Execution outcome references: build id and status, runtime verification result and check count, runtime error ids, repair attempts, final run status and cancellation state. The safety layer (#42) adds safety_blocked / safety counters here when a proposal made on the run's behalf was denied or refused."
+    },
+    "user_outcome": {
+      "type": "string",
+      "enum": [
+        "accepted",
+        "rejected",
+        "abandoned",
+        "edited_after_generation",
+        "deployed",
+        "reverted"
+      ],
+      "description": "What the human did with the result. Deliberately nullable: until it is known, the episode carries no outcome rather than a guessed one."
+    },
+    "user_outcome_at": {
+      "type": "string"
+    },
+    "learning_eligibility": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The production-learning flywheel's (#43) deterministic promotion verdict for this episode: { eligible, reasons, policy_version, cycle_id, decided_at }. Like user_outcome it is knowable only after sealing, so it is set as an annotation with a matching trajectory event and never rewrites recorded history. An episode marked eligible=false is refused by the Dataset Builder."
+    },
+    "event_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of appended events; also the sequence allocator for the next one."
+    },
+    "last_event_at": {
+      "type": "string"
+    },
+    "finalized_at": {
+      "type": "string"
+    },
+    "duration_ms": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "run_id",
+    "project_id",
+    "workspace_id",
+    "status"
+  ]
+}

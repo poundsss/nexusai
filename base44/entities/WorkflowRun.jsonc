@@ -1,0 +1,155 @@
+{
+  "name": "WorkflowRun",
+  "type": "object",
+  "properties": {
+    "workflow_id": {
+      "type": "string",
+      "description": "The exact WorkflowDefinition version record this run executes. Resolved once at start and never re-resolved, which is what makes it impossible for a run to silently switch definitions when a new version lands."
+    },
+    "workflow_key": {
+      "type": "string"
+    },
+    "workflow_version": {
+      "type": "number",
+      "description": "Definition version frozen at start, denormalized so a run is self-describing."
+    },
+    "definition_checksum": {
+      "type": "string",
+      "description": "Checksum of the definition at start. A run whose definition no longer matches it is detectable rather than silently continuing against different configuration."
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Project the run belongs to. Every read is filtered by this field after the caller is authorized against the project."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side."
+    },
+    "trigger": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Reference to what started the run: the trigger source (webhook | schedule | app_event | entity_event | manual), the event name, and the originating reference (a verified webhook delivery id, a scheduled trigger id, an app event key). Never a credential."
+    },
+    "trigger_source": {
+      "type": "string",
+      "enum": [
+        "webhook",
+        "schedule",
+        "app_event",
+        "entity_event",
+        "manual"
+      ],
+      "default": "manual"
+    },
+    "trigger_idempotency_key": {
+      "type": "string",
+      "description": "Logical identity of the TRIGGERING EVENT. A duplicate trigger carrying the same key resolves to the FIRST run instead of creating a second logical run, which is what makes a replayed webhook or a redundant scheduler tick safe."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "PENDING",
+        "RUNNING",
+        "WAITING",
+        "COMPLETED",
+        "FAILED",
+        "CANCELLED"
+      ],
+      "default": "PENDING",
+      "description": "Durable execution state, persisted after every meaningful transition. WAITING is a run parked on a durable delay \u2014 it holds no worker and resumes through the existing job queue."
+    },
+    "current_step": {
+      "type": "string",
+      "description": "The step the run will execute next. Persisted, so a worker restart resumes exactly here rather than restarting the workflow."
+    },
+    "attempt": {
+      "type": "number",
+      "default": 0,
+      "description": "Attempts spent on the CURRENT step. Persisted on the run, so a worker restart cannot reset a retry budget."
+    },
+    "steps_completed": {
+      "type": "number",
+      "default": 0
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The run's bounded, scrubbed context: the trigger payload and prior step outputs, plus references to project resources. Secrets are never copied here \u2014 every value passes through the platform's existing scrubber and oversized values are replaced by a bounded preview."
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The completing step's declared output."
+    },
+    "error": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Structured terminal failure: which step failed, its code, category, retryability and scrubbed message."
+    },
+    "failed_step_id": {
+      "type": "string"
+    },
+    "compensation": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Result of the definition's failure hook, when one ran. A compensating branch is recorded here and never changes the run's FAILED outcome."
+    },
+    "cancel_requested": {
+      "type": "boolean",
+      "default": false,
+      "description": "Durable cancellation intent. A run executes across several jobs, so this persisted flag \u2014 not an in-memory signal \u2014 is what stops it: it is checked before each step, so completed steps are preserved and no partial write is interrupted."
+    },
+    "cancel_reason": {
+      "type": "string"
+    },
+    "cancelled_by": {
+      "type": "string"
+    },
+    "timeout_at": {
+      "type": "string",
+      "description": "Wall-clock deadline for the whole run, computed at start from the definition's workflow timeout."
+    },
+    "resume_at": {
+      "type": "string",
+      "description": "When a WAITING run becomes due again."
+    },
+    "trace_id": {
+      "type": "string",
+      "description": "The operation's existing correlation id, carried verbatim through every step, primitive invocation and queued continuation \u2014 the workflow engine mints no second trace system."
+    },
+    "run_id": {
+      "type": "string",
+      "description": "AI run or agent run the workflow was started on behalf of, when there was one."
+    },
+    "job_id": {
+      "type": "string",
+      "description": "The most recent EXISTING queue job that advanced this run. Retries, backoff and dead-lettering remain the queue's."
+    },
+    "actor": {
+      "type": "string",
+      "enum": [
+        "user",
+        "app",
+        "system"
+      ],
+      "default": "user"
+    },
+    "triggered_by": {
+      "type": "string"
+    },
+    "started_at": {
+      "type": "string"
+    },
+    "completed_at": {
+      "type": "string"
+    },
+    "duration_ms": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "workflow_id",
+    "project_id",
+    "status"
+  ]
+}

@@ -1,0 +1,245 @@
+{
+  "name": "AIRun",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string"
+    },
+    "conversation_id": {
+      "type": "string"
+    },
+    "initiated_by_user_id": {
+      "type": "string",
+      "description": "OPTIONAL real user a delegated run acts for (e.g. an Agent-created Builder run, whose record is created by the service principal). Identity resolution uses initiated_by_user_id ?? created_by_id, so runs without it behave exactly as before."
+    },
+    "parent_agent_run_id": {
+      "type": "string",
+      "description": "OPTIONAL AgentRun that delegated this Builder run. Only runs carrying the agent's own id can be adopted by that agent on resume. Absent for normal Builder runs."
+    },
+    "trace_id": {
+      "type": "string",
+      "description": "THE correlation id of this run, minted once when the run is enqueued and then carried unchanged through every background phase, worker hand-off, repair attempt and retry. Every step, tool call, MCP call, generated-function execution and persisted frontend error caused by this run records the same value, which is what makes the whole operation reconstructable as one diagnostic trail."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "QUEUED",
+        "RUNNING",
+        "PLANNING",
+        "CONTEXT_LOADING",
+        "EXECUTING",
+        "VALIDATING",
+        "REPAIRING",
+        "COMPLETED",
+        "FAILED",
+        "CANCELLED",
+        "STALE"
+      ],
+      "default": "QUEUED"
+    },
+    "phase": {
+      "type": "string",
+      "enum": [
+        "plan",
+        "generate",
+        "build",
+        "commit",
+        "done"
+      ],
+      "description": "Background execution phase; each phase runs in its own request and is resumed by the executor workflow"
+    },
+    "phase_attempts": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Attempts already spent per phase, e.g. { \"plan\": 2 }. Persisted on the run rather than held in worker memory, so a worker restart cannot reset the retry budget and a phase that keeps failing transiently still becomes terminal instead of looping forever."
+    },
+    "phase_error_code": {
+      "type": "string",
+      "description": "Code of the most recent phase failure. Present while a retryable failure is awaiting another attempt; a deterministic failure (validation, budget, authorization, version conflict, lost lease) is never retried."
+    },
+    "phase_lease_token": {
+      "type": "string",
+      "description": "Lease held by the ONE worker currently allowed to execute this run's phase. Written and then re-read, so two workers claiming at once cannot both proceed, and re-asserted immediately before the commit phase mutates canonical state \u2014 a worker that lost its lease can therefore never commit behind the winner's back."
+    },
+    "phase_lease_owner": {
+      "type": "string",
+      "description": "Identifier of the worker holding the phase lease."
+    },
+    "phase_lease_expires_at": {
+      "type": "string",
+      "description": "When the phase lease expires. An expired lease is reclaimable, so a worker that died mid-phase never strands the run."
+    },
+    "staging_url": {
+      "type": "string",
+      "description": "Reference to the run's staged intermediate state (serialized project files, entities, plan, design and accumulated failures) held in blob storage between background phases. Each phase writes a fresh reference and the next phase reads it, which is what lets a multi-phase run resume in a different worker request without carrying the whole working set in the row. Cleared by the Scheduled Maintenance staging sweep once the run has been terminal past the staging TTL; an in-flight run's reference is never released."
+    },
+    "cancel_requested": {
+      "type": "boolean",
+      "default": false,
+      "description": "Durable cancellation intent, set only by the authorized cancel endpoint. A run executes across several requests in a background worker, so this persisted flag \u2014 not an in-memory signal \u2014 is what stops it: the worker checks it between phases and again immediately before the commit phase mutates anything, then makes the run CANCELLED and releases its credit reservation. Survives worker restarts, so a cancellation is never lost."
+    },
+    "cancel_requested_at": {
+      "type": "string"
+    },
+    "cancel_requested_by": {
+      "type": "string",
+      "description": "Authenticated user who requested cancellation, stamped server-side after the run's project/workspace authorization check."
+    },
+    "usage_event_id": {
+      "type": "string",
+      "description": "Set once the run has been billed; guarantees a retried worker cannot charge credits twice"
+    },
+    "operation_id": {
+      "type": "string",
+      "description": "The billable AIOperation this run settled as. Carries the authoritative token usage, pricing version and credit charge."
+    },
+    "credits_charged": {
+      "type": "number",
+      "default": 0,
+      "description": "Credits this run cost, copied from the settled operation for display. The ledger remains authoritative."
+    },
+    "routing_decision": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Why this model ran: strategy, requirements, candidates with expected cost, rejection reasons, budget ceiling, and any provider fallback that was attempted."
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "default",
+        "discuss",
+        "edit"
+      ],
+      "default": "default"
+    },
+    "preferred_model_id": {
+      "type": "string",
+      "description": "Model the user explicitly selected in the Builder. The router treats this as a preference: if the model is compatible and affordable it is used, otherwise the router falls back and records why."
+    },
+    "model": {
+      "type": "string"
+    },
+    "provider": {
+      "type": "string"
+    },
+    "prompt": {
+      "type": "string"
+    },
+    "image_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "OPTIONAL reference images the user attached to this request. Normalized http(s) file URLs produced by the platform's existing upload \u2014 never raw image data, and capped at enqueue time. They accompany the prompt on this run's planning and generation model calls. Absent means a text-only run, which behaves exactly as before."
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "running",
+              "done",
+              "failed"
+            ]
+          },
+          "detail": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "plan": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "changed_files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "change": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "tool_log": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "tool": {
+            "type": "string"
+          },
+          "ok": {
+            "type": "boolean"
+          },
+          "summary": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "error": {
+      "type": "string"
+    },
+    "input_tokens": {
+      "type": "number",
+      "default": 0
+    },
+    "output_tokens": {
+      "type": "number",
+      "default": 0
+    },
+    "tool_calls": {
+      "type": "number",
+      "default": 0
+    },
+    "repair_attempts": {
+      "type": "number",
+      "default": 0
+    },
+    "build_id": {
+      "type": "string"
+    },
+    "version_id": {
+      "type": "string"
+    },
+    "version_number": {
+      "type": "number"
+    },
+    "base_version_number": {
+      "type": "number",
+      "description": "Project version this run started from; used for optimistic concurrency at commit time"
+    },
+    "heartbeat_at": {
+      "type": "string",
+      "description": "Last time the run reported progress; stale non-terminal runs are reaped and marked STALE"
+    },
+    "started_at": {
+      "type": "string"
+    },
+    "completed_at": {
+      "type": "string"
+    },
+    "duration_ms": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "project_id",
+    "status",
+    "mode"
+  ]
+}

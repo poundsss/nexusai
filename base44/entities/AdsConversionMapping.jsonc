@@ -1,0 +1,49 @@
+{
+  "name": "AdsConversionMapping",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Project the mapping belongs to. Every read and mutation is filtered by this field server-side."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side from the authorized project."
+    },
+    "app_event_name": {
+      "type": "string",
+      "description": "The app's own recorded analytics event this mapping starts from. One mapping per event name per project \u2014 a duplicate create is refused."
+    },
+    "conversion_action_name": {
+      "type": "string",
+      "description": "Human name of the conversion action this event maps to."
+    },
+    "provider_conversion_ref": {
+      "type": "string",
+      "description": "Provider-side conversion action reference, minted only through a successful provider mapping. Never invented locally."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "unmapped",
+        "mapped"
+      ],
+      "default": "unmapped",
+      "description": "unmapped until the provider confirmed a conversion action for the event."
+    },
+    "created_at": {
+      "type": "string",
+      "description": "When the mapping was created."
+    },
+    "updated_at": {
+      "type": "string",
+      "description": "When the mapping last changed."
+    }
+  },
+  "required": [
+    "project_id",
+    "workspace_id",
+    "app_event_name",
+    "status"
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "name": "RetentionPolicy",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string",
+      "description": "Workspace this policy applies to. Null means platform-wide default. A workspace-specific policy overrides the default for that data type."
+    },
+    "data_type": {
+      "type": "string",
+      "enum": [
+        "audit_logs",
+        "usage_events",
+        "ai_operations",
+        "deployments",
+        "user_activity",
+        "billing_events",
+        "support_tickets",
+        "abuse_reports",
+        "dsr_records",
+        "trajectories",
+        "trajectory_events",
+        "memories"
+      ],
+      "description": "Data category the policy governs. One policy per data type per scope. 'trajectories' and 'trajectory_events' govern the learning data layer, and 'memories' governs the runtime memory layer, all through the same scheduled sweep as every other category \u2014 only records that are no longer active memory (superseded, archived, expired, conflicted-and-resolved) are eligible, so live memory is never removed."
+    },
+    "retention_days": {
+      "type": "number",
+      "description": "Days to retain. After this, the action is applied. 0 means retain indefinitely (legal hold)."
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "delete",
+        "anonymize",
+        "archive"
+      ],
+      "default": "delete",
+      "description": "What happens at expiry. 'delete' removes the record; 'anonymize' strips identifiers but keeps aggregate data; 'archive' moves to cold storage."
+    },
+    "legal_basis": {
+      "type": "string",
+      "description": "Legal reason for this retention period (e.g. tax_law_7y, gdpr_minimization, contract_term)."
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    },
+    "created_by": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "data_type",
+    "retention_days",
+    "action"
+  ]
+}

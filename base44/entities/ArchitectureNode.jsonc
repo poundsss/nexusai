@@ -1,0 +1,113 @@
+{
+  "name": "ArchitectureNode",
+  "type": "object",
+  "properties": {
+    "architecture_id": {
+      "type": "string",
+      "description": "Architecture version this node belongs to. Every read is filtered by this field together with the project, so nodes can never be read across projects or leak between versions."
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "workspace_id": {
+      "type": "string"
+    },
+    "node_key": {
+      "type": "string",
+      "description": "Deterministic identity of the node within its architecture version: '<node_type>:<key>'. Unique per version, which is what stops repeated reconciliation from creating duplicate nodes."
+    },
+    "node_type": {
+      "type": "string",
+      "enum": [
+        "domain",
+        "entity",
+        "relationship",
+        "page",
+        "component",
+        "function",
+        "route",
+        "workflow",
+        "integration",
+        "role",
+        "external_dependency",
+        "storage"
+      ],
+      "description": "What kind of architectural element this is."
+    },
+    "key": {
+      "type": "string",
+      "description": "The element's own identifier in its authoritative system (entity name, file path, route path, function name, integration name, workflow name, role name, dependency specifier, secret name)."
+    },
+    "name": {
+      "type": "string"
+    },
+    "domain": {
+      "type": "string",
+      "description": "Domain this node was grouped into, so a domain summary is a narrow indexed query rather than a full-graph scan."
+    },
+    "reference": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "REFERENCES into the authoritative systems (file path, entity name, function name, integration name, workflow record id, version number). Architecture stores pointers, never a second copy of file content or schema definitions."
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Bounded, scrubbed structural metadata (exports, field names, referenced entity names, secret NAMES, http methods). Passed through the platform's existing secret scrubber; a credential value can never be stored here."
+    },
+    "provenance_state": {
+      "type": "string",
+      "enum": [
+        "verified",
+        "user_decision",
+        "inferred"
+      ],
+      "default": "inferred",
+      "description": "How the fact is known. 'verified' comes from parsed authoritative state (a file, a schema, a function, a workflow record). 'user_decision' is an explicit human declaration. 'inferred' is a heuristic. An inferred fact is NEVER silently promoted to verified \u2014 promotion requires a new reconciliation that reads it from an authoritative source, or an explicit decision."
+    },
+    "provenance_source": {
+      "type": "string",
+      "enum": [
+        "project_file",
+        "entity_schema",
+        "function",
+        "page_component",
+        "integration",
+        "workflow",
+        "permission",
+        "project_version",
+        "user_decision",
+        "system_fact",
+        "memory_decision"
+      ],
+      "description": "Which authoritative system (or explicit decision) generated this architecture fact."
+    },
+    "provenance_reference": {
+      "type": "string",
+      "description": "The specific record the fact came from: a file path, an entity name, a workflow name, a version number or a memory id."
+    },
+    "provenance_detail": {
+      "type": "string",
+      "description": "Short scrubbed statement of how the fact was derived, so an inferred node is explainable rather than merely labelled."
+    },
+    "confidence": {
+      "type": "number",
+      "default": 1,
+      "description": "How strongly the fact is believed, 0..1. Clamped by provenance state server-side, so an inferred node can never present itself with verified-level confidence."
+    },
+    "content_hash": {
+      "type": "string",
+      "description": "Deterministic hash of the node's own content. Feeds the architecture fingerprint and makes a node-level change detectable in a diff."
+    },
+    "created_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "architecture_id",
+    "project_id",
+    "node_key",
+    "node_type",
+    "key"
+  ]
+}

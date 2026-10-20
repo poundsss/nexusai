@@ -1,0 +1,96 @@
+{
+  "name": "NexusCodeSession",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Owning app user \u2014 the ONE person whose GitHub authorization this session may ever run under. Every read and mutation is filtered by this field server-side; a session is never shared, inherited or borrowed."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "The owner's active workspace, resolved server-side at connect time, so audit rows carry workspace attribution. A REFERENCE only \u2014 no capability or credential meaning."
+    },
+    "repo_full_name": {
+      "type": "string",
+      "description": "owner/repo this session works on"
+    },
+    "repo_default_branch": {
+      "type": "string"
+    },
+    "base_branch": {
+      "type": "string",
+      "description": "The branch the working branch was created from; also the pull request target."
+    },
+    "base_head_sha": {
+      "type": "string",
+      "description": "Head of the base branch at connect time. Anchors diff (before side) and the no-commits-yet guard for pull requests."
+    },
+    "working_branch": {
+      "type": "string",
+      "description": "The branch AI edits and commits land on. Null until a branch is created or switched to. Never a production environment pointer."
+    },
+    "head_sha": {
+      "type": "string",
+      "description": "Last known head of the working branch that Nexus Code wrote or verified. A live head that differs from this value means the branch moved outside Nexus Code and edits fail closed (BRANCH_MOVED)."
+    },
+    "created_by_branch": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the working branch was created by Nexus Code. Only such branches are eligible for remote deletion; switching to a pre-existing GitHub branch clears this flag."
+    },
+    "subdirectory": {
+      "type": "string",
+      "description": "Optional path inside the repository that scopes all reads and edits"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "connected",
+        "deleted"
+      ],
+      "default": "connected",
+      "description": "'deleted' is the tombstone for a deleted Nexus Code session: chat state is cleared and the row is never served again. The GitHub branch itself is only removed when created_by_branch and explicitly requested."
+    },
+    "chat": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "description": "user | assistant | system"
+          },
+          "text": {
+            "type": "string"
+          },
+          "sha": {
+            "type": "string",
+            "description": "Commit sha produced by this turn, when the turn committed"
+          },
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "role",
+          "text"
+        ]
+      },
+      "description": "Bounded branch-scoped chat transcript (last 40 entries, text truncated at write time)."
+    },
+    "last_pr_url": {
+      "type": "string"
+    },
+    "last_pr_number": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "user_id",
+    "repo_full_name",
+    "base_branch"
+  ]
+}

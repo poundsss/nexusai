@@ -1,0 +1,54 @@
+{
+  "name": "DataCheckpoint",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Project whose entity data this checkpoint snapshots. Every read and mutation is filtered by this field server-side, so one project's history can never be read or restored from another."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side from the project."
+    },
+    "entity_name": {
+      "type": "string",
+      "description": "The app entity the snapshot covers. User records and reserved namespaces are excluded from data history."
+    },
+    "data_as_of": {
+      "type": "string",
+      "description": "ISO-8601 instant the snapshot reflects \u2014 the restore point. DOCUMENTED (Base44): the list field and the restore target."
+    },
+    "trigger_type": {
+      "type": "string",
+      "enum": [
+        "crud"
+      ],
+      "default": "crud",
+      "description": "DOCUMENTED (Base44): checkpoints are captured automatically on data changes (trigger_type crud). No manual data-checkpoint creation exists in the contract and none is added."
+    },
+    "record_count": {
+      "type": "number",
+      "default": 0,
+      "description": "How many records the snapshot holds."
+    },
+    "fields": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "The entity's declared field names at capture time \u2014 the download's header fields, ahead of the record built-ins."
+    },
+    "snapshot_url": {
+      "type": "string",
+      "description": "Storage URL of the packed snapshot ({ records, fields }); the payload is never inline (field-size limits). Records carry id, created_date, updated_date, created_by_id, owner_id and the data blob verbatim, so a restore preserves record IDs and field values exactly."
+    }
+  },
+  "required": [
+    "project_id",
+    "workspace_id",
+    "entity_name",
+    "data_as_of",
+    "trigger_type"
+  ]
+}

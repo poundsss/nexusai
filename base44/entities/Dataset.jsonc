@@ -1,0 +1,172 @@
+{
+  "name": "Dataset",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Human-readable dataset name. A name plus scope identifies a dataset LINEAGE, not one dataset: a changed policy or transform produces the next version under the same name rather than rewriting the previous one."
+    },
+    "description": {
+      "type": "string"
+    },
+    "dataset_type": {
+      "type": "string",
+      "enum": [
+        "sft",
+        "preference",
+        "evaluation"
+      ],
+      "description": "Which construction contract the items follow. Deliberately separate: an evaluation dataset is built by a different transform than an SFT dataset and never carries training targets, so benchmark answers cannot leak into training data."
+    },
+    "version": {
+      "type": "number",
+      "default": 1,
+      "description": "Monotonic version within the dataset name + scope. Assigned at creation and never reused, so a historical dataset stays reproducible while a new build lands beside it."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "DRAFT",
+        "BUILDING",
+        "BUILT",
+        "VALIDATED",
+        "FINALIZED",
+        "FAILED",
+        "DUPLICATE"
+      ],
+      "default": "DRAFT",
+      "description": "Lifecycle. Only FINALIZED may be exported to a downstream training system, and FINALIZED is reachable only from VALIDATED \u2014 so a failed or partially built dataset can never present itself as finished. FAILED marks a build or validation that did not complete; DUPLICATE marks a build whose source fingerprint already had an active FINALIZED dataset, which is what makes repeated generation idempotent instead of duplicating versions."
+    },
+    "scope": {
+      "type": "string",
+      "enum": [
+        "project",
+        "platform"
+      ],
+      "default": "project",
+      "description": "Where the source data may come from. 'project' is isolated to one authorized project. 'platform' aggregates several projects and is admissible ONLY for projects explicitly approved on this dataset, so private project data cannot enter a global dataset by default."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved SERVER-side from the authorized project \u2014 never taken from a client. Absent for a platform dataset, which belongs to no single workspace."
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Project a project-scoped dataset is isolated to. Every read is authorized against this project and every item is filtered by it, so one project can never build from or read another's data."
+    },
+    "approved_project_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "For a platform dataset: the projects whose episodes are EXPLICITLY approved for platform-level aggregation. A candidate from any other project is excluded with a recorded reason rather than silently included, so the approval is a whitelist and the default is exclusion."
+    },
+    "created_by": {
+      "type": "string",
+      "description": "Authenticated caller who created the dataset, stamped server-side."
+    },
+    "eligibility_policy_version": {
+      "type": "string",
+      "description": "Version of the eligibility policy that decided which episodes are admissible. The rules live in a versioned registry, so no threshold is a permanent hardcoded constant: changing the policy means a new version, which means a new dataset version."
+    },
+    "eligibility": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The resolved eligibility filter this build applied: the policy's own defaults merged with the caller's explicit narrowing (quality floor, reward bounds, success/failure class, user-outcome requirement, date range, evaluator version, reward policy version). Frozen at creation so the selection stays reproducible."
+    },
+    "transformation_version": {
+      "type": "string",
+      "description": "Version of the deterministic transform that shaped the items. Same sources + same policy + same transform must produce the same items and the same checksum."
+    },
+    "source_policy_version": {
+      "type": "string",
+      "description": "Composite fingerprint of every policy the build depended on (eligibility + transform + required evaluator and reward policy versions). One value a consumer can compare to know whether two datasets were constructed under the same rules."
+    },
+    "source_fingerprint": {
+      "type": "string",
+      "description": "Deterministic hash of the resolved source SET plus the policy versions. Two builds with the same fingerprint are the same dataset: the second is marked DUPLICATE and points at the first instead of creating a second active FINALIZED version."
+    },
+    "checksum": {
+      "type": "string",
+      "description": "Content hash over the ordered item keys and item checksums. Recomputed during validation and re-checked at finalization, so an item added or altered behind the dataset's back is detected instead of shipping silently."
+    },
+    "item_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of INCLUDED items. Re-derived from the stored rows during validation, never trusted as a running counter."
+    },
+    "candidate_count": {
+      "type": "number",
+      "default": 0,
+      "description": "How many episodes were considered, so the inclusion rate of a policy is inspectable."
+    },
+    "excluded_count": {
+      "type": "number",
+      "default": 0
+    },
+    "exclusions": {
+      "type": "array",
+      "description": "Why candidates were rejected, kept as evidence of the selection rather than discarded. Bounded per build.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "trajectory_id": {
+            "type": "string"
+          },
+          "project_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The validation report: per-check outcome for provenance completeness, secret scrubbing, schema correctness, duplicate detection, authorization, item count, checksum and lineage integrity. Stored so a refusal to finalize is explainable, and re-run at finalization so a stale pass cannot be reused."
+    },
+    "parent_dataset_id": {
+      "type": "string",
+      "description": "The previous finalized version of this dataset lineage, when this one is derived from it. Makes the version history a chain rather than unrelated rows."
+    },
+    "duplicate_of_dataset_id": {
+      "type": "string",
+      "description": "The already-finalized dataset this build turned out to reproduce exactly."
+    },
+    "finalized": {
+      "type": "boolean",
+      "default": false,
+      "description": "True once FINALIZED. From that moment the dataset and its items are immutable: a change requires a NEW version, and every mutating path refuses."
+    },
+    "error": {
+      "type": "string",
+      "description": "Scrubbed reason a build or validation did not complete."
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "built_at": {
+      "type": "string"
+    },
+    "validated_at": {
+      "type": "string"
+    },
+    "finalized_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "dataset_type",
+    "version",
+    "status",
+    "scope",
+    "eligibility_policy_version",
+    "transformation_version"
+  ]
+}

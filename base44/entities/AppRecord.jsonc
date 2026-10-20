@@ -1,0 +1,55 @@
+{
+  "name": "AppRecord",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string"
+    },
+    "entity_name": {
+      "type": "string"
+    },
+    "owner_id": {
+      "type": "string",
+      "description": "For RLS-enabled apps, the end-user id that owns this record. Promoted to a top-level field (out of the JSON `data` blob) so the storage layer can filter on it server-side \u2014 this is the index for the per-user query path. Null/absent for anonymous (RLS-off) apps and for legacy records created before this field existed."
+    },
+    "data": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Record payload of the generated application. App field values live here as a JSON blob; the storage layer cannot filter on nested `data.*` fields, so app-field filters are applied in memory during a batched stream (see createServerDb)."
+    },
+    "unread": {
+      "type": "boolean",
+      "description": "Reserved `__notifications` rows only: top-level mirror of data.read === false so the inbox counts and lists unread rows server-side with no recency window. Absent on legacy notification rows (handled by a bounded fallback) and on every other entity."
+    },
+    "trashed_at": {
+      "type": "string",
+      "description": "Entity Trash: set when the record is deleted and moved to its entity's trash (the row's entity_name is renamed to 'TRASH:<entity>' while trashed, so every live query path excludes it). The trash listing surfaces this as the DOCUMENTED deleted_date. Restore clears it; the row's id, created_date, updated_date and data are preserved verbatim across the delete/restore round trip."
+    },
+    "trashed_by": {
+      "type": "string",
+      "description": "Entity Trash: who deleted the record (app user id), stamped server-side. Audit metadata only \u2014 never part of the record view."
+    }
+  },
+  "required": [
+    "project_id",
+    "entity_name"
+  ],
+  "rls": {
+    "read": false,
+    "create": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "system"
+      }
+    }
+  }
+}

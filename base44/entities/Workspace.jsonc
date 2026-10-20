@@ -1,0 +1,60 @@
+{
+  "name": "Workspace",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Workspace display name"
+    },
+    "owner_id": {
+      "type": "string",
+      "description": "User id of the workspace owner"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "suspended",
+        "terminated"
+      ],
+      "default": "active",
+      "description": "Lifecycle state. 'active' is the normal operating state; 'suspended' is an abuse/trust action that pauses access (auto-applied on critical abuse reports); 'terminated' is terminal. Only an active workspace authenticates and serves."
+    },
+    "credits_balance": {
+      "type": "number",
+      "default": 0,
+      "description": "Cached projection of the credit ledger. The ledger is authoritative; this field is recomputed from it and must never be written directly by application code."
+    },
+    "reserved_credits": {
+      "type": "number",
+      "default": 0,
+      "description": "Credits currently held by in-flight operations. Spendable credits are balance minus this, which is what prevents concurrent runs from overspending one balance."
+    },
+    "balance_synced_at": {
+      "type": "string",
+      "description": "When the cached balance was last derived from the ledger."
+    }
+  },
+  "required": [
+    "name",
+    "owner_id"
+  ],
+  "rls": {
+    "read": false,
+    "create": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "system"
+      }
+    }
+  }
+}

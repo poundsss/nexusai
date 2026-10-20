@@ -1,0 +1,41 @@
+{
+  "name": "Build",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string"
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "running",
+        "success",
+        "failed"
+      ]
+    },
+    "logs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "error_count": {
+      "type": "number",
+      "default": 0
+    },
+    "file_count": {
+      "type": "number",
+      "default": 0
+    },
+    "duration_ms": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "project_id",
+    "status"
+  ]
+}

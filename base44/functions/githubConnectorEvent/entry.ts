@@ -1,0 +1,24 @@
+// Public GitHub connector-EVENT webhook receiver.
+//
+// URL: <this function's URL>?project_id=<id>
+//
+// A SEPARATE receiver from `githubWebhook` (the push→GitSync import path, unchanged). This
+// endpoint turns a verified GitHub delivery into a connector workflow dispatch through the
+// existing `emitConnector` emitter.
+//
+// This endpoint has NO user session — authenticity comes entirely from the GitHub HMAC
+// signature. All request handling — signature verification, replay protection, repo
+// targeting, normalization and dispatch — lives in shared/githubConnectorEvent.ts, so the
+// endpoint and its certification harness exercise exactly the same code.
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.53";
+import { handleGithubConnectorEvent } from "../../shared/githubConnectorEvent.ts";
+
+export default async function (req) {
+  const svc = createClientFromRequest(req).asServiceRole;
+  const url = new URL(req.url);
+  const projectId = url.searchParams.get("project_id");
+  const rawBody = await req.text();
+  const headers = Object.fromEntries([...req.headers.entries()].map(([k, v]) => [k.toLowerCase(), v]));
+  const result = await handleGithubConnectorEvent(svc, { projectId, rawBody, headers, now: Date.now() });
+  return Response.json(result.body, { status: result.status });
+}

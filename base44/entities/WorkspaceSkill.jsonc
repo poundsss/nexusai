@@ -1,0 +1,58 @@
+{
+  "name": "WorkspaceSkill",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string",
+      "description": "Workspace this skill belongs to. Every read, mutation and Builder injection resolves through this field, so one workspace's skills can never be listed, edited or applied by another."
+    },
+    "name": {
+      "type": "string",
+      "description": "Short human label chosen at creation (DOCUMENTED Base44 example: 'brand-guidelines')."
+    },
+    "description": {
+      "type": "string",
+      "description": "DOCUMENTED (Base44): describes when the AI should use this skill \u2014 which pages or tasks it applies to."
+    },
+    "instructions": {
+      "type": "string",
+      "description": "DOCUMENTED (Base44): the step-by-step rules the AI should follow when the skill applies. Static text only \u2014 it can never pull live data, check conditions or execute."
+    },
+    "enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "DOCUMENTED (Base44): a disabled skill is temporarily ignored by the AI without deletion. Disabled skills are never injected into Builder context."
+    },
+    "created_by": {
+      "type": "string",
+      "description": "Workspace member who created the skill; authorization was resolved server-side at creation time."
+    },
+    "created_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "workspace_id",
+    "name",
+    "description",
+    "instructions"
+  ],
+  "rls": {
+    "read": false,
+    "create": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "system"
+      }
+    }
+  }
+}

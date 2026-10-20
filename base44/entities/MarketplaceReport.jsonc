@@ -1,0 +1,77 @@
+{
+  "name": "MarketplaceReport",
+  "type": "object",
+  "properties": {
+    "listing_id": {
+      "type": "string",
+      "description": "Listing reported. Reports may also target a specific version or review via the optional *_id fields."
+    },
+    "version_id": {
+      "type": "string"
+    },
+    "review_id": {
+      "type": "string"
+    },
+    "reporter_workspace_id": {
+      "type": "string",
+      "description": "Workspace that filed the report. Kept for audit and to prevent a single workspace from filing many reports against the same listing (rate-limited server-side)."
+    },
+    "reporter_user_id": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string",
+      "enum": [
+        "spam",
+        "abuse",
+        "malware",
+        "ip_infringement",
+        "data_theft",
+        "other"
+      ],
+      "description": "Stable report classification. Drives the trust-score impact and the moderation queue routing."
+    },
+    "detail": {
+      "type": "string",
+      "description": "Reporter's free-text explanation. Length-bounded and never executed or rendered as HTML."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "reviewing",
+        "dismissed",
+        "actioned"
+      ],
+      "default": "open",
+      "description": "Only 'open' and 'reviewing' count toward the listing's open-report total. 'dismissed' is a no-action resolution; 'actioned' applied a trust penalty."
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "none",
+        "warning",
+        "suspend",
+        "remove"
+      ],
+      "default": "none",
+      "description": "Moderation outcome. 'suspend' hides the listing and blocks new installs; 'remove' is a terminal owner-facing action."
+    },
+    "resolved_by": {
+      "type": "string"
+    },
+    "resolved_at": {
+      "type": "string"
+    },
+    "resolution_note": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "listing_id",
+    "reporter_workspace_id",
+    "reporter_user_id",
+    "reason",
+    "status"
+  ]
+}

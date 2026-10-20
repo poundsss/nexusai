@@ -1,0 +1,166 @@
+{
+  "name": "ModelCatalogEntry",
+  "type": "object",
+  "properties": {
+    "provider": {
+      "type": "string",
+      "description": "Upstream provider that actually bills for the model (openai, anthropic, google, nexus). Distinct from the gateway the platform calls through."
+    },
+    "gateway_provider": {
+      "type": "string",
+      "default": "base44-core",
+      "description": "Gateway adapter used to reach the model. The economics engine prices by `provider`, the router executes through this."
+    },
+    "model_id": {
+      "type": "string",
+      "description": "Stable platform identifier for the model, e.g. claude-sonnet-5. Application code and historical operations reference this and never a price."
+    },
+    "provider_model_name": {
+      "type": "string",
+      "description": "Exact name the gateway/provider expects on the wire."
+    },
+    "display_name": {
+      "type": "string"
+    },
+    "model_family": {
+      "type": "string"
+    },
+    "model_version": {
+      "type": "string",
+      "description": "Provider/model version the entry describes (e.g. 1.0.0-preview for a first-party model). Frozen on operations and candidate evaluations that reference it."
+    },
+    "provider_version": {
+      "type": "string",
+      "description": "Version of the provider wire contract the gateway adapter speaks."
+    },
+    "quality_tier": {
+      "type": "string",
+      "enum": [
+        "fast",
+        "standard",
+        "advanced"
+      ],
+      "default": "standard",
+      "description": "Relative quality/\u00b7cost tier used by the router's quality strategy."
+    },
+    "quality_tier_basis": {
+      "type": "string",
+      "description": "How the tier was established: provider_documentation, benchmark_evidence or unverified. An unverified tier is a placeholder, never a measured quality claim."
+    },
+    "capabilities": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Task capabilities: text, json, code, vision, audio, reasoning, tools, structured_output."
+    },
+    "context_window": {
+      "type": "number"
+    },
+    "max_output_tokens": {
+      "type": "number"
+    },
+    "supports_streaming": {
+      "type": "boolean",
+      "default": false
+    },
+    "supports_tools": {
+      "type": "boolean",
+      "default": false
+    },
+    "supports_vision": {
+      "type": "boolean",
+      "default": false
+    },
+    "supports_audio": {
+      "type": "boolean",
+      "default": false
+    },
+    "supports_reasoning": {
+      "type": "boolean",
+      "default": false
+    },
+    "supports_structured_output": {
+      "type": "boolean",
+      "default": true
+    },
+    "supports_cached_input": {
+      "type": "boolean",
+      "default": false
+    },
+    "pricing": {
+      "type": "array",
+      "description": "Every pricing version this model has ever had. A price change APPENDS a version; existing versions are immutable so a historical operation always reprices to exactly what it was charged under.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "pricing_version": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string",
+            "default": "USD"
+          },
+          "input_per_mtok": {
+            "type": "number"
+          },
+          "cached_input_per_mtok": {
+            "type": "number"
+          },
+          "output_per_mtok": {
+            "type": "number"
+          },
+          "reasoning_per_mtok": {
+            "type": "number"
+          },
+          "cost_basis": {
+            "type": "string",
+            "description": "provider_list_price (default) or unpriced_internal: a first-party model whose internal cost has not been established records 0 with this basis rather than an invented rate."
+          },
+          "effective_from": {
+            "type": "string"
+          },
+          "effective_until": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "pricing_version",
+          "input_per_mtok",
+          "output_per_mtok",
+          "effective_from"
+        ]
+      }
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the router may select this model. An inactive model still prices historical operations."
+    },
+    "availability": {
+      "type": "string",
+      "enum": [
+        "ga",
+        "preview",
+        "deprecated",
+        "unavailable"
+      ],
+      "default": "ga"
+    },
+    "routing": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Routing metadata: latency_class, expected_latency_ms, weight, fallback_model_ids, max_concurrency, health notes."
+    },
+    "catalog_version": {
+      "type": "number",
+      "default": 1,
+      "description": "Increments whenever this entry's definition or pricing set changes."
+    }
+  },
+  "required": [
+    "provider",
+    "model_id",
+    "pricing"
+  ]
+}

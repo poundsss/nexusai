@@ -1,0 +1,110 @@
+{
+  "name": "SyntheticTaskSet",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Human-readable task-set name. A name plus workspace identifies a LINEAGE: changing membership produces the NEXT version under the same name rather than editing the previous set."
+    },
+    "description": {
+      "type": "string"
+    },
+    "version": {
+      "type": "number",
+      "default": 1,
+      "description": "Monotonic version within name + workspace. Assigned server-side and never reused, so a historical task set stays reproducible."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "DRAFT",
+        "FINALIZED"
+      ],
+      "default": "DRAFT",
+      "description": "Only a DRAFT may change. FINALIZED makes the set immutable: membership changes require a new version."
+    },
+    "generator_version": {
+      "type": "string"
+    },
+    "task_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "The FINALIZED synthetic tasks that make up the set, in deterministic order. Only finalized, valid tasks are admitted."
+    },
+    "members": {
+      "type": "array",
+      "description": "Self-describing membership: each task's key, version, fingerprint, category and difficulty, so an exported set explains itself without resolving every row.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "task_id": {
+            "type": "string"
+          },
+          "task_key": {
+            "type": "string"
+          },
+          "task_version": {
+            "type": "number"
+          },
+          "fingerprint": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "difficulty": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "membership_fingerprint": {
+      "type": "string",
+      "description": "Deterministic hash over the ordered member fingerprints. Two sets with the same value have identical membership, which is how a membership change is detected rather than assumed."
+    },
+    "checksum": {
+      "type": "string",
+      "description": "Content hash over the ordered members plus the generator version. Recomputed at finalization, so a member altered behind the set's back blocks finalization instead of shipping silently."
+    },
+    "item_count": {
+      "type": "number",
+      "default": 0
+    },
+    "parent_task_set_id": {
+      "type": "string",
+      "description": "The previous finalized version this set was derived from, making the version history a chain rather than unrelated rows."
+    },
+    "workspace_id": {
+      "type": "string"
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "trace_id": {
+      "type": "string"
+    },
+    "finalized": {
+      "type": "boolean",
+      "default": false
+    },
+    "created_by": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "finalized_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "version",
+    "status",
+    "generator_version",
+    "workspace_id",
+    "project_id"
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "name": "AppAnalyticsSession",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Project the session belongs to. A session key from one app is meaningless in another."
+    },
+    "workspace_id": {
+      "type": "string"
+    },
+    "session_key": {
+      "type": "string",
+      "description": "Project-scoped session identifier the app carries. Unique per project."
+    },
+    "anonymous_id": {
+      "type": "string",
+      "description": "Pseudonymous visitor id for the unauthenticated part of the session."
+    },
+    "app_user_id": {
+      "type": "string",
+      "description": "REFERENCE to the #29 AppUser once the session is (or becomes) authenticated. Set only through the controlled identity-linking path."
+    },
+    "team_id": {
+      "type": "string"
+    },
+    "environment": {
+      "type": "string",
+      "enum": [
+        "development",
+        "staging",
+        "production"
+      ],
+      "default": "production"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "ended"
+      ],
+      "default": "active"
+    },
+    "identity_linked_at": {
+      "type": "string",
+      "description": "When an anonymous session was linked to an app user. Recorded so the transition is auditable."
+    },
+    "started_at": {
+      "type": "string"
+    },
+    "last_seen_at": {
+      "type": "string"
+    },
+    "ended_at": {
+      "type": "string"
+    },
+    "duration_ms": {
+      "type": "number"
+    },
+    "event_count": {
+      "type": "number",
+      "default": 0
+    },
+    "entry_page": {
+      "type": "string"
+    },
+    "trace_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "project_id",
+    "session_key",
+    "environment",
+    "status"
+  ]
+}

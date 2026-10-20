@@ -1,0 +1,96 @@
+{
+  "name": "CommitJournal",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Project whose canonical state this commit mutates. Every lookup is filtered by this field."
+    },
+    "workspace_id": {
+      "type": "string"
+    },
+    "run_id": {
+      "type": "string",
+      "description": "The AI run (or restore operation) this commit belongs to. At most one journal per run, which is what makes a retried worker resume the same commit instead of starting a second one."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "prepared",
+        "applying",
+        "applied",
+        "committed",
+        "rolled_back",
+        "failed"
+      ],
+      "default": "prepared",
+      "description": "Commit lifecycle. 'prepared' = both snapshots are durable but canonical state is untouched; 'applying' = canonical writes in flight (the only partial state, and it is recoverable because the target snapshot is complete); 'applied' = canonical state fully matches the target but the version is not yet created; 'committed' = version created and the project pointer updated \u2014 the only state that may be reported as a successful commit; 'rolled_back' = canonical state was restored to the previous snapshot."
+    },
+    "base_version_number": {
+      "type": "number",
+      "description": "Project version this commit started from. Recovery refuses to roll forward when the project has moved past it, so optimistic concurrency survives a worker crash."
+    },
+    "target_version_number": {
+      "type": "number",
+      "description": "Version number this commit will produce. Fixed at prepare time so a retry cannot create a second, higher version."
+    },
+    "message": {
+      "type": "string"
+    },
+    "changed_files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "change": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "previous_snapshot": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Complete canonical state (files, entities, secret references) as it was BEFORE any mutation. This is what a rollback restores."
+    },
+    "previous_snapshot_url": {
+      "type": "string",
+      "description": "Storage pointer used when the previous snapshot exceeds the inline field ceiling."
+    },
+    "target_snapshot": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Complete canonical state the commit intends to produce. Written durably BEFORE any canonical mutation, so applying it is idempotent and can be completed by a later worker."
+    },
+    "target_snapshot_url": {
+      "type": "string"
+    },
+    "records_backup_url": {
+      "type": "string",
+      "description": "Storage pointer to the generated application's DATA as it was before this commit migrated it (AppRecord blobs plus relation definitions for entities the commit drops). Written durably BEFORE the first data write, so a rollback \u2014 including one performed by the recovery sweep after a crash \u2014 restores the records as well as the schema. Absent for commits that only change files and schema declarations, which need no data migration."
+    },
+    "version_id": {
+      "type": "string",
+      "description": "The single immutable ProjectVersion this commit produced. Set exactly once; its presence is what makes finalization idempotent."
+    },
+    "heartbeat_at": {
+      "type": "string",
+      "description": "Last time a worker reported progress on this commit. A journal past the stale cutoff is eligible for recovery; a live worker is never recovered out from under itself."
+    },
+    "recovery_count": {
+      "type": "number",
+      "default": 0
+    },
+    "error": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "project_id",
+    "run_id",
+    "status"
+  ]
+}

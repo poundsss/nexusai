@@ -1,0 +1,21 @@
+{
+  "name": "AgentProfile",
+  "type": "object",
+  "properties": {
+    "agent_name": {
+      "type": "string",
+      "description": "Root agent this identity profile belongs to. One profile per agent (unique key)."
+    },
+    "display_name": {
+      "type": "string",
+      "description": "Editable display name overriding the agent's built-in one."
+    },
+    "description": {
+      "type": "string",
+      "description": "Editable description ('About the agent') overriding the built-in one."
+    }
+  },
+  "required": [
+    "agent_name"
+  ]
+}

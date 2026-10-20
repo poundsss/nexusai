@@ -1,0 +1,157 @@
+{
+  "name": "AIOperation",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string"
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string"
+    },
+    "operation_type": {
+      "type": "string",
+      "enum": [
+        "ai_run",
+        "ai_step",
+        "agent",
+        "embedding",
+        "stream",
+        "other"
+      ],
+      "default": "ai_run"
+    },
+    "credit_type": {
+      "type": "string",
+      "enum": [
+        "message",
+        "integration"
+      ],
+      "default": "message",
+      "description": "Which credit pool this operation reserves, charges and refunds against: message (AI Builder/Agent) or integration (live-app usage). Optional; operations without it are treated as message."
+    },
+    "provider": {
+      "type": "string"
+    },
+    "gateway_provider": {
+      "type": "string"
+    },
+    "model_id": {
+      "type": "string"
+    },
+    "streaming": {
+      "type": "boolean",
+      "default": false
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "reserved",
+        "running",
+        "completed",
+        "failed",
+        "cancelled",
+        "refunded"
+      ],
+      "default": "running",
+      "description": "Only a completed operation carries an authoritative charge. A failed provider call never produces a valid charge."
+    },
+    "input_tokens": {
+      "type": "number",
+      "default": 0
+    },
+    "cached_input_tokens": {
+      "type": "number",
+      "default": 0
+    },
+    "output_tokens": {
+      "type": "number",
+      "default": 0
+    },
+    "reasoning_tokens": {
+      "type": "number",
+      "default": 0
+    },
+    "total_tokens": {
+      "type": "number",
+      "default": 0
+    },
+    "usage_by_model": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "OPTIONAL per-model token breakdown recorded at settlement: { [model_id]: { input_tokens, cached_input_tokens, output_tokens, reasoning_tokens } }, keyed by the model that actually served each call. Attribution only \u2014 the charge is still priced from the totals under model_id. Absent means no breakdown was recorded."
+    },
+    "usage_source": {
+      "type": "string",
+      "enum": [
+        "provider",
+        "estimated"
+      ],
+      "default": "estimated",
+      "description": "provider = counts reported by the provider's usage block (authoritative). estimated = derived locally because the provider returned none; never presented as measured usage."
+    },
+    "pricing_version": {
+      "type": "string",
+      "description": "Model pricing version the cost was computed under. Frozen at charge time so a later price change cannot rewrite history."
+    },
+    "provider_cost": {
+      "type": "number",
+      "default": 0,
+      "description": "Real upstream cost in `currency`. Internal/admin only \u2014 never exposed to ordinary users."
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD"
+    },
+    "credit_policy_version": {
+      "type": "string"
+    },
+    "credits_charged": {
+      "type": "number",
+      "default": 0,
+      "description": "Authoritative user-facing charge in credits, derived from provider_cost through the credit pricing policy."
+    },
+    "credits_reserved": {
+      "type": "number",
+      "default": 0
+    },
+    "credits_refunded": {
+      "type": "number",
+      "default": 0
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "Identifies this logical operation. A retry, reconnect or duplicated worker reusing the key settles the SAME operation instead of charging twice."
+    },
+    "finalized_at": {
+      "type": "string",
+      "description": "Set exactly once when usage was reconciled and the ledger charge written. Presence of this stamp is what makes a second finalization a no-op."
+    },
+    "routing": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Explainable routing decision: requested strategy, requirements, candidates considered, rejection reasons, chosen model."
+    },
+    "error": {
+      "type": "string"
+    },
+    "duration_ms": {
+      "type": "number",
+      "default": 0
+    },
+    "started_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "workspace_id",
+    "operation_type",
+    "status",
+    "idempotency_key"
+  ]
+}

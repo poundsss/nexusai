@@ -1,0 +1,131 @@
+{
+  "name": "AdsAssetSession",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Project the generation session belongs to. Every read and mutation is filtered by this field server-side."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side from the authorized project."
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "generate_all",
+        "generate_text",
+        "generate_images"
+      ],
+      "description": "DOCUMENTED (Base44) generation kinds. One generation runs per project and kind at a time \u2014 a concurrent call returns the in-flight session, not a new one."
+    },
+    "campaign_type": {
+      "type": "string",
+      "enum": [
+        "PERFORMANCE_MAX",
+        "DEMAND_GEN",
+        "SEARCH",
+        "DISPLAY"
+      ],
+      "default": "PERFORMANCE_MAX",
+      "description": "DOCUMENTED (Base44): the slots filled follow channel_type \u2014 SEARCH gets HEADLINE/DESCRIPTION plus landscape and square images; DISPLAY adds LONG_HEADLINE; PERFORMANCE_MAX and DEMAND_GEN add portrait and tall portrait."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "generating",
+        "completed",
+        "failed"
+      ],
+      "default": "generating",
+      "description": "Session lifecycle. Generating is the in-flight state a concurrent call dedups onto."
+    },
+    "final_url": {
+      "type": "string",
+      "description": "Page the creative is based on. Exactly one of final_url / freeform_prompt for image generation."
+    },
+    "freeform_prompt": {
+      "type": "string",
+      "description": "Freeform direction for image generation, used only when final_url is absent."
+    },
+    "text": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "session_asset_id": {
+            "type": "string"
+          },
+          "asset_field_type": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "session_asset_id",
+          "asset_field_type",
+          "content"
+        ]
+      },
+      "default": [],
+      "description": "Copy previews. Each line carries a session_asset_id to pass to the accept step. Nothing here is on a live campaign \u2014 only accept puts an asset on one."
+    },
+    "images": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "session_asset_id": {
+            "type": "string"
+          },
+          "asset_field_type": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "session_asset_id",
+          "asset_field_type",
+          "url"
+        ]
+      },
+      "default": [],
+      "description": "Image previews that finished in time. Assets may be empty while background generation is pending."
+    },
+    "background_image_count": {
+      "type": "number",
+      "default": 0,
+      "description": "DOCUMENTED (Base44): how many pictures are still generating after the response returned; poll the session for the rest."
+    },
+    "language": {
+      "type": "string",
+      "description": "Language the copy was written in, reported by the generator (the app's own language, not the caller's)."
+    },
+    "accepted_session_asset_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Previews accepted onto the live campaign through the provider. Accepting the same asset twice creates a duplicate \u2014 a re-accept is refused."
+    },
+    "error": {
+      "type": "string",
+      "description": "Truncated safe error when the session failed."
+    },
+    "completed_at": {
+      "type": "string",
+      "description": "When the session reached a terminal state."
+    }
+  },
+  "required": [
+    "project_id",
+    "workspace_id",
+    "kind",
+    "status"
+  ]
+}

@@ -1,0 +1,104 @@
+{
+  "name": "Subscription",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string"
+    },
+    "plan_code": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "incomplete",
+        "trialing",
+        "active",
+        "past_due",
+        "cancelled",
+        "expired"
+      ],
+      "default": "active",
+      "description": "Entitlement state. Derived from validated billing events \u2014 a raw provider status is never trusted as the source of truth. Only trialing and active carry entitlements."
+    },
+    "provider": {
+      "type": "string",
+      "default": "none"
+    },
+    "provider_subscription_id": {
+      "type": "string"
+    },
+    "provider_customer_id": {
+      "type": "string"
+    },
+    "current_period_start": {
+      "type": "string"
+    },
+    "current_period_end": {
+      "type": "string"
+    },
+    "trial_end": {
+      "type": "string"
+    },
+    "cancel_at_period_end": {
+      "type": "boolean",
+      "default": false,
+      "description": "A cancellation scheduled for the end of the paid period. Entitlements continue until then, which is why cancelling is not the same as expiring."
+    },
+    "cancelled_at": {
+      "type": "string"
+    },
+    "previous_plan_code": {
+      "type": "string",
+      "description": "Plan this subscription moved from, kept so an upgrade/downgrade is auditable."
+    },
+    "scheduled_plan_code": {
+      "type": "string",
+      "description": "Plan taking effect at the end of the current period. A downgrade never removes paid-for entitlements mid-period."
+    },
+    "scheduled_change_at": {
+      "type": "string"
+    },
+    "selected_credit_option": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "OPTIONAL credit allowance chosen on the Plans page (P-8.8, Elite parity): { code, message_credits, integration_credits }. The caller only ever names a code; the amounts are resolved and re-validated server-side against the plan's credit_options at selection time AND again at every grant, so a stored or forged amount outside the plan's list is never granted. Renewals grant exactly this option through the canonical billing event; expiration still runs through the standard cycle-bound grant machinery (P-8.1/P-8.2)."
+    },
+    "entitlements": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "last_grant_period": {
+      "type": "string",
+      "description": "Period key whose included credits were already granted. Makes recurring grants idempotent across webhook replays."
+    },
+    "trial_credits_granted": {
+      "type": "boolean",
+      "default": false,
+      "description": "True once trial credits were granted, so converting a trial to paid cannot re-grant them."
+    }
+  },
+  "required": [
+    "workspace_id",
+    "plan_code",
+    "status"
+  ],
+  "rls": {
+    "read": false,
+    "create": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "system"
+      }
+    }
+  }
+}

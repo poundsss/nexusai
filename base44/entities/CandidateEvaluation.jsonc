@@ -1,0 +1,159 @@
+{
+  "name": "CandidateEvaluation",
+  "type": "object",
+  "properties": {
+    "harness_version": {
+      "type": "string",
+      "description": "Version of the candidate-evaluation contract that produced this record. Frozen at creation, so a later change to the scoring contract never silently reinterprets a historical evaluation."
+    },
+    "name": {
+      "type": "string"
+    },
+    "dataset_id": {
+      "type": "string",
+      "description": "The FINALIZED evaluation dataset this candidate was measured against. A candidate is only comparable to another candidate measured against the same dataset id and checksum."
+    },
+    "dataset_version": {
+      "type": "number"
+    },
+    "dataset_checksum": {
+      "type": "string",
+      "description": "Checksum of the dataset at measurement time. Re-checked before scoring, so a dataset altered behind the evaluation's back invalidates the comparison instead of shipping silently."
+    },
+    "scope": {
+      "type": "string",
+      "enum": [
+        "project",
+        "platform"
+      ],
+      "default": "project",
+      "description": "Authorization scope inherited from the dataset. Resolved SERVER-side, never taken from a client."
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Project the evaluation belongs to for a project-scoped dataset. Every read is authorized against it, so one project can never read another's candidate evaluations."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side from the authorized project."
+    },
+    "candidate_id": {
+      "type": "string",
+      "description": "Deterministic identity of the candidate configuration (model, model version, routing policy, prompt policy, tool policy). Two identical configurations resolve the same candidate id."
+    },
+    "candidate": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The candidate configuration actually measured: model_id and provider resolved from the model catalog (never client-supplied), model_version, routing_policy_version, prompt_policy_version, tool_policy_version. Frozen at creation."
+    },
+    "config_checksum": {
+      "type": "string",
+      "description": "Checksum over the frozen candidate configuration, part of the evaluation key."
+    },
+    "evaluation_key": {
+      "type": "string",
+      "description": "Deterministic identity of ONE measurement: dataset + dataset checksum + candidate configuration + harness version. Re-running the same measurement resolves this key instead of appending a second, conflicting result."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "DRAFT",
+        "SCORED",
+        "FINALIZED",
+        "FAILED"
+      ],
+      "default": "DRAFT",
+      "description": "Lifecycle. DRAFT is the only mutable state. SCORED carries measured metrics. FINALIZED is immutable \u2014 a change requires a NEW evaluation. FAILED marks a measurement that could not complete."
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Aggregate metrics measured from authoritative records only, reusing the benchmark measurement dimensions: task success, build success, runtime success, repair success, tool-call success, latency, normalized provider cost and structured-output quality. A dimension with no evidence is null, never zero."
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "How much of the dataset the candidate actually has evidence for: items considered, items scored, items with no execution evidence. A metric derived from partial coverage is reported as partial rather than presented as complete."
+    },
+    "item_results": {
+      "type": "array",
+      "description": "Per-item measurement, each naming the authoritative records it was read from. An item with no matching execution is recorded as no_evidence rather than scored 0.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "item_key": {
+            "type": "string"
+          },
+          "trajectory_id": {
+            "type": "string"
+          },
+          "run_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "task_success": {
+            "type": "number"
+          },
+          "build_success": {
+            "type": "number"
+          },
+          "runtime_success": {
+            "type": "number"
+          },
+          "latency_ms": {
+            "type": "number"
+          },
+          "detail": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "regression": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Result of comparing this candidate against a fixed reference evaluation on the SAME dataset: per-metric deltas, the tolerance applied and an explicit verdict (PASS, REGRESSION or INSUFFICIENT_EVIDENCE). Recorded, never auto-repaired."
+    },
+    "reference_evaluation_id": {
+      "type": "string",
+      "description": "The reference candidate evaluation this one was compared against, when a regression check was run."
+    },
+    "checksum": {
+      "type": "string",
+      "description": "Content hash over the candidate configuration, dataset checksum and measured metrics. Re-checked at finalization, so a metric changed after scoring blocks finalization."
+    },
+    "finalized": {
+      "type": "boolean",
+      "default": false
+    },
+    "error": {
+      "type": "string",
+      "description": "Scrubbed reason a measurement did not complete."
+    },
+    "trace_id": {
+      "type": "string",
+      "description": "The platform's existing correlation id, carried through verbatim \u2014 this layer mints no second trace system."
+    },
+    "created_by": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "scored_at": {
+      "type": "string"
+    },
+    "finalized_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "harness_version",
+    "dataset_id",
+    "candidate_id",
+    "evaluation_key",
+    "status"
+  ]
+}

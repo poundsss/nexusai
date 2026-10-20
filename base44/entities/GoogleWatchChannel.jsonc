@@ -1,0 +1,100 @@
+{
+  "name": "GoogleWatchChannel",
+  "type": "object",
+  "properties": {
+    "channel_id": {
+      "type": "string",
+      "description": "The UUID this app generated and sent as the watch `id`. Echoed back by Google as X-Goog-Channel-ID on every notification for this channel. AUTHORITATIVE channel/target mapping \u2014 the receiver resolves an inbound notification's X-Goog-Channel-ID to this row. Renewal re-issues a watch with a NEW uuid and UPDATES this field on the existing row (never a new row), so a renewed channel resolves to the same logical subscription."
+    },
+    "resource_id": {
+      "type": "string",
+      "description": "Google's opaque X-Goog-Resource-ID returned in the watch response. Stable across API versions; required to stop the channel. Updated alongside channel_id on renewal."
+    },
+    "provider": {
+      "type": "string",
+      "enum": [
+        "googlecalendar",
+        "googledrive"
+      ],
+      "description": "Base44-cataloged connector name this channel dispatches as (the `connector` argument passed to emitConnector). googlecalendar for Calendar events watch, googledrive for Drive files/changes watch."
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Project this channel belongs to. Resolved SERVER-side from the authorized project at creation. The receiver rejects any notification whose channel row's project_id does not match the project resolved from the receiver URL, so one project's channels can never dispatch into another."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side from the project."
+    },
+    "delegated_credential_id": {
+      "type": "string",
+      "description": "The DelegatedCredential.credential_id whose access token is used to create / renew / stop the watch with Google. The credential's app_user_id owns the channel; token refresh reuses the existing delegated OAuth machinery."
+    },
+    "expiration": {
+      "type": "string",
+      "description": "Google's watch expiration as an ISO instant (converted from the ms timestamp Google returns). The renewal sweeper re-watches before this instant; after it Google stops delivering and the row is marked expired/deleted so the receiver refuses further dispatch."
+    },
+    "token_secret_name": {
+      "type": "string",
+      "description": "NAME of the ProjectSecret holding the X-Goog-Channel-Token value Google echoes back per notification. A name only \u2014 the value is resolved server-side at verification time and never stored here. One per project (GOOGLE_CHANNEL_TOKEN), shared across that project's channels."
+    },
+    "watch_resource_uri": {
+      "type": "string",
+      "description": "Google's X-Goog-Resource-URI (API-version-specific identifier for the watched resource), returned in the watch response and echoed on notifications. Stored for provenance/diagnostics and used to derive the watch endpoint at renewal."
+    },
+    "notification_url": {
+      "type": "string",
+      "description": "The watch `address` (this app's receiver URL with ?project_id=<id>) registered with Google. Stored so renewal can re-issue the watch against the same callback without a caller resupplying it."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "expired",
+        "deleted"
+      ],
+      "default": "active",
+      "description": "Lifecycle. Only 'active' channels dispatch events; the receiver rejects 'expired' and 'deleted'. 'expired' is set when expiration passes without successful renewal; 'deleted' is terminal (Google channel stopped)."
+    },
+    "last_renewed_at": {
+      "type": "string"
+    },
+    "last_renewal_error": {
+      "type": "string",
+      "description": "Safe, redacted reason the most recent renewal failed."
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "channel_id",
+    "resource_id",
+    "provider",
+    "project_id",
+    "delegated_credential_id",
+    "expiration",
+    "status"
+  ],
+  "rls": {
+    "read": false,
+    "create": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "system"
+      }
+    }
+  }
+}

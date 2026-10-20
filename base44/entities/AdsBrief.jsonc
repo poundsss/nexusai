@@ -1,0 +1,92 @@
+{
+  "name": "AdsBrief",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Project the brief belongs to. Every read and mutation is filtered by this field server-side."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side from the authorized project."
+    },
+    "campaign_type": {
+      "type": "string",
+      "enum": [
+        "PERFORMANCE_MAX",
+        "DEMAND_GEN",
+        "SEARCH",
+        "DISPLAY"
+      ],
+      "default": "PERFORMANCE_MAX",
+      "description": "Campaign type the brief plans for. Documented asset-slot sets follow this value."
+    },
+    "headlines": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Generated or member-edited headline copy. DOCUMENTED (Base44): a failed generation still saves a brief \u2014 check headlines and descriptions are non-empty before use."
+    },
+    "descriptions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Generated or member-edited description copy."
+    },
+    "keywords": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Keyword themes the member has in mind."
+    },
+    "budget_micros": {
+      "type": "number",
+      "description": "Daily budget the member has in mind, in micros. Informational until launch."
+    },
+    "business_name": {
+      "type": "string",
+      "description": "Business details for the campaign."
+    },
+    "business_phone": {
+      "type": "string",
+      "description": "Phone number for the campaign."
+    },
+    "landing_page": {
+      "type": "string",
+      "description": "Page the planned campaign would lead to."
+    },
+    "language": {
+      "type": "string",
+      "description": "Language the copy was written in, reported by the generator (the app's own language, never assumed)."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "ready"
+      ],
+      "default": "draft",
+      "description": "A brief is a plan, not a campaign: nothing about it reaches the provider, it spends no money and changes no running campaign. 'ready' requires non-empty headlines and descriptions."
+    },
+    "generation_warning": {
+      "type": "string",
+      "description": "DOCUMENTED (Base44): a failed generation still returns a saved brief \u2014 this carries the human-readable warning when headlines or descriptions came back empty."
+    },
+    "generated_at": {
+      "type": "string",
+      "description": "When the copy was last generated."
+    }
+  },
+  "required": [
+    "project_id",
+    "workspace_id",
+    "campaign_type",
+    "status"
+  ]
+}

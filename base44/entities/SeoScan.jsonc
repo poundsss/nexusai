@@ -1,0 +1,129 @@
+{
+  "name": "SeoScan",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Project this scan belongs to. Resolved SERVER-side from the authorized project, never from a client, and every read is filtered by this field, so one project's scans can never be read from another."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side from the project."
+    },
+    "user_id": {
+      "type": "string",
+      "description": "Authenticated caller the scan is attributed to. Authorization was resolved before the scan ran."
+    },
+    "version_number": {
+      "type": "number",
+      "description": "The project's production_version_number at scan time. A scan is always bound to the production version it inspected \u2014 repeat scans under the same version are separate rows, never rewrites."
+    },
+    "production_deployment_id": {
+      "type": "string",
+      "description": "The production deployment the scanned version was serving at scan time. Frozen for provenance."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "COMPLETED",
+        "FAILED"
+      ],
+      "default": "COMPLETED",
+      "description": "Scan lifecycle. The scan is deterministic and synchronous: COMPLETED means the checks ran to a verdict; FAILED records an engine error with a truncated safe message."
+    },
+    "score": {
+      "type": "number",
+      "default": 0,
+      "description": "Overall score 0-100. NexusAI-native formula: weighted category scores minus the critical cap. Base44's own weights, caps and formula are not published and are NOT claimed here."
+    },
+    "grade": {
+      "type": "string",
+      "enum": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "F"
+      ],
+      "description": "Letter grade derived from the score by NexusAI-native thresholds."
+    },
+    "categories": {
+      "type": "array",
+      "description": "One row per check category with its weighted score and the individual deterministic checks. Fully reproducible from the same project files.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string"
+          },
+          "weight": {
+            "type": "number"
+          },
+          "score": {
+            "type": "number"
+          },
+          "checks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "passed",
+                    "failed"
+                  ]
+                },
+                "weight": {
+                  "type": "number"
+                },
+                "critical": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "detail": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "critical_capped": {
+      "type": "boolean",
+      "default": false,
+      "description": "True when a failed critical check capped the overall score (NexusAI-native cap value). Mirrors the DOCUMENTED Base44 concept of critical checks capping the score; the specific cap value is NexusAI-native."
+    },
+    "scanned_files": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of project files actually read by the scan."
+    },
+    "duration_ms": {
+      "type": "number",
+      "default": 0
+    },
+    "error": {
+      "type": "string",
+      "description": "Truncated safe error when status is FAILED."
+    },
+    "completed_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "project_id",
+    "workspace_id",
+    "version_number",
+    "status",
+    "score",
+    "grade"
+  ]
+}

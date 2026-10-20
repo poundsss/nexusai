@@ -1,0 +1,178 @@
+{
+  "name": "ViralityScheduledPost",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Project whose social calendar holds this post. Every read and mutation is filtered by this field server-side, so one project's calendar can never be read or changed from another. ONE calendar per project \u2014 the rows ARE the calendar."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side from the authorized project."
+    },
+    "plan_id": {
+      "type": "string",
+      "description": "DOCUMENTED: the content plan the post was generated from, or null for a post created through the calendar API. A plan-suggestion the member EDITED is detached (set to null) so a plan replacement can no longer drop it \u2014 NEXUSAI-DERIVED encoding of the documented 'anything you already turned into a real post stays'."
+    },
+    "source_post_id": {
+      "type": "string",
+      "description": "DOCUMENTED: the post's id inside the content plan it came from, or null for a post created through the API. Kept after a plan-detaching edit so a later list never re-materializes the same suggestion twice."
+    },
+    "platform": {
+      "type": "string",
+      "description": "Account the post publishes to. Instagram, LinkedIn, Facebook and X keep their existing publishers. TikTok is enabled per post only with a project-owned TikTok OAuth authorization, video.publish, current creator capability and explicit post consent. The shared TikTok read/list connector stays unchanged. Unsupported platforms still fail closed."
+    },
+    "title": {
+      "type": "string",
+      "description": "DOCUMENTED: labels the post on the calendar; is not published as text (on LinkedIn it would be an image's title \u2014 image publishing is unverified here, so titles are never sent)."
+    },
+    "body": {
+      "type": "string",
+      "description": "DOCUMENTED: body text of the post. Published followed by the hashtags, so tags never live inside it."
+    },
+    "hook": {
+      "type": "string",
+      "description": "DOCUMENTED (as 'hook'): the plan angle (pain_point, feature_demo, social_proof, trending_hook, user_story, before_after) or empty."
+    },
+    "cover_index": {
+      "type": "number",
+      "description": "DOCUMENTED: 0-based position of the post within its platform's series."
+    },
+    "scheduled_at": {
+      "type": "string",
+      "description": "DOCUMENTED: when the post should publish, stored normalized as a UTC ISO-8601 instant (NEXUSAI normalization \u2014 the API accepts any timestamp carrying an offset)."
+    },
+    "scheduled_local_at": {
+      "type": "string",
+      "description": "DOCUMENTED: the same instant expressed in scheduled_timezone, as an ISO timestamp carrying the zone's offset (DST-correct, derived through the existing scheduler timezone primitive)."
+    },
+    "scheduled_timezone": {
+      "type": "string",
+      "default": "UTC",
+      "description": "DOCUMENTED: the IANA zone the member scheduled in, validated against Intl at write time. Defaults to UTC when a create omits it."
+    },
+    "best_time_reason": {
+      "type": "string",
+      "description": "DOCUMENTED: the planner-written reason this time was picked."
+    },
+    "hashtags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "DOCUMENTED: suggested hashtags without the leading #."
+    },
+    "image_url": {
+      "type": "string",
+      "description": "DOCUMENTED: URL of the post's image, or null."
+    },
+    "image_prompt": {
+      "type": "string",
+      "description": "DOCUMENTED: the prompt the image was generated from."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "proposal",
+        "scheduled",
+        "publishing",
+        "posted",
+        "failed",
+        "publish_outcome_unknown",
+        "needs_reconnect",
+        "not_materialized_plan_limit"
+      ],
+      "description": "DOCUMENTED lifecycle: proposal (on the calendar, not approved \u2014 nothing publishes it), scheduled (approved, waiting for the publisher), publishing (being sent), posted, failed (not retried), publish_outcome_unknown, needs_reconnect (no usable connection), not_materialized_plan_limit. Only proposal and scheduled are editable or deletable; every other state refuses with 409. NEXUSAI note: not_materialized_plan_limit is never produced \u2014 the plan tier that covers publishing is not published (UNKNOWN)."
+    },
+    "workflow_id": {
+      "type": "string",
+      "description": "DOCUMENTED field, UNKNOWN semantics in Base44 (its internal workflow identifier). Mapped here (NEXUSAI-DERIVED) to THIS runtime's per-post publish BackgroundJob id \u2014 one idempotent job per post is the duplicate-publication guard."
+    },
+    "publish_started_at": {
+      "type": "string",
+      "description": "NEXUSAI-DERIVED: when the publisher started sending (the in-flight marker). A marker older than the staleness bound means a worker died mid-send and the post converges to publish_outcome_unknown \u2014 never guessed back to posted."
+    },
+    "publish_error": {
+      "type": "string",
+      "description": "NEXUSAI-DERIVED: truncated safe error for a failed or needs_reconnect post (the documented API surfaces the failure as a status; this detail is this runtime's own observability)."
+    },
+    "video_url": {
+      "type": "string",
+      "description": "TikTok-only HTTPS video URL for the documented PULL_FROM_URL transfer. TikTok verifies domain or URL-prefix ownership. No file bytes are stored here."
+    },
+    "video_duration_sec": {
+      "type": "number",
+      "description": "Video-preview duration checked against TikTok creator_info; TikTok independently validates the media."
+    },
+    "tiktok_user_id": {
+      "type": "string",
+      "description": "Authenticated project member who selected the credential and consented. Stamped server-side; project.write is re-authorized at execution."
+    },
+    "tiktok_credential_id": {
+      "type": "string",
+      "description": "Explicit project/user-owned tiktokOrganic DelegatedCredential selector. Never an access or refresh token."
+    },
+    "tiktok_consent_at": {
+      "type": "string",
+      "description": "Server timestamp for explicit content/settings consent plus TikTok Music Usage Confirmation. Editing TikTok content requires renewed consent."
+    },
+    "tiktok_settings": {
+      "type": "object",
+      "properties": {
+        "privacy_level": {
+          "type": "string",
+          "enum": [
+            "PUBLIC_TO_EVERYONE",
+            "MUTUAL_FOLLOW_FRIENDS",
+            "FOLLOWER_OF_CREATOR",
+            "SELF_ONLY"
+          ]
+        },
+        "allow_comment": {
+          "type": "boolean"
+        },
+        "allow_duet": {
+          "type": "boolean"
+        },
+        "allow_stitch": {
+          "type": "boolean"
+        },
+        "brand_content_toggle": {
+          "type": "boolean"
+        },
+        "brand_organic_toggle": {
+          "type": "boolean"
+        },
+        "is_aigc": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "privacy_level"
+      ],
+      "description": "User-selected TikTok metadata. Privacy has no default; interaction opt-ins default off and creator restrictions are enforced."
+    },
+    "tiktok_publish_id": {
+      "type": "string",
+      "description": "TikTok video/init operation handle, saved before status polling. Its existence forbids another init for this post; not proof of successful publication."
+    },
+    "tiktok_post_ref": {
+      "type": "string",
+      "description": "Provider reference after PUBLISH_COMPLETE only: publicaly_available_post_id when present, otherwise the publish_id for a non-public post."
+    },
+    "tiktok_poll_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Bounded status-only continuations of the existing virality.publish job; no video is resubmitted during polling."
+    }
+  },
+  "required": [
+    "project_id",
+    "workspace_id",
+    "platform",
+    "body",
+    "scheduled_at",
+    "status"
+  ]
+}

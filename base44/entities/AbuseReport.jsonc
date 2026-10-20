@@ -1,0 +1,125 @@
+{
+  "name": "AbuseReport",
+  "type": "object",
+  "properties": {
+    "reporter_workspace_id": {
+      "type": "string",
+      "description": "Workspace that filed the report. May be null for anonymous/public reports."
+    },
+    "reporter_user_id": {
+      "type": "string"
+    },
+    "target_type": {
+      "type": "string",
+      "enum": [
+        "workspace",
+        "user",
+        "content",
+        "app",
+        "marketplace_listing",
+        "deployment",
+        "other"
+      ],
+      "description": "What is being reported. Drives the routing of the investigation."
+    },
+    "target_id": {
+      "type": "string",
+      "description": "Identifier of the reported target. The server resolves this to the actual entity; a client cannot state a target it cannot see."
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "spam",
+        "harassment",
+        "malware",
+        "data_theft",
+        "ip_infringement",
+        "csam",
+        "illegal_content",
+        "tos_violation",
+        "other"
+      ],
+      "description": "Abuse classification. CSAM and illegal_content are escalated immediately and may trigger mandatory reporting."
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "default": "medium",
+      "description": "Impact assessment. Critical/high severity starts the SLA clock immediately and may auto-suspend the target."
+    },
+    "description": {
+      "type": "string",
+      "description": "Reporter's free-text explanation. Length-bounded and never rendered as HTML."
+    },
+    "evidence_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "URLs to supporting evidence (screenshots, logs). Stored as references only."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "investigating",
+        "actioned",
+        "dismissed",
+        "escalated"
+      ],
+      "default": "open",
+      "description": "Workflow state. 'escalated' routes to legal/law enforcement; 'actioned' applied a penalty; 'dismissed' is a no-action resolution."
+    },
+    "priority": {
+      "type": "number",
+      "default": 0,
+      "description": "Queue priority. Derived from severity and category; CSAM is always highest."
+    },
+    "assigned_to": {
+      "type": "string",
+      "description": "Moderator assigned to the case."
+    },
+    "resolution": {
+      "type": "string",
+      "enum": [
+        "none",
+        "warning",
+        "suspension",
+        "termination",
+        "legal_referral",
+        "no_action"
+      ],
+      "default": "none",
+      "description": "Outcome applied. 'suspension' suspends the target workspace/user; 'termination' is terminal; 'legal_referral' escalates to law enforcement."
+    },
+    "resolution_note": {
+      "type": "string"
+    },
+    "resolved_by": {
+      "type": "string"
+    },
+    "resolved_at": {
+      "type": "string"
+    },
+    "sla_due_at": {
+      "type": "string",
+      "description": "SLA deadline derived from severity. A report past its SLA is escalated automatically."
+    },
+    "auto_suspended": {
+      "type": "boolean",
+      "default": false,
+      "description": "True when the target was auto-suspended on filing (critical severity or CSAM category)."
+    }
+  },
+  "required": [
+    "target_type",
+    "target_id",
+    "category",
+    "status"
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "name": "ProjectVersion",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string"
+    },
+    "number": {
+      "type": "number"
+    },
+    "parent_version_id": {
+      "type": "string"
+    },
+    "restored_from_version_id": {
+      "type": "string"
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "message": {
+      "type": "string"
+    },
+    "changed_files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "change": {
+            "type": "string",
+            "enum": [
+              "added",
+              "modified",
+              "deleted"
+            ]
+          }
+        }
+      }
+    },
+    "snapshot": {
+      "type": "object",
+      "description": "Full snapshot: { files: [{path, content, frozen}], entities: [{name, fields}] }. Null when snapshot_url is set.",
+      "additionalProperties": true
+    },
+    "snapshot_url": {
+      "type": "string",
+      "description": "Storage URL holding the snapshot JSON when it exceeds the inline field size limit"
+    }
+  },
+  "required": [
+    "project_id",
+    "number",
+    "message"
+  ]
+}

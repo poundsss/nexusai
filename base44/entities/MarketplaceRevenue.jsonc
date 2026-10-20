@@ -1,0 +1,125 @@
+{
+  "name": "MarketplaceRevenue",
+  "type": "object",
+  "properties": {
+    "listing_id": {
+      "type": "string",
+      "description": "Marketplace listing this allocation derives from."
+    },
+    "listing_slug": {
+      "type": "string"
+    },
+    "version_id": {
+      "type": "string",
+      "description": "The exact published version whose purchase allocated this revenue. The version is immutable, so the allocation always resolves to the artifact that was bought."
+    },
+    "version_number": {
+      "type": "number"
+    },
+    "publisher_workspace_id": {
+      "type": "string",
+      "description": "Workspace that owns the listing and earns the publisher share. Every publisher read is filtered by this field, so one publisher can never read another's revenue; buyers never see allocations at all."
+    },
+    "buyer_workspace_id": {
+      "type": "string",
+      "description": "Workspace that paid the gross amount. The buyer's charge itself stays on the buyer's credit ledger as an immutable entry this allocation points at \u2014 it is never modified."
+    },
+    "price_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD"
+    },
+    "gross_credits": {
+      "type": "number",
+      "default": 0,
+      "description": "The full amount charged to the buyer, in credits. The source of truth for it is the purchase ledger entry this row references."
+    },
+    "platform_fee_credits": {
+      "type": "number",
+      "default": 0,
+      "description": "The platform's share of the gross, in credits."
+    },
+    "publisher_credits": {
+      "type": "number",
+      "default": 0,
+      "description": "The publisher's share of the gross, in credits. platform_fee_credits + publisher_credits always equals gross_credits exactly."
+    },
+    "fee_bps": {
+      "type": "number",
+      "default": 3000,
+      "description": "Platform fee basis points this allocation was computed under, frozen at creation from server configuration only. A later configuration change never rewrites already-allocated history."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "reversed"
+      ],
+      "default": "active",
+      "description": "'reversed' means the purchase was refunded: the publisher's allocation is reversed, never deleted, so both sides stay auditable."
+    },
+    "purchase_idempotency_key": {
+      "type": "string",
+      "description": "Source purchase event: the buyer charge's ledger idempotency key (marketplace:install:<buyer>:<listing>:<version>)."
+    },
+    "purchase_ledger_entry_id": {
+      "type": "string",
+      "description": "The buyer's immutable charge entry this allocation derives from. Never modified by a refund \u2014 a refund is a new entry recorded in refund_ledger_entry_id."
+    },
+    "refund_ledger_entry_id": {
+      "type": "string",
+      "description": "The refund ledger entry that reversed this allocation, when the purchase was refunded."
+    },
+    "reversed_at": {
+      "type": "string"
+    },
+    "reversal_reason": {
+      "type": "string"
+    },
+    "refunded_by": {
+      "type": "string"
+    },
+    "voided": {
+      "type": "boolean",
+      "default": false,
+      "description": "True only for the loser of a duplicate-key race, which is excluded from every derivation. Rows are otherwise reversed, never deleted."
+    },
+    "created_by_user_id": {
+      "type": "string",
+      "description": "The buyer user whose purchase created this allocation."
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "Uniqueness key derived from the purchase key. A replayed purchase converges on the existing allocation instead of allocating revenue twice."
+    }
+  },
+  "required": [
+    "listing_id",
+    "publisher_workspace_id",
+    "buyer_workspace_id",
+    "gross_credits",
+    "status",
+    "idempotency_key"
+  ],
+  "rls": {
+    "read": false,
+    "create": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "system"
+      }
+    }
+  }
+}

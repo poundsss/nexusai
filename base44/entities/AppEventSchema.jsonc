@@ -1,0 +1,74 @@
+{
+  "name": "AppEventSchema",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Project that owns this event definition. Schemas never cross projects."
+    },
+    "workspace_id": {
+      "type": "string"
+    },
+    "event_name": {
+      "type": "string",
+      "description": "The project's own event name. A name plus version identifies ONE immutable definition; changing a definition produces the next version rather than rewriting the previous one."
+    },
+    "event_version": {
+      "type": "number",
+      "default": 1
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "page_view",
+        "session_start",
+        "session_end",
+        "user_action",
+        "conversion",
+        "error",
+        "performance",
+        "custom_event"
+      ],
+      "default": "custom_event"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "deprecated"
+      ],
+      "default": "active",
+      "description": "Only an active version accepts new events. A deprecated version keeps its history readable but is refused at ingestion."
+    },
+    "description": {
+      "type": "string"
+    },
+    "required_properties": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "property_types": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Map of property name \u2192 allowed primitive type (string | number | boolean). A property outside this map is refused when strict is true."
+    },
+    "strict": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, a property not declared in property_types is a validation failure rather than an accepted extra."
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "project_id",
+    "event_name",
+    "event_version"
+  ]
+}

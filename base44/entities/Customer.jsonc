@@ -1,0 +1,63 @@
+{
+  "name": "Customer",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "company": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Lead",
+        "Contacted",
+        "Qualified",
+        "Proposal",
+        "Negotiation",
+        "Won",
+        "Lost"
+      ],
+      "default": "Lead"
+    },
+    "deal_value": {
+      "type": "number"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "string"
+    },
+    "external_id": {
+      "type": "string"
+    },
+    "tier": {
+      "type": "string",
+      "enum": [
+        "Bronze",
+        "Silver",
+        "Gold"
+      ]
+    },
+    "project_id": {
+      "type": "string",
+      "description": "NexusAI growth-loop scoping (additive): the project this lead belongs to. Set by the lead-generation run; null on legacy CRM rows, which keep their existing behavior."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "NexusAI growth-loop scoping (additive): the owning workspace, resolved server-side from the authorized project. Null on legacy CRM rows."
+    }
+  },
+  "required": [
+    "name",
+    "status"
+  ]
+}

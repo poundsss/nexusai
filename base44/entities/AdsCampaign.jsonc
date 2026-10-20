@@ -1,0 +1,126 @@
+{
+  "name": "AdsCampaign",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Project the campaign belongs to. Every read and mutation is filtered by this field server-side, so one project's campaigns can never be read or changed from another."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side from the authorized project."
+    },
+    "channel": {
+      "type": "string",
+      "enum": [
+        "google",
+        "zernio:meta",
+        "zernio:tiktok",
+        "zernio:linkedin",
+        "zernio:openai"
+      ],
+      "default": "google",
+      "description": "Provider/channel this campaign runs on (NexusAI-native, from the completed Zernio \u2194 NexusAI audit). Set at launch; a legacy row without this field is Google. Campaign operations refuse with CHANNEL_MISMATCH when the addressed channel differs."
+    },
+    "account_id": {
+      "type": "string",
+      "description": "The project's channel-scoped AdsAccount row this campaign runs on. Null until launch created the account."
+    },
+    "campaign_name": {
+      "type": "string",
+      "description": "Name shown for the campaign. Only the workspace sees it; it never appears in ads."
+    },
+    "campaign_type": {
+      "type": "string",
+      "enum": [
+        "SMART",
+        "PERFORMANCE_MAX",
+        "EXTERNAL"
+      ],
+      "default": "PERFORMANCE_MAX",
+      "description": "DOCUMENTED (Base44) launch types: Smart or Performance Max. EXTERNAL marks a campaign created outside NexusAI and imported read-only from the provider sync \u2014 its real type is the provider's and is not claimed."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "PENDING",
+        "ENABLED",
+        "PAUSED",
+        "REMOVED"
+      ],
+      "default": "PENDING",
+      "description": "DOCUMENTED (Base44) serving states. REMOVED is a deleted campaign, which stays listed for reporting \u2014 deletion is permanent and there is no restore."
+    },
+    "provider_status": {
+      "type": "string",
+      "description": "The provider's raw derived campaign status, verbatim (e.g. Zernio active/paused/completed/error). Set by the import so a status outside the serving-state enum is never lost or guessed."
+    },
+    "import_source": {
+      "type": "string",
+      "description": "Set when the row was imported from a provider sync rather than launched by NexusAI (e.g. 'zernio'). Import never creates or changes anything at the provider."
+    },
+    "daily_budget_micros": {
+      "type": "number",
+      "description": "Daily budget in micros of the account currency (1,000,000 micros = one unit). A budget below Google's per-currency minimum is refused with a 400 carrying Google's reason."
+    },
+    "start_date": {
+      "type": "string",
+      "description": "Date the campaign started, or empty when it has not."
+    },
+    "landing_page": {
+      "type": "string",
+      "description": "Page the ad leads to. Immutable after creation per the documented site-link/domain rule."
+    },
+    "site_links": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Additional landing pages surfaced as site links."
+    },
+    "targeting": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The targeting the member controls: locations, keyword themes and excluded terms (each an exact-match block)."
+    },
+    "provider_campaign_id": {
+      "type": "string",
+      "description": "The campaign's id on the provider side, minted only after a successful provider launch or read from the provider sync for an imported campaign. Server-side provenance \u2014 never invented locally."
+    },
+    "review_status": {
+      "type": "string",
+      "description": "Provider-side ad review state, verbatim from the provider (a campaign starts in a review stage)."
+    },
+    "serving_status": {
+      "type": "string",
+      "description": "Provider-side serving state, verbatim from the provider."
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Performance metrics as reported by the provider (impressions, clicks, cost_micros, spend, conversions, ctr). Fetched from Google on the fly in Base44; here, cached from the last provider sync only \u2014 never computed locally."
+    },
+    "metrics_window": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Which period `metrics` covers: { from, to, basis }. basis 'trailing_90_days' is Zernio's documented default window for campaign lists; it is NOT lifetime and NOT weekly."
+    },
+    "metrics_pending": {
+      "type": "boolean",
+      "default": true,
+      "description": "True until the first provider sync delivered metrics; metric fields read 0 while pending."
+    },
+    "last_synced_at": {
+      "type": "string",
+      "description": "When this row last synced from the provider."
+    }
+  },
+  "required": [
+    "project_id",
+    "workspace_id",
+    "campaign_name",
+    "campaign_type",
+    "status"
+  ]
+}

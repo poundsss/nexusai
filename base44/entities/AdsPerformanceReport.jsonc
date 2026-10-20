@@ -1,0 +1,85 @@
+{
+  "name": "AdsPerformanceReport",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Project whose ads this report covers. Every read and mutation is filtered by this field server-side, so one project's reports can never be read or changed from another."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side from the authorized project."
+    },
+    "channel": {
+      "type": "string",
+      "description": "Ads channel the report covers (google, zernio:openai, zernio:meta, zernio:linkedin, zernio:tiktok) \u2014 validated against the existing provider registry."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ok",
+        "blocked"
+      ],
+      "description": "ok: metrics were synced through the channel's provider adapter and the report carries them. blocked: the adapter refused (no active account or provider unconfigured) and the refusal is recorded verbatim \u2014 the report row still exists, so the weekly cadence is observable either way."
+    },
+    "period_start": {
+      "type": "string",
+      "description": "First day (UTC date) of the report's Monday-anchored week bucket. ONE report per project + channel + bucket \u2014 the idempotency key that makes a repeated weekly run return the same row."
+    },
+    "period_end": {
+      "type": "string",
+      "description": "Last day (UTC date) of the report's week bucket."
+    },
+    "provider_sync": {
+      "type": "string",
+      "description": "synced | partial | skipped_not_configured | no_account \u2014 how the report's campaign data was obtained. partial means the provider listing was not fully read (page cap or short page) and the report is NOT complete."
+    },
+    "blocker_code": {
+      "type": "string",
+      "description": "The machine-checkable refusal when status is blocked: PROVIDER_NOT_CONFIGURED or NO_ACCOUNT."
+    },
+    "error": {
+      "type": "string",
+      "description": "Truncated safe error when the provider sync itself threw (fail-open per report, mirroring the listening per-term rule)."
+    },
+    "campaigns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "default": [],
+      "description": "Bounded projection of the channel's campaigns with their metrics as the adapter reported them: campaign_id, provider_campaign_id, campaign_name, status, serving_status, metrics \u2014 plus the approval-gated recommendation object when one was generated from the synced metrics. Computed ONLY from stored/provider rows \u2014 never invented."
+    },
+    "metrics_window": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Which period the campaign metrics cover: { from, to, basis, period_complete }. basis 'period' = scoped to this week by the provider's date window; 'provider_cumulative' = the provider gave no date window, so the numbers are cumulative totals and must not be shown as weekly spend. period_complete false = the week was still running."
+    },
+    "import_complete": {
+      "type": "boolean",
+      "description": "False when the provider campaign listing could not be fully read for this report. Null when no provider sync ran."
+    },
+    "guardrails": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Member-set budget guardrails for the channel (max_daily_budget_micros, pause_on_zero_conversions). Enforced before any approved recommendation executes; never a provider write by itself."
+    },
+    "source_job_id": {
+      "type": "string",
+      "description": "The scheduled BackgroundJob that produced this report, when one did (manual runs leave it null)."
+    },
+    "generated_at": {
+      "type": "string",
+      "description": "When the report row was written (ISO)."
+    }
+  },
+  "required": [
+    "project_id",
+    "workspace_id",
+    "channel",
+    "status",
+    "period_start",
+    "period_end"
+  ]
+}

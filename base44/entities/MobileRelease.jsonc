@@ -1,0 +1,105 @@
+{
+  "name": "MobileRelease",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string",
+      "description": "Account the release belongs to. Every read is workspace-scoped, so one workspace can never see or mutate another's releases."
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Project whose app this release publishes. Authorization (deploy.manage) is resolved server-side against this project on every lifecycle transition."
+    },
+    "mobile_build_id": {
+      "type": "string",
+      "description": "The FINISHED (READY) mobile build this release derives from. The build stays the immutable record of what was packaged; the release is its publishable identity."
+    },
+    "platform": {
+      "type": "string",
+      "enum": [
+        "ios",
+        "android"
+      ],
+      "description": "Native platform this release targets. At most one release per (project, platform) is live at a time."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "DRAFT",
+        "READY",
+        "RELEASED",
+        "ROLLED_BACK"
+      ],
+      "default": "DRAFT",
+      "description": "Release lifecycle. DRAFT = created, pinned to the build's package. READY = the stored package passed checksum verification. RELEASED = the one live release for its platform. ROLLED_BACK = no longer live; its artifact identity is kept untouched so a rollback can restore the exact bytes."
+    },
+    "artifact_uri": {
+      "type": "string",
+      "description": "IMMUTABLE PRIVATE-storage reference of the released binary package, copied once from the READY build at creation and never rewritten by any lifecycle transition. Reachable only through short-lived signed download URLs."
+    },
+    "checksum": {
+      "type": "string",
+      "description": "SHA-256 of the released package's canonical bytes, copied from the build at creation. Verified against what storage actually serves before a release may go READY or be restored by a rollback."
+    },
+    "version_name": {
+      "type": "string",
+      "description": "Human-facing release version (e.g. 1.0.0), pinned from the build's release metadata at request time."
+    },
+    "version_code": {
+      "type": "number",
+      "description": "Monotonic machine version code, pinned from the build's release metadata at request time."
+    },
+    "release_notes": {
+      "type": "string",
+      "description": "Release notes for this version."
+    },
+    "minimum_os_version": {
+      "type": "string",
+      "description": "Minimum OS version the package requires."
+    },
+    "released_at": {
+      "type": "string",
+      "description": "When the release went live (READY \u2192 RELEASED)."
+    },
+    "rolled_back_at": {
+      "type": "string",
+      "description": "When the release stopped being live \u2014 rolled back explicitly, or superseded by a newer release."
+    },
+    "superseded_by_release_id": {
+      "type": "string",
+      "description": "The newer release that superseded this one, when it was displaced while live. Rollback resolves its target from this trail; nothing is ever deleted or rewritten."
+    },
+    "created_by": {
+      "type": "string",
+      "description": "Authenticated workspace member who created the release; authorization was resolved at creation time."
+    }
+  },
+  "required": [
+    "workspace_id",
+    "project_id",
+    "mobile_build_id",
+    "platform",
+    "status",
+    "artifact_uri",
+    "checksum",
+    "created_by"
+  ],
+  "rls": {
+    "read": false,
+    "create": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "system"
+      }
+    }
+  }
+}

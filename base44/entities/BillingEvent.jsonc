@@ -1,0 +1,136 @@
+{
+  "name": "BillingEvent",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string"
+    },
+    "provider": {
+      "type": "string",
+      "default": "none"
+    },
+    "provider_event_id": {
+      "type": "string",
+      "description": "Provider's own event id. Combined with the idempotency key this is what makes a replayed webhook a no-op."
+    },
+    "provider_customer_id": {
+      "type": "string"
+    },
+    "provider_subscription_id": {
+      "type": "string"
+    },
+    "provider_invoice_id": {
+      "type": "string"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "credit_purchase",
+        "subscription_started",
+        "subscription_renewed",
+        "subscription_updated",
+        "subscription_resumed",
+        "subscription_cancelled",
+        "trial_started",
+        "payment_failed",
+        "payment_disputed",
+        "invoice_created",
+        "refund",
+        "promotional_grant",
+        "adjustment"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "received",
+        "processed",
+        "rejected",
+        "ignored"
+      ],
+      "default": "received",
+      "description": "Only a processed event has moved credits. A rejected event never touches the ledger."
+    },
+    "amount_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD"
+    },
+    "credits": {
+      "type": "number",
+      "default": 0,
+      "description": "Message-pool credits this event grants or reverses. Applied to the ledger by the billing processor, never written to a balance directly."
+    },
+    "integration_credits": {
+      "type": "number",
+      "default": 0,
+      "description": "Integration-pool credits this event grants or reverses. Optional; events recorded before the pool split have none and read as 0."
+    },
+    "plan_code": {
+      "type": "string"
+    },
+    "period_key": {
+      "type": "string"
+    },
+    "period_start": {
+      "type": "string"
+    },
+    "period_end": {
+      "type": "string"
+    },
+    "idempotency_key": {
+      "type": "string"
+    },
+    "ledger_entry_id": {
+      "type": "string",
+      "description": "Message-pool ledger entry this event produced."
+    },
+    "integration_ledger_entry_id": {
+      "type": "string",
+      "description": "Integration-pool ledger entry this event produced, when it moved integration credits. Optional."
+    },
+    "invoice_id": {
+      "type": "string"
+    },
+    "reject_reason": {
+      "type": "string"
+    },
+    "payload_preview": {
+      "type": "string",
+      "description": "Truncated, redacted provider payload for audit. Never carries a credential or full card data."
+    },
+    "processed_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "workspace_id",
+    "event_type",
+    "idempotency_key",
+    "status"
+  ],
+  "rls": {
+    "read": false,
+    "create": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "system"
+      }
+    }
+  }
+}

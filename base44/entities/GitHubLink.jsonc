@@ -1,0 +1,80 @@
+{
+  "name": "GitHubLink",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string"
+    },
+    "workspace_id": {
+      "type": "string"
+    },
+    "connector_id": {
+      "type": "string",
+      "description": "Workspace OAuth connector the connected account consented against. A REFERENCE only \u2014 no token, ever."
+    },
+    "connected_login": {
+      "type": "string",
+      "description": "GitHub login of the account that authorized this link"
+    },
+    "connected_by": {
+      "type": "string",
+      "description": "App user id that linked the repository"
+    },
+    "repo_full_name": {
+      "type": "string",
+      "description": "owner/repo"
+    },
+    "repo_default_branch": {
+      "type": "string"
+    },
+    "branch": {
+      "type": "string",
+      "description": "Branch this project exports to and imports from"
+    },
+    "subdirectory": {
+      "type": "string",
+      "description": "Optional path inside the repository holding the project source"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "never_connected",
+        "connected",
+        "error",
+        "disconnected"
+      ],
+      "default": "never_connected"
+    },
+    "connected_at": {
+      "type": "string"
+    },
+    "last_sync_at": {
+      "type": "string"
+    },
+    "last_error": {
+      "type": "string",
+      "description": "Safe, redacted message from the last failed GitHub operation"
+    },
+    "last_error_code": {
+      "type": "string"
+    },
+    "last_export_commit_sha": {
+      "type": "string"
+    },
+    "last_export_version_number": {
+      "type": "number"
+    },
+    "last_import_commit_sha": {
+      "type": "string"
+    },
+    "last_import_version_number": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "project_id",
+    "workspace_id",
+    "repo_full_name",
+    "branch"
+  ]
+}

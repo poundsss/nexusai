@@ -1,0 +1,27 @@
+{
+  "name": "AppEntity",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string",
+      "description": "Entity name used by the generated app, e.g. Customer"
+    },
+    "fields": {
+      "type": "object",
+      "description": "Map of field name to { type, required, enum, description }",
+      "additionalProperties": true
+    },
+    "rls": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "OPTIONAL row-level-security declaration for this entity: { read, create, update, delete }, each a filter object (or true/false). A SIBLING of `fields`, never part of it, so adding or changing it produces no schema migration and rewrites no record. Absent means the entity keeps its existing behaviour (open, or the project-level owner isolation of Project.rls_enabled). Evaluated ONLY by shared/rls.ts."
+    }
+  },
+  "required": [
+    "project_id",
+    "name"
+  ]
+}

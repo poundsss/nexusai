@@ -1,0 +1,88 @@
+{
+  "name": "AgentStep",
+  "type": "object",
+  "properties": {
+    "agent_run_id": {
+      "type": "string"
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "trace_id": {
+      "type": "string",
+      "description": "Correlation id of the agent operation this step belongs to, carried unchanged across the step's own background request and any retry."
+    },
+    "step_number": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "running",
+        "done",
+        "failed",
+        "cancelled"
+      ],
+      "default": "running"
+    },
+    "action_type": {
+      "type": "string",
+      "description": "inspect_project | read_file | search_project | list_mcp_connections | mcp_call | verify_build | edit_project | observe | finish"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "native",
+        "mcp",
+        "ai_run",
+        "build"
+      ],
+      "default": "native",
+      "description": "Which existing subsystem executed this step"
+    },
+    "tool": {
+      "type": "string",
+      "description": "Tool or subsystem entry point used"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Concise, user-safe statement of what the agent did. NEVER model chain-of-thought."
+    },
+    "input_summary": {
+      "type": "string",
+      "description": "Truncated, redacted description of the input"
+    },
+    "result_summary": {
+      "type": "string",
+      "description": "Truncated, redacted description of the observed result"
+    },
+    "signature": {
+      "type": "string",
+      "description": "Action fingerprint used for loop detection"
+    },
+    "ai_run_id": {
+      "type": "string"
+    },
+    "error_code": {
+      "type": "string"
+    },
+    "retry_count": {
+      "type": "number",
+      "default": 0
+    },
+    "started_at": {
+      "type": "string"
+    },
+    "completed_at": {
+      "type": "string"
+    },
+    "duration_ms": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "agent_run_id",
+    "step_number",
+    "action_type"
+  ]
+}

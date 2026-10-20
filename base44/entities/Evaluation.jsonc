@@ -1,0 +1,116 @@
+{
+  "name": "Evaluation",
+  "type": "object",
+  "properties": {
+    "evaluator_version": {
+      "type": "string",
+      "description": "Version of the evaluation logic that produced this record. Scoring lives in a versioned registry, so a historical evaluation stays reproducible: a later evaluator never reinterprets an earlier record, it produces a NEW one alongside it."
+    },
+    "trajectory_id": {
+      "type": "string",
+      "description": "The sealed episode this evaluation judges. Together with evaluator_version it identifies the evaluation uniquely: re-evaluating the same episode with the same evaluator resolves the existing record instead of inserting a second one."
+    },
+    "run_id": {
+      "type": "string",
+      "description": "AIRun the episode describes, copied for correlation. The run remains authoritative for its own outcome."
+    },
+    "trace_id": {
+      "type": "string",
+      "description": "The operation's existing correlation id, reused verbatim \u2014 the evaluator mints no new trace."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side from the project \u2014 never taken from a client."
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Project the evaluation belongs to. Every read is filtered by this field after the caller is authorized against the project, so one project can never read another's evaluations."
+    },
+    "version_id": {
+      "type": "string",
+      "description": "Immutable ProjectVersion the episode produced, when it produced one. This is the reference a consumer resolves to recover exactly what was evaluated; the evaluator never copies project contents."
+    },
+    "version_number": {
+      "type": "number"
+    },
+    "build_id": {
+      "type": "string",
+      "description": "Authoritative Build record the build score was read from, when one exists."
+    },
+    "revision": {
+      "type": "number",
+      "default": 1,
+      "description": "Position of this evaluation in the episode's evaluation history. A revised judgement is a NEW record with the next revision, so an earlier evaluation is preserved rather than rewritten."
+    },
+    "supersedes_evaluation_id": {
+      "type": "string",
+      "description": "The evaluation this one follows for the same episode. Makes the history a chain rather than an unordered set."
+    },
+    "trajectory_status": {
+      "type": "string",
+      "description": "Terminal status of the episode as recorded by the platform (COMPLETED, FAILED, CANCELLED). Read, never written back."
+    },
+    "trajectory_revision": {
+      "type": "number",
+      "description": "Episode revision the evaluation was computed against, so a later correction to the episode is visibly not covered by this record."
+    },
+    "inputs_hash": {
+      "type": "string",
+      "description": "Fingerprint of the authoritative inputs the score was derived from. Identical inputs and evaluator therefore mean an identical evaluation, which is what makes repeated evaluation deterministic and detectable."
+    },
+    "dimensions": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Separate normalized dimensions (ta******, build, runtime, regression, repair_efficiency, change_efficiency). Each carries its own score (0..1, or null when the signal is unavailable), a status and its evidence. Deliberately NOT combined into a single reward \u2014 this layer evaluates, it does not reward."
+    },
+    "scores": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Flat projection of the dimension scores for querying (ta******, build_score, \u2026). Null means 'not measurable from the available evidence', never zero."
+    },
+    "evidence": {
+      "type": "array",
+      "description": "Every signal's provenance: which authoritative record it was read from and that record's id. A dimension with no evidence is reported as unavailable rather than scored, so no finding can be fabricated.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "dimension": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string",
+            "description": "build_result | runtime_result | trajectory | trajectory_event | project_version | deployment | ai_run"
+          },
+          "reference_id": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string",
+            "description": "Short, scrubbed statement of what the record showed."
+          }
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Objective, scrubbed observations derived from the evidence. Never stylistic judgement and never model self-reported reasoning."
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Measured scope and effort counts (files changed, entities changed, tool calls, failed tool calls, repair attempts, retries, phases, duration)."
+    },
+    "evaluated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "evaluator_version",
+    "trajectory_id",
+    "project_id",
+    "workspace_id"
+  ]
+}

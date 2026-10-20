@@ -1,0 +1,1955 @@
+{
+  "name": "Agent Executor",
+  "description": "Durable background execution for agent runs: repeatedly advances the agent's observe/act/verify loop, waiting between invocations while a delegated builder run finishes. Independent of the browser. 60 iterations (~8 minutes of 8s cadence) so a run waiting on a delegated builder run is driven to completion without idling until the 5-minute reaper; the reaper remains the safety net beyond that.",
+  "trigger": {
+    "config": {
+      "trigger_type": "entity",
+      "entity_name": "AgentRun",
+      "events": [
+        "create"
+      ]
+    },
+    "condition": "${ .trigger.data.status == \"QUEUED\" }"
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "agent_executor",
+      "version": "1.1",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "iter_1": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_1",
+          "x-base44": {
+            "title": "Agent iterations 1"
+          }
+        }
+      },
+      {
+        "check_1": {
+          "switch": [
+            {
+              "when": "${ .iter_1.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_1"
+            }
+          ],
+          "x-base44": {
+            "title": "More work?"
+          }
+        }
+      },
+      {
+        "wait_1": {
+          "wait": "PT8S",
+          "then": "iter_2",
+          "x-base44": {
+            "title": "Let the builder run progress"
+          }
+        }
+      },
+      {
+        "iter_2": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_2",
+          "x-base44": {
+            "title": "Agent iterations 2"
+          }
+        }
+      },
+      {
+        "check_2": {
+          "switch": [
+            {
+              "when": "${ .iter_2.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_2"
+            }
+          ]
+        }
+      },
+      {
+        "wait_2": {
+          "wait": "PT8S",
+          "then": "iter_3"
+        }
+      },
+      {
+        "iter_3": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_3",
+          "x-base44": {
+            "title": "Agent iterations 3"
+          }
+        }
+      },
+      {
+        "check_3": {
+          "switch": [
+            {
+              "when": "${ .iter_3.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_3"
+            }
+          ]
+        }
+      },
+      {
+        "wait_3": {
+          "wait": "PT8S",
+          "then": "iter_4"
+        }
+      },
+      {
+        "iter_4": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_4",
+          "x-base44": {
+            "title": "Agent iterations 4"
+          }
+        }
+      },
+      {
+        "check_4": {
+          "switch": [
+            {
+              "when": "${ .iter_4.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_4"
+            }
+          ]
+        }
+      },
+      {
+        "wait_4": {
+          "wait": "PT8S",
+          "then": "iter_5"
+        }
+      },
+      {
+        "iter_5": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_5",
+          "x-base44": {
+            "title": "Agent iterations 5"
+          }
+        }
+      },
+      {
+        "check_5": {
+          "switch": [
+            {
+              "when": "${ .iter_5.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_5"
+            }
+          ]
+        }
+      },
+      {
+        "wait_5": {
+          "wait": "PT8S",
+          "then": "iter_6"
+        }
+      },
+      {
+        "iter_6": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_6",
+          "x-base44": {
+            "title": "Agent iterations 6"
+          }
+        }
+      },
+      {
+        "check_6": {
+          "switch": [
+            {
+              "when": "${ .iter_6.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_6"
+            }
+          ]
+        }
+      },
+      {
+        "wait_6": {
+          "wait": "PT8S",
+          "then": "iter_7"
+        }
+      },
+      {
+        "iter_7": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_7",
+          "x-base44": {
+            "title": "Agent iterations 7"
+          }
+        }
+      },
+      {
+        "check_7": {
+          "switch": [
+            {
+              "when": "${ .iter_7.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_7"
+            }
+          ]
+        }
+      },
+      {
+        "wait_7": {
+          "wait": "PT8S",
+          "then": "iter_8"
+        }
+      },
+      {
+        "iter_8": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_8",
+          "x-base44": {
+            "title": "Agent iterations 8"
+          }
+        }
+      },
+      {
+        "check_8": {
+          "switch": [
+            {
+              "when": "${ .iter_8.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_8"
+            }
+          ]
+        }
+      },
+      {
+        "wait_8": {
+          "wait": "PT8S",
+          "then": "iter_9"
+        }
+      },
+      {
+        "iter_9": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_9",
+          "x-base44": {
+            "title": "Agent iterations 9"
+          }
+        }
+      },
+      {
+        "check_9": {
+          "switch": [
+            {
+              "when": "${ .iter_9.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_9"
+            }
+          ]
+        }
+      },
+      {
+        "wait_9": {
+          "wait": "PT8S",
+          "then": "iter_10"
+        }
+      },
+      {
+        "iter_10": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_10",
+          "x-base44": {
+            "title": "Agent iterations 10"
+          }
+        }
+      },
+      {
+        "check_10": {
+          "switch": [
+            {
+              "when": "${ .iter_10.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_10"
+            }
+          ]
+        }
+      },
+      {
+        "wait_10": {
+          "wait": "PT8S",
+          "then": "iter_11"
+        }
+      },
+      {
+        "iter_11": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_11",
+          "x-base44": {
+            "title": "Agent iterations 11"
+          }
+        }
+      },
+      {
+        "check_11": {
+          "switch": [
+            {
+              "when": "${ .iter_11.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_11"
+            }
+          ]
+        }
+      },
+      {
+        "wait_11": {
+          "wait": "PT8S",
+          "then": "iter_12"
+        }
+      },
+      {
+        "iter_12": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "wait_12",
+          "x-base44": {
+            "title": "Agent iterations 12"
+          }
+        }
+      },
+      {
+        "wait_12": {
+          "wait": "PT8S",
+          "then": "iter_13"
+        }
+      },
+      {
+        "iter_13": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_13"
+        }
+      },
+      {
+        "check_13": {
+          "switch": [
+            {
+              "when": "${ .iter_13.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_13"
+            }
+          ]
+        }
+      },
+      {
+        "wait_13": {
+          "wait": "PT8S",
+          "then": "iter_14"
+        }
+      },
+      {
+        "iter_14": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_14"
+        }
+      },
+      {
+        "check_14": {
+          "switch": [
+            {
+              "when": "${ .iter_14.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_14"
+            }
+          ]
+        }
+      },
+      {
+        "wait_14": {
+          "wait": "PT8S",
+          "then": "iter_15"
+        }
+      },
+      {
+        "iter_15": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_15"
+        }
+      },
+      {
+        "check_15": {
+          "switch": [
+            {
+              "when": "${ .iter_15.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_15"
+            }
+          ]
+        }
+      },
+      {
+        "wait_15": {
+          "wait": "PT8S",
+          "then": "iter_16"
+        }
+      },
+      {
+        "iter_16": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_16"
+        }
+      },
+      {
+        "check_16": {
+          "switch": [
+            {
+              "when": "${ .iter_16.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_16"
+            }
+          ]
+        }
+      },
+      {
+        "wait_16": {
+          "wait": "PT8S",
+          "then": "iter_17"
+        }
+      },
+      {
+        "iter_17": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_17"
+        }
+      },
+      {
+        "check_17": {
+          "switch": [
+            {
+              "when": "${ .iter_17.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_17"
+            }
+          ]
+        }
+      },
+      {
+        "wait_17": {
+          "wait": "PT8S",
+          "then": "iter_18"
+        }
+      },
+      {
+        "iter_18": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_18"
+        }
+      },
+      {
+        "check_18": {
+          "switch": [
+            {
+              "when": "${ .iter_18.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_18"
+            }
+          ]
+        }
+      },
+      {
+        "wait_18": {
+          "wait": "PT8S",
+          "then": "iter_19"
+        }
+      },
+      {
+        "iter_19": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_19"
+        }
+      },
+      {
+        "check_19": {
+          "switch": [
+            {
+              "when": "${ .iter_19.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_19"
+            }
+          ]
+        }
+      },
+      {
+        "wait_19": {
+          "wait": "PT8S",
+          "then": "iter_20"
+        }
+      },
+      {
+        "iter_20": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_20"
+        }
+      },
+      {
+        "check_20": {
+          "switch": [
+            {
+              "when": "${ .iter_20.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_20"
+            }
+          ]
+        }
+      },
+      {
+        "wait_20": {
+          "wait": "PT8S",
+          "then": "iter_21"
+        }
+      },
+      {
+        "iter_21": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_21"
+        }
+      },
+      {
+        "check_21": {
+          "switch": [
+            {
+              "when": "${ .iter_21.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_21"
+            }
+          ]
+        }
+      },
+      {
+        "wait_21": {
+          "wait": "PT8S",
+          "then": "iter_22"
+        }
+      },
+      {
+        "iter_22": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_22"
+        }
+      },
+      {
+        "check_22": {
+          "switch": [
+            {
+              "when": "${ .iter_22.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_22"
+            }
+          ]
+        }
+      },
+      {
+        "wait_22": {
+          "wait": "PT8S",
+          "then": "iter_23"
+        }
+      },
+      {
+        "iter_23": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_23"
+        }
+      },
+      {
+        "check_23": {
+          "switch": [
+            {
+              "when": "${ .iter_23.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_23"
+            }
+          ]
+        }
+      },
+      {
+        "wait_23": {
+          "wait": "PT8S",
+          "then": "iter_24"
+        }
+      },
+      {
+        "iter_24": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_24"
+        }
+      },
+      {
+        "check_24": {
+          "switch": [
+            {
+              "when": "${ .iter_24.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_24"
+            }
+          ]
+        }
+      },
+      {
+        "wait_24": {
+          "wait": "PT8S",
+          "then": "iter_25"
+        }
+      },
+      {
+        "iter_25": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_25"
+        }
+      },
+      {
+        "check_25": {
+          "switch": [
+            {
+              "when": "${ .iter_25.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_25"
+            }
+          ]
+        }
+      },
+      {
+        "wait_25": {
+          "wait": "PT8S",
+          "then": "iter_26"
+        }
+      },
+      {
+        "iter_26": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_26"
+        }
+      },
+      {
+        "check_26": {
+          "switch": [
+            {
+              "when": "${ .iter_26.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_26"
+            }
+          ]
+        }
+      },
+      {
+        "wait_26": {
+          "wait": "PT8S",
+          "then": "iter_27"
+        }
+      },
+      {
+        "iter_27": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_27"
+        }
+      },
+      {
+        "check_27": {
+          "switch": [
+            {
+              "when": "${ .iter_27.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_27"
+            }
+          ]
+        }
+      },
+      {
+        "wait_27": {
+          "wait": "PT8S",
+          "then": "iter_28"
+        }
+      },
+      {
+        "iter_28": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_28"
+        }
+      },
+      {
+        "check_28": {
+          "switch": [
+            {
+              "when": "${ .iter_28.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_28"
+            }
+          ]
+        }
+      },
+      {
+        "wait_28": {
+          "wait": "PT8S",
+          "then": "iter_29"
+        }
+      },
+      {
+        "iter_29": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_29"
+        }
+      },
+      {
+        "check_29": {
+          "switch": [
+            {
+              "when": "${ .iter_29.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_29"
+            }
+          ]
+        }
+      },
+      {
+        "wait_29": {
+          "wait": "PT8S",
+          "then": "iter_30"
+        }
+      },
+      {
+        "iter_30": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_30"
+        }
+      },
+      {
+        "check_30": {
+          "switch": [
+            {
+              "when": "${ .iter_30.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_30"
+            }
+          ]
+        }
+      },
+      {
+        "wait_30": {
+          "wait": "PT8S",
+          "then": "iter_31"
+        }
+      },
+      {
+        "iter_31": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_31"
+        }
+      },
+      {
+        "check_31": {
+          "switch": [
+            {
+              "when": "${ .iter_31.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_31"
+            }
+          ]
+        }
+      },
+      {
+        "wait_31": {
+          "wait": "PT8S",
+          "then": "iter_32"
+        }
+      },
+      {
+        "iter_32": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_32"
+        }
+      },
+      {
+        "check_32": {
+          "switch": [
+            {
+              "when": "${ .iter_32.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_32"
+            }
+          ]
+        }
+      },
+      {
+        "wait_32": {
+          "wait": "PT8S",
+          "then": "iter_33"
+        }
+      },
+      {
+        "iter_33": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_33"
+        }
+      },
+      {
+        "check_33": {
+          "switch": [
+            {
+              "when": "${ .iter_33.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_33"
+            }
+          ]
+        }
+      },
+      {
+        "wait_33": {
+          "wait": "PT8S",
+          "then": "iter_34"
+        }
+      },
+      {
+        "iter_34": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_34"
+        }
+      },
+      {
+        "check_34": {
+          "switch": [
+            {
+              "when": "${ .iter_34.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_34"
+            }
+          ]
+        }
+      },
+      {
+        "wait_34": {
+          "wait": "PT8S",
+          "then": "iter_35"
+        }
+      },
+      {
+        "iter_35": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_35"
+        }
+      },
+      {
+        "check_35": {
+          "switch": [
+            {
+              "when": "${ .iter_35.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_35"
+            }
+          ]
+        }
+      },
+      {
+        "wait_35": {
+          "wait": "PT8S",
+          "then": "iter_36"
+        }
+      },
+      {
+        "iter_36": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_36"
+        }
+      },
+      {
+        "check_36": {
+          "switch": [
+            {
+              "when": "${ .iter_36.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_36"
+            }
+          ]
+        }
+      },
+      {
+        "wait_36": {
+          "wait": "PT8S",
+          "then": "iter_37"
+        }
+      },
+      {
+        "iter_37": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_37"
+        }
+      },
+      {
+        "check_37": {
+          "switch": [
+            {
+              "when": "${ .iter_37.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_37"
+            }
+          ]
+        }
+      },
+      {
+        "wait_37": {
+          "wait": "PT8S",
+          "then": "iter_38"
+        }
+      },
+      {
+        "iter_38": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_38"
+        }
+      },
+      {
+        "check_38": {
+          "switch": [
+            {
+              "when": "${ .iter_38.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_38"
+            }
+          ]
+        }
+      },
+      {
+        "wait_38": {
+          "wait": "PT8S",
+          "then": "iter_39"
+        }
+      },
+      {
+        "iter_39": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_39"
+        }
+      },
+      {
+        "check_39": {
+          "switch": [
+            {
+              "when": "${ .iter_39.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_39"
+            }
+          ]
+        }
+      },
+      {
+        "wait_39": {
+          "wait": "PT8S",
+          "then": "iter_40"
+        }
+      },
+      {
+        "iter_40": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_40"
+        }
+      },
+      {
+        "check_40": {
+          "switch": [
+            {
+              "when": "${ .iter_40.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_40"
+            }
+          ]
+        }
+      },
+      {
+        "wait_40": {
+          "wait": "PT8S",
+          "then": "iter_41"
+        }
+      },
+      {
+        "iter_41": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_41"
+        }
+      },
+      {
+        "check_41": {
+          "switch": [
+            {
+              "when": "${ .iter_41.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_41"
+            }
+          ]
+        }
+      },
+      {
+        "wait_41": {
+          "wait": "PT8S",
+          "then": "iter_42"
+        }
+      },
+      {
+        "iter_42": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_42"
+        }
+      },
+      {
+        "check_42": {
+          "switch": [
+            {
+              "when": "${ .iter_42.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_42"
+            }
+          ]
+        }
+      },
+      {
+        "wait_42": {
+          "wait": "PT8S",
+          "then": "iter_43"
+        }
+      },
+      {
+        "iter_43": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_43"
+        }
+      },
+      {
+        "check_43": {
+          "switch": [
+            {
+              "when": "${ .iter_43.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_43"
+            }
+          ]
+        }
+      },
+      {
+        "wait_43": {
+          "wait": "PT8S",
+          "then": "iter_44"
+        }
+      },
+      {
+        "iter_44": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_44"
+        }
+      },
+      {
+        "check_44": {
+          "switch": [
+            {
+              "when": "${ .iter_44.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_44"
+            }
+          ]
+        }
+      },
+      {
+        "wait_44": {
+          "wait": "PT8S",
+          "then": "iter_45"
+        }
+      },
+      {
+        "iter_45": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_45"
+        }
+      },
+      {
+        "check_45": {
+          "switch": [
+            {
+              "when": "${ .iter_45.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_45"
+            }
+          ]
+        }
+      },
+      {
+        "wait_45": {
+          "wait": "PT8S",
+          "then": "iter_46"
+        }
+      },
+      {
+        "iter_46": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_46"
+        }
+      },
+      {
+        "check_46": {
+          "switch": [
+            {
+              "when": "${ .iter_46.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_46"
+            }
+          ]
+        }
+      },
+      {
+        "wait_46": {
+          "wait": "PT8S",
+          "then": "iter_47"
+        }
+      },
+      {
+        "iter_47": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_47"
+        }
+      },
+      {
+        "check_47": {
+          "switch": [
+            {
+              "when": "${ .iter_47.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_47"
+            }
+          ]
+        }
+      },
+      {
+        "wait_47": {
+          "wait": "PT8S",
+          "then": "iter_48"
+        }
+      },
+      {
+        "iter_48": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_48"
+        }
+      },
+      {
+        "check_48": {
+          "switch": [
+            {
+              "when": "${ .iter_48.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_48"
+            }
+          ]
+        }
+      },
+      {
+        "wait_48": {
+          "wait": "PT8S",
+          "then": "iter_49"
+        }
+      },
+      {
+        "iter_49": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_49"
+        }
+      },
+      {
+        "check_49": {
+          "switch": [
+            {
+              "when": "${ .iter_49.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_49"
+            }
+          ]
+        }
+      },
+      {
+        "wait_49": {
+          "wait": "PT8S",
+          "then": "iter_50"
+        }
+      },
+      {
+        "iter_50": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_50"
+        }
+      },
+      {
+        "check_50": {
+          "switch": [
+            {
+              "when": "${ .iter_50.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_50"
+            }
+          ]
+        }
+      },
+      {
+        "wait_50": {
+          "wait": "PT8S",
+          "then": "iter_51"
+        }
+      },
+      {
+        "iter_51": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_51"
+        }
+      },
+      {
+        "check_51": {
+          "switch": [
+            {
+              "when": "${ .iter_51.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_51"
+            }
+          ]
+        }
+      },
+      {
+        "wait_51": {
+          "wait": "PT8S",
+          "then": "iter_52"
+        }
+      },
+      {
+        "iter_52": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_52"
+        }
+      },
+      {
+        "check_52": {
+          "switch": [
+            {
+              "when": "${ .iter_52.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_52"
+            }
+          ]
+        }
+      },
+      {
+        "wait_52": {
+          "wait": "PT8S",
+          "then": "iter_53"
+        }
+      },
+      {
+        "iter_53": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_53"
+        }
+      },
+      {
+        "check_53": {
+          "switch": [
+            {
+              "when": "${ .iter_53.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_53"
+            }
+          ]
+        }
+      },
+      {
+        "wait_53": {
+          "wait": "PT8S",
+          "then": "iter_54"
+        }
+      },
+      {
+        "iter_54": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_54"
+        }
+      },
+      {
+        "check_54": {
+          "switch": [
+            {
+              "when": "${ .iter_54.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_54"
+            }
+          ]
+        }
+      },
+      {
+        "wait_54": {
+          "wait": "PT8S",
+          "then": "iter_55"
+        }
+      },
+      {
+        "iter_55": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_55"
+        }
+      },
+      {
+        "check_55": {
+          "switch": [
+            {
+              "when": "${ .iter_55.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_55"
+            }
+          ]
+        }
+      },
+      {
+        "wait_55": {
+          "wait": "PT8S",
+          "then": "iter_56"
+        }
+      },
+      {
+        "iter_56": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_56"
+        }
+      },
+      {
+        "check_56": {
+          "switch": [
+            {
+              "when": "${ .iter_56.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_56"
+            }
+          ]
+        }
+      },
+      {
+        "wait_56": {
+          "wait": "PT8S",
+          "then": "iter_57"
+        }
+      },
+      {
+        "iter_57": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_57"
+        }
+      },
+      {
+        "check_57": {
+          "switch": [
+            {
+              "when": "${ .iter_57.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_57"
+            }
+          ]
+        }
+      },
+      {
+        "wait_57": {
+          "wait": "PT8S",
+          "then": "iter_58"
+        }
+      },
+      {
+        "iter_58": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_58"
+        }
+      },
+      {
+        "check_58": {
+          "switch": [
+            {
+              "when": "${ .iter_58.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_58"
+            }
+          ]
+        }
+      },
+      {
+        "wait_58": {
+          "wait": "PT8S",
+          "then": "iter_59"
+        }
+      },
+      {
+        "iter_59": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_59"
+        }
+      },
+      {
+        "check_59": {
+          "switch": [
+            {
+              "when": "${ .iter_59.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_59"
+            }
+          ]
+        }
+      },
+      {
+        "wait_59": {
+          "wait": "PT8S",
+          "then": "iter_60"
+        }
+      },
+      {
+        "iter_60": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "agentStep",
+            "args": {
+              "agent_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Agent iterations 60 (final)"
+          }
+        }
+      }
+    ]
+  }
+}

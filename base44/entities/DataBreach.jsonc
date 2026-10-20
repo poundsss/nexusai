@@ -1,0 +1,90 @@
+{
+  "name": "DataBreach",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string",
+      "description": "Workspace affected by the breach. Null for platform-wide breaches."
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "description": "Impact assessment. High/critical severity triggers the 72-hour GDPR notification clock."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "detected",
+        "investigating",
+        "contained",
+        "resolved",
+        "notified"
+      ],
+      "default": "detected",
+      "description": "Lifecycle. 'detected' is the initial report; 'contained' means the breach is stopped; 'resolved' means remediation is complete; 'notified' means regulators and/or affected users were informed."
+    },
+    "detected_at": {
+      "type": "string",
+      "description": "When the breach was first detected. Drives the 72-hour notification deadline."
+    },
+    "contained_at": {
+      "type": "string"
+    },
+    "resolved_at": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string",
+      "description": "What happened. Factual, length-bounded."
+    },
+    "root_cause": {
+      "type": "string"
+    },
+    "affected_data_categories": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Categories of personal data exposed (identity, contact, financial, credentials, sensitive)."
+    },
+    "affected_user_count": {
+      "type": "number",
+      "default": 0
+    },
+    "notification_required": {
+      "type": "boolean",
+      "default": false,
+      "description": "True when the breach meets the GDPR Art. 33 threshold (risk to rights and freedoms). Drives the regulator notification clock."
+    },
+    "notification_deadline": {
+      "type": "string",
+      "description": "72 hours after detection, when notification is required. A breach past this deadline without notification is a compliance violation."
+    },
+    "regulator_notified_at": {
+      "type": "string"
+    },
+    "users_notified_at": {
+      "type": "string",
+      "description": "When affected users were notified (GDPR Art. 34, required for high-risk breaches)."
+    },
+    "remediation": {
+      "type": "string"
+    },
+    "reported_by": {
+      "type": "string"
+    },
+    "assigned_to": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "severity",
+    "status",
+    "detected_at"
+  ]
+}

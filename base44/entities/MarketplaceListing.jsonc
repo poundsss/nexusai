@@ -1,0 +1,150 @@
+{
+  "name": "MarketplaceListing",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string",
+      "description": "Workspace that owns this listing. Only members of this workspace may publish new versions, edit metadata, or yank the listing; the server resolves the caller's role on every write, never from the client."
+    },
+    "owner_id": {
+      "type": "string",
+      "description": "User who created the listing. Retained for attribution even after ownership transfers; never used as authorization (authorization is workspace-role based)."
+    },
+    "slug": {
+      "type": "string",
+      "description": "Stable public identifier for the listing's URLs. Unique platform-wide: one slug resolves to exactly one listing. Lowercase, kebab-case, immutable after first publish."
+    },
+    "name": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "template",
+        "integration",
+        "agent",
+        "component",
+        "plugin",
+        "workflow"
+      ],
+      "description": "What this listing ships. Drives compatibility checks and the install path: a template scaffolds a new project, an integration wires a connector, an agent installs an agent config, a component drops into the builder, a plugin extends the runtime, a workflow installs an automation."
+    },
+    "visibility": {
+      "type": "string",
+      "enum": [
+        "public",
+        "unlisted",
+        "private"
+      ],
+      "default": "private",
+      "description": "public appears in browse/search; unlisted is reachable only by direct link; private is owner-only. A listing starts private and is made public only through the publish flow."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "in_review",
+        "published",
+        "suspended",
+        "removed"
+      ],
+      "default": "draft",
+      "description": "Lifecycle state. Only 'published' is installable. 'suspended' is an admin trust action (the listing stays for audit but cannot be installed); 'removed' is an owner soft-delete."
+    },
+    "current_version_id": {
+      "type": "string",
+      "description": "The single published version serving installs. A yank or new publish changes this pointer; the version records themselves are immutable."
+    },
+    "current_version_number": {
+      "type": "number",
+      "default": 0
+    },
+    "category": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "capabilities": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Permissions the listing requests (entity:read, entity:write, function:invoke, network, filesystem, secrets). Granted at install time only after explicit user consent; never silently escalated."
+    },
+    "compatibility": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "min_platform_version, frameworks (preact-htm, react), min_plan_tier. Checked at install time against the installer's project and plan; an incompatible install is refused, not silently downgraded."
+    },
+    "pricing_model": {
+      "type": "string",
+      "enum": [
+        "free",
+        "one_time",
+        "subscription",
+        "usage_based"
+      ],
+      "default": "free"
+    },
+    "price_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD"
+    },
+    "install_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Denormalized install counter. Recomputed from MarketplaceInstall records, never written directly by a client."
+    },
+    "rating_avg": {
+      "type": "number",
+      "default": 0,
+      "description": "Denormalized average rating. Recomputed from MarketplaceReview records."
+    },
+    "rating_count": {
+      "type": "number",
+      "default": 0
+    },
+    "review_count": {
+      "type": "number",
+      "default": 0
+    },
+    "report_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Open abuse reports. A listing above the trust threshold is auto-suspended pending review."
+    },
+    "trust_score": {
+      "type": "number",
+      "default": 100,
+      "description": "0-100 trust score derived from reports, reviews, install growth and owner history. Below the threshold the listing is hidden from browse and new installs are blocked."
+    },
+    "suspended_reason": {
+      "type": "string"
+    },
+    "listed_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "workspace_id",
+    "owner_id",
+    "slug",
+    "name",
+    "kind",
+    "status"
+  ]
+}

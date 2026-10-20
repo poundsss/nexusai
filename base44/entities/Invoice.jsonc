@@ -1,0 +1,93 @@
+{
+  "name": "Invoice",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string"
+    },
+    "provider": {
+      "type": "string",
+      "default": "manual"
+    },
+    "provider_invoice_id": {
+      "type": "string",
+      "description": "Provider's invoice id. Combined with workspace_id this is the dedup key, so a replayed invoice webhook updates one row instead of creating history twice."
+    },
+    "number": {
+      "type": "string"
+    },
+    "plan_code": {
+      "type": "string"
+    },
+    "period_key": {
+      "type": "string"
+    },
+    "amount_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "amount_refunded_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD"
+    },
+    "credits_granted": {
+      "type": "number",
+      "default": 0,
+      "description": "Credits the settled invoice granted, as applied to the ledger. Display only \u2014 the ledger remains authoritative."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "open",
+        "paid",
+        "payment_failed",
+        "refunded",
+        "partially_refunded",
+        "disputed",
+        "void",
+        "uncollectible"
+      ],
+      "default": "open"
+    },
+    "hosted_invoice_url": {
+      "type": "string",
+      "description": "Provider-hosted invoice page. A public provider URL only; never a credential or signed platform token."
+    },
+    "issued_at": {
+      "type": "string"
+    },
+    "paid_at": {
+      "type": "string"
+    },
+    "billing_event_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "workspace_id",
+    "status"
+  ],
+  "rls": {
+    "read": false,
+    "create": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "system"
+      }
+    }
+  }
+}

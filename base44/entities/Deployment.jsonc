@@ -1,0 +1,164 @@
+{
+  "name": "Deployment",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string"
+    },
+    "workspace_id": {
+      "type": "string"
+    },
+    "version_id": {
+      "type": "string",
+      "description": "Immutable project version this deployment serves"
+    },
+    "version_number": {
+      "type": "number"
+    },
+    "artifact_id": {
+      "type": "string",
+      "description": "Immutable DeploymentArtifact this deployment serves"
+    },
+    "artifact_checksum": {
+      "type": "string",
+      "description": "Stable artifact identity; the same project state always produces the same checksum"
+    },
+    "environment": {
+      "type": "string",
+      "enum": [
+        "staging",
+        "production"
+      ],
+      "default": "production",
+      "description": "Which environment this deployment serves. Each environment has its own live deployment, so a staging deployment never changes production."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "QUEUED",
+        "BUILDING",
+        "DEPLOYING",
+        "VERIFYING",
+        "LIVE",
+        "FAILED",
+        "CANCELLED",
+        "ROLLED_BACK"
+      ],
+      "default": "QUEUED"
+    },
+    "deployment_url": {
+      "type": "string",
+      "description": "Public path serving this deployment while it is its environment's current deployment"
+    },
+    "trigger": {
+      "type": "string",
+      "enum": [
+        "user",
+        "rollback",
+        "promotion"
+      ],
+      "default": "user",
+      "description": "Deployments are always explicitly user-authorized; agents may not deploy"
+    },
+    "rollback_target_deployment_id": {
+      "type": "string",
+      "description": "Set when this deployment was created by rolling back to an earlier deployment's artifact"
+    },
+    "promoted_from_deployment_id": {
+      "type": "string",
+      "description": "Set when this deployment was created by promoting another environment's live deployment. The artifact is reused byte-for-byte \u2014 never rebuilt \u2014 so what was verified is exactly what ships."
+    },
+    "superseded_at": {
+      "type": "string",
+      "description": "When a newer deployment took over this environment. Historical records keep their status and artifact; only this lifecycle stamp is added."
+    },
+    "cancel_requested": {
+      "type": "boolean",
+      "default": false,
+      "description": "Cooperative cancellation; honoured only before the environment switch"
+    },
+    "verification": {
+      "type": "string",
+      "description": "Concise result of the post-deploy health verification"
+    },
+    "secret_scan": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "fail",
+        "unknown"
+      ],
+      "default": "unknown"
+    },
+    "build_error_count": {
+      "type": "number",
+      "default": 0
+    },
+    "build_diagnostics": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Structured build/verification diagnostics for a failed deployment"
+    },
+    "failure_code": {
+      "type": "string",
+      "description": "BUILD_FAILED | SECRET_LEAK | VERIFICATION_FAILED | ARTIFACT_ERROR | WORKER_LOST | CANCELLED | DEPLOY_ERROR"
+    },
+    "failure_summary": {
+      "type": "string"
+    },
+    "deployed_by": {
+      "type": "string",
+      "description": "User id that authorized this deployment"
+    },
+    "recovery_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Bounded worker recoveries before the deployment is failed terminally"
+    },
+    "lease_token": {
+      "type": "string",
+      "description": "Identifies the single worker advancing this deployment"
+    },
+    "lease_expires_at": {
+      "type": "string"
+    },
+    "heartbeat_at": {
+      "type": "string"
+    },
+    "started_at": {
+      "type": "string"
+    },
+    "completed_at": {
+      "type": "string"
+    },
+    "duration_ms": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "project_id",
+    "workspace_id",
+    "version_id",
+    "status"
+  ],
+  "rls": {
+    "read": false,
+    "create": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "system"
+      }
+    }
+  }
+}

@@ -1,0 +1,106 @@
+{
+  "name": "RuntimeError",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Project whose preview or deployed app produced the error. Required: an error that cannot be attributed to a project is not accepted, and every read is filtered by this field after the caller is authorized against the project."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved SERVER-side from the project \u2014 never taken from the reporting client."
+    },
+    "trace_id": {
+      "type": "string",
+      "description": "Correlation id of the operation that produced the code, when the reporter knows it (a preview reloaded by an AI run carries the run's trace). Absent for an error a user hit spontaneously, which is why it is optional rather than invented."
+    },
+    "run_id": {
+      "type": "string",
+      "description": "AIRun that last changed the previewed code, when known."
+    },
+    "version_number": {
+      "type": "number",
+      "description": "Project version the failing code came from, when known."
+    },
+    "deployment_id": {
+      "type": "string",
+      "description": "Deployment serving the failing app, for errors reported by a deployed environment rather than the builder preview."
+    },
+    "environment": {
+      "type": "string",
+      "enum": [
+        "preview",
+        "staging",
+        "production"
+      ],
+      "default": "preview"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "preview_runtime",
+        "builder_ui",
+        "deployed_app"
+      ],
+      "default": "preview_runtime",
+      "description": "Which surface caught the error."
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "error",
+        "unhandled_rejection",
+        "render_error",
+        "console_error",
+        "network_error"
+      ],
+      "default": "error"
+    },
+    "message": {
+      "type": "string",
+      "description": "Error message, truncated and passed through the shared scrubber so no credential can be persisted."
+    },
+    "error_name": {
+      "type": "string"
+    },
+    "stack": {
+      "type": "string",
+      "description": "Truncated, scrubbed stack trace \u2014 the diagnostic value of the report."
+    },
+    "file": {
+      "type": "string",
+      "description": "Project file the error came from, when the runtime reported one."
+    },
+    "line": {
+      "type": "number"
+    },
+    "column": {
+      "type": "number"
+    },
+    "route": {
+      "type": "string",
+      "description": "Route inside the generated app where the error occurred."
+    },
+    "user_agent": {
+      "type": "string",
+      "description": "Truncated user agent, kept for reproduction. No IP address is stored."
+    },
+    "occurrences": {
+      "type": "number",
+      "default": 1,
+      "description": "How many times this identical error was reported. A loop that throws every frame is folded into one row rather than flooding the trail."
+    },
+    "last_seen_at": {
+      "type": "string"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Bounded, scrubbed extra context from the reporter. Never a token, secret, header or request body."
+    }
+  },
+  "required": [
+    "project_id",
+    "message"
+  ]
+}

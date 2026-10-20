@@ -1,0 +1,83 @@
+{
+  "name": "DataSubjectRequest",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string",
+      "description": "Workspace the request is scoped to. A DSR is always workspace-scoped because data lives in a workspace."
+    },
+    "requester_user_id": {
+      "type": "string",
+      "description": "Platform user who filed the request, when the data subject is a registered user."
+    },
+    "email": {
+      "type": "string",
+      "description": "Data subject's email. Lowercased. Verified against a one-time token before any data is released."
+    },
+    "request_type": {
+      "type": "string",
+      "enum": [
+        "access",
+        "deletion",
+        "portability",
+        "rectification",
+        "restriction",
+        "objection",
+        "opt_out_sale"
+      ],
+      "description": "GDPR/CCPA right being exercised. Each type has a different response path: access returns data, deletion removes it, portability returns machine-readable data."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "verifying",
+        "in_progress",
+        "completed",
+        "rejected",
+        "expired"
+      ],
+      "default": "pending",
+      "description": "Lifecycle. 'pending' awaits email verification; 'verifying' the token was sent; 'in_progress' verified and being fulfilled; 'completed' the response was delivered; 'rejected' failed legal-basis review; 'expired' the verification token lapsed."
+    },
+    "verification_token": {
+      "type": "string",
+      "description": "Random token emailed to the data subject to prove they control the email. Generated server-side; never accepted from the client."
+    },
+    "verified_at": {
+      "type": "string"
+    },
+    "completed_at": {
+      "type": "string"
+    },
+    "expires_at": {
+      "type": "string",
+      "description": "Deadline for the request (GDPR: 30 days, extendable to 90). A request past its deadline without completion is a compliance violation."
+    },
+    "response_data_uri": {
+      "type": "string",
+      "description": "Private storage URI for the access/portability response data. Signed URL generated for the data subject on delivery."
+    },
+    "rejection_reason": {
+      "type": "string",
+      "description": "Legal basis for refusal, when applicable (e.g. legitimate interest override, legal obligation to retain)."
+    },
+    "legal_basis": {
+      "type": "string",
+      "description": "Legal basis under which the request is processed (gdpr_art_15, gdpr_art_17, gdpr_art_20, ccpa_1798.100, etc.)."
+    },
+    "assigned_to": {
+      "type": "string"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "workspace_id",
+    "email",
+    "request_type",
+    "status"
+  ]
+}

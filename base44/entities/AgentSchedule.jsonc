@@ -1,0 +1,123 @@
+{
+  "name": "AgentSchedule",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Project whose agent runtime this schedule fires into. Every read is scoped by this field."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, denormalized at creation. Its lifecycle (suspended/terminated) is re-checked at EVERY tick \u2014 an inactive workspace never enqueues."
+    },
+    "goal": {
+      "type": "string",
+      "description": "Fixed instruction handed to the agent on every fire. Same bound as the agentRun enqueue contract: at most 4000 characters."
+    },
+    "agent_name": {
+      "type": "string",
+      "description": "OPTIONAL declared agent (base44/agents/<name>.jsonc) the scheduled run executes as. Validated fail-closed against the project's own agent files at EVERY tick, exactly like the agentRun enqueue contract."
+    },
+    "owner_user_id": {
+      "type": "string",
+      "description": "DOCUMENTED (Base44) background execution identity: 'background watches run as you, the owner'. Enqueued AgentRuns carry this as user_id, so the agent's existing credit reservation, budget guard, model-access gates and audit attribution all run under the owner \u2014 a scheduled agent run is never anonymous."
+    },
+    "created_by": {
+      "type": "string",
+      "description": "Workspace member who created the schedule."
+    },
+    "cron": {
+      "type": "string",
+      "description": "5-field cron expression (minute hour day-of-month month day-of-week), evaluated in the schedule's timezone. Used when interval_seconds and one_time_at are not set. Same semantics as the certified ScheduledTrigger."
+    },
+    "timezone": {
+      "type": "string",
+      "default": "UTC",
+      "description": "IANA timezone the cron expression is evaluated in."
+    },
+    "interval_seconds": {
+      "type": "number",
+      "description": "Simple fixed interval in seconds."
+    },
+    "one_time_at": {
+      "type": "string",
+      "description": "One-time fire time (ISO, UTC). Takes precedence over cron/interval when set; fires once, then the schedule ends."
+    },
+    "ends_type": {
+      "type": "string",
+      "enum": [
+        "never",
+        "on",
+        "after"
+      ],
+      "default": "never",
+      "description": "When a recurring schedule stops: never, on ends_on_date (inclusive), or after ends_after_count runs."
+    },
+    "ends_on_date": {
+      "type": "string",
+      "description": "End date (ISO, UTC), inclusive. Required when ends_type is on."
+    },
+    "ends_after_count": {
+      "type": "number",
+      "description": "Number of fired runs after which the schedule ends. Required when ends_type is after."
+    },
+    "enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Pause/resume switch. A paused schedule (paused_reason set) fires nothing until re-enabled."
+    },
+    "next_run_at": {
+      "type": "string",
+      "description": "Next due time (ISO). Computed by the sweep until first fired."
+    },
+    "last_claimed_key": {
+      "type": "string",
+      "default": "",
+      "description": "IDEMPOTENCY CLAIM SLOT \u2014 the idempotency key (schedule:<id>:<dueISO>) of the occurrence currently claimed. Taken by an atomic conditional update (the certified deploy.ts claim pattern), so exactly one tick can enqueue an AgentRun per due occurrence even under duplicate/concurrent sweeps. Certified ScheduledRun is deliberately NOT used: its rows mean a generic-scheduler FUNCTION execution, and agent rows there would change its certified semantics."
+    },
+    "consecutive_failures": {
+      "type": "number",
+      "default": 0,
+      "description": "Consecutive failed fires; reset by any successful fire. At 5 the schedule pauses automatically (DOCUMENTED Base44 workflow behavior) and a notification is emitted. AGENT_ALREADY_RUNNING is a skipped occurrence and never increments this."
+    },
+    "run_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Fired runs so far; drives ends_type=after."
+    },
+    "paused_reason": {
+      "type": "string",
+      "description": "Why the schedule is disabled: completed (one-time fired), schedule_ended, consecutive_failures, or a member-initiated pause (paused) / archive (archived) set through the member-authorized lifecycle (Phase 16C-4D)."
+    },
+    "last_run_at": {
+      "type": "string",
+      "description": "When the schedule last fired."
+    },
+    "last_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "running",
+        "success",
+        "failed",
+        "skipped"
+      ],
+      "default": "pending",
+      "description": "Outcome of the last FIRE (the enqueue), not of the agent run itself \u2014 an enqueued AgentRun's own lifecycle stays with the certified Agent Executor."
+    },
+    "last_error": {
+      "type": "string",
+      "description": "Safe, truncated error of the last failed fire."
+    },
+    "last_agent_run_id": {
+      "type": "string",
+      "description": "The AgentRun enqueued by the last successful fire."
+    }
+  },
+  "required": [
+    "project_id",
+    "workspace_id",
+    "goal",
+    "owner_user_id"
+  ]
+}

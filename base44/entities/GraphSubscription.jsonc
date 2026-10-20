@@ -1,0 +1,107 @@
+{
+  "name": "GraphSubscription",
+  "type": "object",
+  "properties": {
+    "subscription_id": {
+      "type": "string",
+      "description": "Microsoft Graph's subscription id (a GUID). AUTHORITATIVE subscription/target mapping \u2014 the receiver resolves an inbound notification's subscriptionId to this row, never relying on tenantId for project targeting. Graph GUIDs are globally unique; one row per Graph subscription."
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Project this subscription belongs to. Resolved SERVER-side from the authorized project at creation, and the receiver rejects any notification whose subscription row's project_id does not match the project resolved from the receiver URL, so one project's subscriptions can never dispatch into another."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side from the project."
+    },
+    "connector": {
+      "type": "string",
+      "enum": [
+        "outlook",
+        "one_drive"
+      ],
+      "description": "Base44-cataloged connector name this subscription dispatches as (the `connector` argument passed to emitConnector). Chosen from the Graph resource at creation \u2014 outlook for mail resources, one_drive for drive resources."
+    },
+    "resource": {
+      "type": "string",
+      "description": "Graph resource path being watched (e.g. /me/messages, /me/drive/root)."
+    },
+    "change_types": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Change types the subscription watches (created / updated / deleted)."
+    },
+    "delegated_credential_id": {
+      "type": "string",
+      "description": "The DelegatedCredential.credential_id whose access token is used to create / renew / delete the subscription with Graph. The credential's app_user_id owns the subscription; token refresh reuses the existing delegated OAuth machinery."
+    },
+    "notification_url": {
+      "type": "string",
+      "description": "The notificationUrl registered with Graph (this app's receiver URL with ?project_id=<id>)."
+    },
+    "lifecycle_notification_url": {
+      "type": "string",
+      "description": "The lifecycleNotificationUrl registered with Graph (may equal notification_url). Absent when lifecycle notifications are not configured."
+    },
+    "expiration_date_time": {
+      "type": "string",
+      "description": "Graph's subscriptionExpirationDateTime. The renewal sweeper renews before this instant; after it Graph stops delivering and the row is marked expired/deleted so the receiver refuses further dispatch."
+    },
+    "client_state_secret_name": {
+      "type": "string",
+      "description": "NAME of the ProjectSecret holding the clientState value Graph echoes back per notification. A name only \u2014 the value is resolved server-side at verification time and never stored here."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "expired",
+        "deleted"
+      ],
+      "default": "active",
+      "description": "Lifecycle. Only 'active' subscriptions dispatch events; the receiver rejects 'expired' and 'deleted'. 'expired' is set when expiration passes without successful renewal; 'deleted' is terminal (Graph subscription removed)."
+    },
+    "last_renewed_at": {
+      "type": "string"
+    },
+    "last_renewal_error": {
+      "type": "string",
+      "description": "Safe, redacted reason the most recent renewal failed."
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "subscription_id",
+    "project_id",
+    "connector",
+    "resource",
+    "delegated_credential_id",
+    "expiration_date_time",
+    "status"
+  ],
+  "rls": {
+    "read": false,
+    "create": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "system"
+      }
+    }
+  }
+}

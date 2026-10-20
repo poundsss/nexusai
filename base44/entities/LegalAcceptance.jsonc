@@ -1,0 +1,42 @@
+{
+  "name": "LegalAcceptance",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "User who accepted. Every lookup is filtered by this field so a user's acceptance history is private to them."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Workspace context of the acceptance, when applicable."
+    },
+    "document_id": {
+      "type": "string",
+      "description": "The exact LegalDocument version accepted. An acceptance is a binding record of agreement to a specific immutable version."
+    },
+    "document_type": {
+      "type": "string"
+    },
+    "document_version": {
+      "type": "string",
+      "description": "Denormalized version label, kept so the acceptance is self-describing even if the document row is later retired."
+    },
+    "accepted_at": {
+      "type": "string"
+    },
+    "ip_hash": {
+      "type": "string",
+      "description": "SHA-256 hash of the client IP, for evidence of acceptance provenance. The raw IP is never stored."
+    },
+    "user_agent_hash": {
+      "type": "string",
+      "description": "Hash of the user agent string, truncated and hashed for privacy."
+    }
+  },
+  "required": [
+    "user_id",
+    "document_id",
+    "document_type",
+    "accepted_at"
+  ]
+}

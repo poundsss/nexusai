@@ -1,0 +1,72 @@
+{
+  "name": "ComplianceEvent",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string",
+      "description": "Workspace the event belongs to. Null for platform-level events."
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "terms_accepted",
+        "dpa_signed",
+        "dsr_filed",
+        "dsr_completed",
+        "dsr_rejected",
+        "breach_detected",
+        "breach_notified",
+        "data_deleted",
+        "retention_applied",
+        "retention_policy_changed",
+        "audit_completed",
+        "subprocessor_added",
+        "data_exported",
+        "consent_withdrawn"
+      ],
+      "description": "Compliance event classification. Each type feeds the compliance dashboard and the regulator-facing audit trail."
+    },
+    "legal_basis": {
+      "type": "string",
+      "enum": [
+        "gdpr_art_6_1_a_consent",
+        "gdpr_art_6_1_b_contract",
+        "gdpr_art_6_1_c_legal",
+        "gdpr_art_6_1_d_vital",
+        "gdpr_art_6_1_e_public",
+        "gdpr_art_6_1_f_legitimate",
+        "ccpa",
+        "contract",
+        "other"
+      ],
+      "description": "Legal basis under which the event's data processing occurs. Required for GDPR accountability."
+    },
+    "data_categories": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Categories of personal data involved (identity, contact, financial, behavioral, technical, sensitive)."
+    },
+    "description": {
+      "type": "string"
+    },
+    "evidence_uri": {
+      "type": "string",
+      "description": "Private storage reference to supporting evidence (signed acceptance, export file, deletion proof)."
+    },
+    "actor_id": {
+      "type": "string",
+      "description": "User or system that triggered the event."
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Event-specific context (document version, dsr id, retention policy id). Never PII."
+    }
+  },
+  "required": [
+    "event_type",
+    "legal_basis"
+  ]
+}

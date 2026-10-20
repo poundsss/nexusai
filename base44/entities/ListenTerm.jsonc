@@ -1,0 +1,49 @@
+{
+  "name": "ListenTerm",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Project the monitoring term belongs to. Every read and mutation is filtered by this field server-side, so one project's listening can never read another's."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side from the authorized project."
+    },
+    "label": {
+      "type": "string",
+      "description": "Human name of the monitored entity (e.g. the company or a competitor)."
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "company",
+        "competitor"
+      ],
+      "default": "company",
+      "description": "Whether the label is the user's own company or a competitor."
+    },
+    "terms": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "The bounded search phrases monitored for this label (1-5, each <= 60 chars)."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "paused"
+      ],
+      "default": "active"
+    }
+  },
+  "required": [
+    "project_id",
+    "label",
+    "kind",
+    "terms"
+  ]
+}

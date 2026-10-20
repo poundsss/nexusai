@@ -1,0 +1,62 @@
+{
+  "name": "CacheEntry",
+  "type": "object",
+  "properties": {
+    "namespace": {
+      "type": "string",
+      "description": "Logical group the entry belongs to (model_catalog, billing_plans, project_index). Invalidation is namespace-scoped, so clearing one cache can never clear another's data."
+    },
+    "cache_key": {
+      "type": "string",
+      "description": "Full key, namespace-prefixed and unique. Any tenant-specific value MUST include its workspace or project id in the key \u2014 a cache is only safe if a lookup cannot return another account's data."
+    },
+    "value": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Cached payload, always wrapped in an object. A cache never holds a credential or a secret value; it is a performance copy of data the caller could already read."
+    },
+    "expires_at": {
+      "type": "string",
+      "description": "Hard expiry. Past this the value is never served, so a cache cannot silently keep answering with data the source has changed."
+    },
+    "stale_at": {
+      "type": "string",
+      "description": "Soft expiry. Between stale_at and expires_at the value is still served while a single refresher recomputes it, which is what keeps a cache miss storm from hitting the source all at once."
+    },
+    "lock_token": {
+      "type": "string",
+      "description": "Held by the one caller currently recomputing this key (single-flight). Others serve stale or compute without writing, so the source sees one refresh, not one per request."
+    },
+    "lock_expires_at": {
+      "type": "string",
+      "description": "Lock lapse time. A refresher that dies cannot block the key forever."
+    },
+    "hits": {
+      "type": "number",
+      "default": 0,
+      "description": "Times this entry was served. Feeds the cache hit-rate health signal."
+    },
+    "misses": {
+      "type": "number",
+      "default": 0
+    },
+    "size_bytes": {
+      "type": "number",
+      "default": 0,
+      "description": "Serialized value size. Oversized values are refused rather than stored, so a cache write can never break the record it lives in."
+    },
+    "version": {
+      "type": "number",
+      "default": 1,
+      "description": "Increments on every recompute, so a caller can tell a refreshed value from a re-served one."
+    },
+    "last_refreshed_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "namespace",
+    "cache_key",
+    "expires_at"
+  ]
+}

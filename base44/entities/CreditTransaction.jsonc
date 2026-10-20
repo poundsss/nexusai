@@ -1,0 +1,53 @@
+{
+  "name": "CreditTransaction",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "grant",
+        "consume",
+        "refund"
+      ]
+    },
+    "amount": {
+      "type": "number"
+    },
+    "balance_after": {
+      "type": "number"
+    },
+    "reference_id": {
+      "type": "string",
+      "description": "UsageEvent or run id this transaction refers to"
+    },
+    "description": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "workspace_id",
+    "type",
+    "amount"
+  ],
+  "rls": {
+    "read": false,
+    "create": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "system"
+      }
+    }
+  }
+}

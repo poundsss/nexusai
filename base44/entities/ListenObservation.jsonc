@@ -1,0 +1,54 @@
+{
+  "name": "ListenObservation",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Project the observation belongs to. Every read is filtered by this field server-side."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side from the authorized project."
+    },
+    "term_id": {
+      "type": "string",
+      "description": "The ListenTerm row this observation was collected for."
+    },
+    "term_label": {
+      "type": "string",
+      "description": "Denormalized label, so a report never needs a term lookup."
+    },
+    "source": {
+      "type": "string",
+      "description": "The collection provider id (e.g. the web-search provider)."
+    },
+    "title": {
+      "type": "string",
+      "description": "Normalized result title, scrubbed and bounded at write time."
+    },
+    "url": {
+      "type": "string",
+      "description": "Normalized result URL, scrubbed and bounded at write time. Empty when the result carried none."
+    },
+    "snippet": {
+      "type": "string",
+      "description": "Normalized result content, scrubbed and bounded at write time."
+    },
+    "dedup_key": {
+      "type": "string",
+      "description": "Deterministic per-(term, result) key \u2014 url-based when present, title-based otherwise. Two runs over the same public result can never produce two rows."
+    },
+    "observed_at": {
+      "type": "string",
+      "description": "When this observation was collected (ISO)."
+    }
+  },
+  "required": [
+    "project_id",
+    "workspace_id",
+    "term_id",
+    "term_label",
+    "dedup_key",
+    "observed_at"
+  ]
+}

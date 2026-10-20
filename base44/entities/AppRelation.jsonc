@@ -1,0 +1,56 @@
+{
+  "name": "AppRelation",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string",
+      "description": "Unique relation name per project, e.g. post_author"
+    },
+    "from_entity": {
+      "type": "string",
+      "description": "Entity holding the FK field (many_to_one/one_to_one), or the 'one' side (one_to_many)."
+    },
+    "from_field": {
+      "type": "string",
+      "description": "FK field name. On from_entity for many_to_one/one_to_one; on to_entity for one_to_many."
+    },
+    "to_entity": {
+      "type": "string",
+      "description": "Referenced entity (the 'one' side for many_to_one; the 'many' side for one_to_many)."
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "one_to_one",
+        "one_to_many",
+        "many_to_one"
+      ],
+      "default": "many_to_one"
+    },
+    "on_delete": {
+      "type": "string",
+      "enum": [
+        "restrict",
+        "set_null",
+        "cascade"
+      ],
+      "default": "restrict"
+    },
+    "required": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true the FK field must be non-null on create (and on update when the field is changed)."
+    }
+  },
+  "required": [
+    "project_id",
+    "name",
+    "from_entity",
+    "from_field",
+    "to_entity",
+    "type"
+  ]
+}

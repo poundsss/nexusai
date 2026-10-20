@@ -1,0 +1,44 @@
+{
+  "name": "VerifiedDomain",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization that claims this domain."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Denormalized owning workspace for authorization checks."
+    },
+    "domain": {
+      "type": "string",
+      "description": "Lowercased email domain owned by this org. Unique platform-wide: one domain resolves to exactly one org, so a user's email domain routes them to the right SSO connection."
+    },
+    "verification_token": {
+      "type": "string",
+      "description": "Random TXT record value the org must publish at _nexusai-verify.<domain> to prove ownership. Generated server-side; never accepted from the client."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "verified",
+        "failed"
+      ],
+      "default": "pending",
+      "description": "Only 'verified' routes SSO authentication. A pending domain reserves the name but does not authenticate; a failed domain failed its DNS check."
+    },
+    "verified_at": {
+      "type": "string"
+    },
+    "verified_by": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "organization_id",
+    "workspace_id",
+    "domain",
+    "status"
+  ]
+}

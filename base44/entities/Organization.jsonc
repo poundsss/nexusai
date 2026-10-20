@@ -1,0 +1,54 @@
+{
+  "name": "Organization",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string",
+      "description": "Workspace that owns this organization. One org per workspace; every SSO/SCIM lookup is filtered by this field so one workspace's enterprise config can never be read or modified by another."
+    },
+    "name": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "suspended"
+      ],
+      "default": "active",
+      "description": "Only an active org authenticates via SSO. A suspended org's SSO connections are refused and SCIM provisioning is paused."
+    },
+    "sso_enforced": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, members with emails on a verified domain MUST authenticate through SSO; password login for those users is refused."
+    },
+    "scim_enabled": {
+      "type": "boolean",
+      "default": false
+    },
+    "default_role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "editor",
+        "viewer"
+      ],
+      "default": "viewer",
+      "description": "Role assigned to SSO/SCIM-provisioned users who don't match a group mapping."
+    },
+    "max_seats": {
+      "type": "number",
+      "default": 0,
+      "description": "Provisioned-user ceiling. 0 means unlimited (bounded by the plan's seats limit)."
+    },
+    "created_by": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "workspace_id",
+    "name",
+    "status"
+  ]
+}

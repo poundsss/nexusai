@@ -1,0 +1,63 @@
+{
+  "name": "AgentStoreFile",
+  "type": "object",
+  "properties": {
+    "agent_name": {
+      "type": "string",
+      "description": "Agent this file store belongs to. Each agent browses only its own store."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, denormalized for the fail-closed membership gate."
+    },
+    "parent_path": {
+      "type": "string",
+      "description": "Path of the containing folder ('' = store root). An entry's full path is parent_path + '/' + name."
+    },
+    "name": {
+      "type": "string",
+      "description": "File or folder name, no slashes."
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "folder",
+        "file"
+      ],
+      "default": "file",
+      "description": "Whether this record is a folder or a stored file."
+    },
+    "file_uri": {
+      "type": "string",
+      "description": "URI of the file bytes in the platform's PRIVATE file storage (Core.UploadPrivateFile). Present for files only \u2014 never a second storage system."
+    },
+    "mime_type": {
+      "type": "string",
+      "description": "MIME type of the stored bytes."
+    },
+    "size_bytes": {
+      "type": "number",
+      "description": "Size of the stored bytes."
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "upload",
+        "artifact"
+      ],
+      "default": "upload",
+      "description": "Where the file came from: a user upload or a chat artifact saved into the artifacts folder."
+    },
+    "artifact_url": {
+      "type": "string",
+      "description": "The original public URL a saved artifact was fetched from. Files only."
+    }
+  },
+  "required": [
+    "agent_name",
+    "workspace_id",
+    "parent_path",
+    "name",
+    "type"
+  ]
+}

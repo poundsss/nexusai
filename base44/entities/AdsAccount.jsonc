@@ -1,0 +1,100 @@
+{
+  "name": "AdsAccount",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Project this ads account belongs to. Every read and mutation is filtered by this field server-side. ONE account per (project, channel) \u2014 the invariant is enforced server-side with a post-create dedup to the deterministic oldest winner; an app has at most one account per provider channel and returns null with a 200 when it has none."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side from the authorized project."
+    },
+    "channel": {
+      "type": "string",
+      "enum": [
+        "google",
+        "zernio:meta",
+        "zernio:tiktok",
+        "zernio:linkedin",
+        "zernio:openai"
+      ],
+      "default": "google",
+      "description": "Provider-scoped channel this account belongs to (NexusAI-native: from the completed Zernio \u2194 NexusAI audit). google keeps its direct adapter; zernio:* routes through the Zernio fail-closed adapter until its runtime integration is explicitly implemented. A legacy row without this field is Google."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "none",
+        "pending_setup",
+        "awaiting_payment",
+        "active",
+        "suspended",
+        "disconnected"
+      ],
+      "default": "pending_setup",
+      "description": "NEXUSAI-NATIVE account lifecycle (NON-PARITY: Base44 documents that only an 'active'-class account serves; its full internal state list is not published). 'none' is never stored \u2014 an absent row means none."
+    },
+    "provider_account_ref": {
+      "type": "string",
+      "description": "Provider-side account reference minted by the provider adapter at launch. Capability credential \u2014 server-side only, never returned to the UI, logged or audited."
+    },
+    "currency_code": {
+      "type": "string",
+      "description": "Billing currency of the account, derived by the provider at launch (never a client value)."
+    },
+    "billing_cadence": {
+      "type": "string",
+      "enum": [
+        "unknown",
+        "every_3_days",
+        "weekly"
+      ],
+      "default": "unknown",
+      "description": "DOCUMENTED (Base44): new ad accounts are charged every 3 days, earlier accounts weekly. Stored as reported by the provider; unknown until the provider reports it."
+    },
+    "spend_cap_micros": {
+      "type": "number",
+      "description": "DOCUMENTED (Base44): the account carries an overall monthly ceiling. Budgets are micros (1,000,000 micros = one unit)."
+    },
+    "payment_on_file": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether an active payment method is on file. Launch refuses without one (fail closed)."
+    },
+    "business_name": {
+      "type": "string",
+      "description": "Business name that can appear in ads; captured at launch readiness."
+    },
+    "business_phone": {
+      "type": "string",
+      "description": "Phone number that can appear in ads; captured at launch readiness."
+    },
+    "landing_page": {
+      "type": "string",
+      "description": "Page the ads lead to, resolved at launch readiness and sent verbatim to the provider."
+    },
+    "linked_business_profile": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The Google Business Profile linked to this account, verbatim from the provider."
+    },
+    "launched_at": {
+      "type": "string",
+      "description": "When launch succeeded (the first point at which live spend could open)."
+    },
+    "disconnected_at": {
+      "type": "string",
+      "description": "When the account was disconnected \u2014 the end of its life; campaigns stop serving, outstanding spend remains owed."
+    },
+    "synced_at": {
+      "type": "string",
+      "description": "When this row last synced from the provider."
+    }
+  },
+  "required": [
+    "project_id",
+    "workspace_id",
+    "status"
+  ]
+}

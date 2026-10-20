@@ -1,0 +1,48 @@
+{
+  "name": "ViralityPlan",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Project this content plan belongs to. Every read and mutation is filtered by this field server-side. Generating a plan replaces the previous one (documented), so the latest-created row per project is the app's current plan."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side from the authorized project."
+    },
+    "plan_id": {
+      "type": "string",
+      "description": "Documented ContentPlan.id \u2014 the id the calendar endpoints accept (Phase 2). Minted per generation."
+    },
+    "app_summary": {
+      "type": "string",
+      "description": "Documented ContentStrategy.app_summary."
+    },
+    "marketing_approach": {
+      "type": "string",
+      "description": "Documented ContentStrategy.marketing_approach."
+    },
+    "platform_plan": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "default": [],
+      "description": "One entry per approved platform, in the order submitted (documented PlatformContentPlan: platform, mode series|selection, reasoning). The posts themselves live in ViralityPlanPost rows."
+    },
+    "created_at": {
+      "type": "string",
+      "description": "Documented ContentPlan.created_at."
+    },
+    "updated_at": {
+      "type": "string",
+      "description": "Documented ContentPlan.updated_at."
+    }
+  },
+  "required": [
+    "project_id",
+    "workspace_id",
+    "plan_id"
+  ]
+}

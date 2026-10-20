@@ -1,0 +1,73 @@
+{
+  "name": "IntegrationRateLimit",
+  "type": "object",
+  "properties": {
+    "state_key": {
+      "type": "string",
+      "description": "Deterministic identity of ONE rate-limit window: project + integration + host. Two projects calling the same upstream host address DIFFERENT keys, so one project's 429 can never throttle another's calls."
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Project the window belongs to. Resolved SERVER-side from the executing project, never from a client, and every read is filtered by it together with the integration and host."
+    },
+    "workspace_id": {
+      "type": "string"
+    },
+    "integration_name": {
+      "type": "string",
+      "description": "The project's own integration name. A window is per integration, so a shared host reached through two integrations with different credentials is tracked separately."
+    },
+    "host": {
+      "type": "string",
+      "description": "Hostname the upstream limit applies to. Host only \u2014 never a URL, which could carry an api_key in its query string."
+    },
+    "status": {
+      "type": "number",
+      "default": 429,
+      "description": "The status that established the window. Only 429 does."
+    },
+    "retry_until": {
+      "type": "string",
+      "description": "When the upstream said it would accept traffic again \u2014 present ONLY when the response actually told us (a parseable Retry-After). Absent means the platform knows it was limited but not for how long, and it therefore refuses nothing: this field is never guessed."
+    },
+    "retry_after_ms": {
+      "type": "number",
+      "description": "The delay the upstream asked for, in milliseconds, as parsed. A Retry-After date already in the past is clamped to 0 rather than becoming a negative wait."
+    },
+    "retry_after_source": {
+      "type": "string",
+      "enum": [
+        "header_seconds",
+        "header_date",
+        "absent",
+        "invalid"
+      ],
+      "default": "absent",
+      "description": "Which form of the upstream's Retry-After header produced the delay \u2014 numeric seconds, an HTTP-date, or neither. Recorded so a wait is always explainable."
+    },
+    "observed_at": {
+      "type": "string",
+      "description": "When the 429 that (re)established this window was received."
+    },
+    "occurrences": {
+      "type": "number",
+      "default": 1,
+      "description": "How many 429s this project+integration+host has produced. The row is reused rather than duplicated, so a repeatedly limited host produces one window, not a history."
+    },
+    "refusals": {
+      "type": "number",
+      "default": 0,
+      "description": "Calls refused BEFORE contacting the upstream because the window was still open \u2014 the requests this state prevented."
+    },
+    "trace_id": {
+      "type": "string",
+      "description": "The existing correlation id of the operation that observed the limit."
+    }
+  },
+  "required": [
+    "state_key",
+    "project_id",
+    "integration_name",
+    "host"
+  ]
+}

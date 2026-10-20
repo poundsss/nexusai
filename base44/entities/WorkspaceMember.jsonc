@@ -1,0 +1,79 @@
+{
+  "name": "WorkspaceMember",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string",
+      "description": "Workspace this membership grants access to. Every authorization decision resolves through a row scoped to exactly one workspace, so a membership can never grant access to another workspace's projects."
+    },
+    "email": {
+      "type": "string",
+      "description": "Lowercased invite address. Identity of an invited member before they have ever signed in; matched against the authenticated user's email on accept."
+    },
+    "user_id": {
+      "type": "string",
+      "description": "Platform user id, set when the invite is accepted. Until then the row grants nothing, because authorization requires status 'active' AND a matching user_id."
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "editor",
+        "viewer"
+      ],
+      "default": "viewer",
+      "description": "Capability level inside the workspace. 'owner' is not a membership role: it is derived from Workspace.owner_id and can never be granted or revoked through membership."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "invited",
+        "active",
+        "removed"
+      ],
+      "default": "invited",
+      "description": "Only 'active' authorizes anything. 'invited' is a pending claim, 'removed' is a revoked membership retained for audit; both resolve to no access at all."
+    },
+    "invite_token": {
+      "type": "string",
+      "description": "Single-use random challenge proving the bearer received the invitation. Cleared the moment the invite is accepted; never a credential for anything else."
+    },
+    "invited_by": {
+      "type": "string",
+      "description": "User id that created the invitation."
+    },
+    "accepted_at": {
+      "type": "string"
+    },
+    "removed_at": {
+      "type": "string"
+    },
+    "last_seen_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "workspace_id",
+    "email",
+    "role",
+    "status"
+  ],
+  "rls": {
+    "read": false,
+    "create": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "system"
+      }
+    }
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "name": "ProjectFile",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string"
+    },
+    "path": {
+      "type": "string",
+      "description": "Path relative to project root, e.g. src/pages/Home.js"
+    },
+    "content": {
+      "type": "string",
+      "description": "Inline file content. Empty when content_url is set."
+    },
+    "content_url": {
+      "type": "string",
+      "description": "Storage URL holding the content when it exceeds the inline field size limit"
+    },
+    "frozen": {
+      "type": "boolean",
+      "default": false,
+      "description": "Frozen files cannot be modified by the AI"
+    }
+  },
+  "required": [
+    "project_id",
+    "path"
+  ],
+  "rls": {
+    "read": false,
+    "create": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "system"
+      }
+    }
+  }
+}

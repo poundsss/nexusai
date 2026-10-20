@@ -1,0 +1,64 @@
+{
+  "name": "DataRestoreBatch",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Project the restore belongs to. Every read and mutation is filtered by this field server-side."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side from the project."
+    },
+    "checkpoint_id": {
+      "type": "string",
+      "description": "The checkpoint the restore was launched from (for an undo batch: the first operation's pre-restore checkpoint). Per-operation sources live on DataRestoreOperation."
+    },
+    "restore_to": {
+      "type": "string",
+      "description": "DOCUMENTED (Get data restore status): the moment the entities are restored to."
+    },
+    "entity_names": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "The entities this batch actually launched for (skipped ones are reported in the 202 response, never stored here)."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "running",
+        "succeeded",
+        "partial",
+        "failed"
+      ],
+      "default": "running",
+      "description": "Internal lifecycle; the documented status surface reports per-operation state, not this."
+    },
+    "undo_checkpoint_id": {
+      "type": "string",
+      "description": "DOCUMENTED: the checkpoint that undoes the whole restore \u2014 the first pre-restore checkpoint captured. Null until Base44 (here: the executor) has saved the first backup."
+    },
+    "error": {
+      "type": "string",
+      "description": "Safe error summary when the batch failed or partially failed."
+    },
+    "created_by": {
+      "type": "string",
+      "description": "Authenticated caller that launched the restore (or 'undo:<batch_id>' provenance for undo batches)."
+    },
+    "completed_at": {
+      "type": "string",
+      "description": "When the batch reached its terminal state."
+    }
+  },
+  "required": [
+    "project_id",
+    "workspace_id",
+    "checkpoint_id",
+    "restore_to",
+    "status"
+  ]
+}

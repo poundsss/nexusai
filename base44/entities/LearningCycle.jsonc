@@ -1,0 +1,163 @@
+{
+  "name": "LearningCycle",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Project whose production episodes this cycle learned from. Resolved SERVER-side from the authorized project, never from a client, and every read is filtered by it, so one project's learning history can never be read from, or mixed into, another's."
+    },
+    "workspace_id": {
+      "type": "string"
+    },
+    "version": {
+      "type": "number",
+      "default": 1,
+      "description": "Monotonic cycle number within the project. A cycle is never edited after it reaches a terminal state; the next attempt is the next version."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "DRAFT",
+        "CAPTURED",
+        "DATASET_READY",
+        "MEASURED",
+        "PROMOTED",
+        "FAILED",
+        "ROLLED_BACK"
+      ],
+      "default": "DRAFT",
+      "description": "Lifecycle. PROMOTED is the only state in which this cycle's policy version became the project's active routing policy. FAILED means nothing was promoted and the known-good state is untouched. ROLLED_BACK means a PROMOTED cycle was reverted through the routing layer's existing rollback."
+    },
+    "flywheel_version": {
+      "type": "string",
+      "description": "Version of the production-learning contract that ran this cycle. Frozen at creation."
+    },
+    "promotion_policy_version": {
+      "type": "string",
+      "description": "Version of the deterministic promotion rules that decided eligibility and promotion for this cycle."
+    },
+    "candidate": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The frozen candidate configuration this cycle measured (model_id, model_version, routing_policy_version), resolved by the EXISTING candidate-evaluation layer from the model catalog \u2014 never client-declared."
+    },
+    "candidate_id": {
+      "type": "string"
+    },
+    "reference_cycle_id": {
+      "type": "string",
+      "description": "The known-good PROMOTED cycle this one was compared against, when one existed."
+    },
+    "capture": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "What the capture stage saw: trajectories considered, judged, rewarded, eligible, and the excluded ones with their deterministic reasons."
+    },
+    "source_trajectory_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Every production trajectory that was ELIGIBLE and therefore admitted into this cycle's datasets. The lineage from a promoted policy back to the real requests that produced it."
+    },
+    "training_dataset_id": {
+      "type": "string",
+      "description": "The FINALIZED sft dataset (training examples) built by the existing Dataset Builder for this cycle."
+    },
+    "evaluation_dataset_id": {
+      "type": "string",
+      "description": "The FINALIZED evaluation dataset the candidate was measured against."
+    },
+    "evaluation_dataset_checksum": {
+      "type": "string"
+    },
+    "dataset_provenance": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Dataset names, versions, checksums, item counts and the eligibility/transformation policy versions that produced them."
+    },
+    "candidate_evaluation_id": {
+      "type": "string",
+      "description": "The existing #39 CandidateEvaluation that measured this cycle's candidate. The 'training run' of this platform: a FINALIZED, checksum-bound measurement."
+    },
+    "reference_evaluation_id": {
+      "type": "string",
+      "description": "The reference measurement (known-good candidate configuration on the SAME dataset) the regression check compared against."
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "regression": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The #39 regression verdict against the reference, when a reference existed."
+    },
+    "promotion": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The deterministic promotion verdict: eligible, code, reasons and the thresholds applied."
+    },
+    "previous_policy_version": {
+      "type": "string",
+      "description": "The routing policy version that was ACTIVE for the project before this cycle promoted. The rollback target."
+    },
+    "policy_version": {
+      "type": "string",
+      "description": "The immutable routing policy version this cycle proposed and activated. Absent for a FAILED cycle: a failed cycle never produces an active policy."
+    },
+    "promoted_model": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The (model_id, model_version) whose evidence the promoted policy now carries, plus whether the active policy's priors actually contain it."
+    },
+    "failure_code": {
+      "type": "string",
+      "description": "NO_ELIGIBLE_EXAMPLES | DATASET_FAILED | NO_EVIDENCE | BELOW_QUALITY_FLOOR | REGRESSION | PROMOTION_POLICY_VIOLATION | TRAINING_ERROR"
+    },
+    "error": {
+      "type": "string"
+    },
+    "rolled_back_at": {
+      "type": "string"
+    },
+    "rolled_back_to_policy_version": {
+      "type": "string"
+    },
+    "trace_id": {
+      "type": "string"
+    },
+    "created_by": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "completed_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "project_id",
+    "workspace_id",
+    "status"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "system"
+      }
+    }
+  }
+}

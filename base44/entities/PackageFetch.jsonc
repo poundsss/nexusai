@@ -1,0 +1,133 @@
+{
+  "name": "PackageFetch",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Project the fetch was performed for. Every read is filtered by this field after the caller is authorized against the project, so one project can never read another's fetch history."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved SERVER-side from the authorized project \u2014 never taken from a client."
+    },
+    "package_name": {
+      "type": "string"
+    },
+    "requested_range": {
+      "type": "string"
+    },
+    "resolved_version": {
+      "type": "string"
+    },
+    "cache_key": {
+      "type": "string",
+      "description": "The content-addressed cache entry this fetch resolved to, when it produced a validated artifact."
+    },
+    "cache_result": {
+      "type": "string",
+      "enum": [
+        "hit",
+        "miss",
+        "bypassed",
+        "rejected"
+      ],
+      "default": "miss",
+      "description": "Whether the validated artifact came from the shared cache ('hit'), was downloaded ('miss'), was not consulted, or was refused because the cached content no longer matched its integrity."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "prepared",
+        "failed",
+        "staged",
+        "expired"
+      ],
+      "default": "staged",
+      "description": "Lifecycle of one package preparation. 'staged' is an in-flight/abandoned fetch, 'prepared' a validated artifact, 'failed' a refusal. Only 'prepared' may enter the build dependency state."
+    },
+    "failure_class": {
+      "type": "string",
+      "description": "Why the preparation was refused: integrity_mismatch, download_too_large, registry_timeout, registry_host_denied, unsupported_archive, license_denied, vulnerable_package, advisory_unavailable, registry_unavailable."
+    },
+    "detail": {
+      "type": "string",
+      "description": "Scrubbed diagnostic detail. Passed through the platform's existing secret scrubber, so no credential can enter a fetch record."
+    },
+    "integrity": {
+      "type": "string"
+    },
+    "content_sha512": {
+      "type": "string"
+    },
+    "integrity_verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "True only when the downloaded (or cached) content digest matched the registry integrity. A package never enters the build dependency state with this false \u2014 there is no fallback from a failed verification."
+    },
+    "size_bytes": {
+      "type": "number"
+    },
+    "duration_ms": {
+      "type": "number"
+    },
+    "registry_source": {
+      "type": "string"
+    },
+    "registry_metadata_fingerprint": {
+      "type": "string",
+      "description": "Fingerprint of the exact registry metadata the resolution used, so a resolved graph stays reproducible against the metadata that produced it."
+    },
+    "advisory_status": {
+      "type": "string",
+      "enum": [
+        "vulnerable",
+        "none_known",
+        "unavailable"
+      ],
+      "default": "unavailable"
+    },
+    "license": {
+      "type": "string"
+    },
+    "license_status": {
+      "type": "string",
+      "enum": [
+        "allowed",
+        "denied",
+        "unknown"
+      ],
+      "default": "unknown"
+    },
+    "install_scripts_blocked": {
+      "type": "boolean",
+      "default": true,
+      "description": "Records that lifecycle scripts declared by the package were blocked rather than executed."
+    },
+    "blocked_install_scripts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "The lifecycle script names that were blocked for this package."
+    },
+    "trace_id": {
+      "type": "string",
+      "description": "The operation's existing correlation id, carried through verbatim \u2014 the supply chain mints no second trace."
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "expires_at": {
+      "type": "string",
+      "description": "When an abandoned staged fetch becomes eligible for the existing Scheduled Maintenance sweep."
+    },
+    "created_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "project_id",
+    "package_name",
+    "status"
+  ]
+}

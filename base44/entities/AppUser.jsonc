@@ -1,0 +1,103 @@
+{
+  "name": "AppUser",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "The generated application (project) this end-user belongs to. Every read and every credential check is filtered by this field, so one app's users can never be resolved from another app. This table is for GENERATED-APP end-users only \u2014 a NexusAI platform user is never stored here."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved SERVER-side from the project \u2014 never taken from a client."
+    },
+    "email": {
+      "type": "string",
+      "description": "Lower-cased, trimmed email. Unique per project."
+    },
+    "display_name": {
+      "type": "string"
+    },
+    "profile": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Bounded, scrubbed profile metadata the app may edit through updateProfile. Never roles, status or credentials."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "disabled",
+        "revoked"
+      ],
+      "default": "active",
+      "description": "Account state. Only 'active' may sign in or hold a valid session; disabling or revoking an account invalidates every existing session."
+    },
+    "email_verified": {
+      "type": "boolean",
+      "default": false
+    },
+    "email_verified_at": {
+      "type": "string"
+    },
+    "roles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Project-defined application role keys held by this user. Assigned SERVER-side by an app administrator or the project's policy \u2014 never from a client claim."
+    },
+    "password_hash": {
+      "type": "string",
+      "description": "PBKDF2-SHA256 derived key (hex). Never returned by any API or exposed to generated code."
+    },
+    "password_salt": {
+      "type": "string"
+    },
+    "password_algorithm": {
+      "type": "string",
+      "description": "Hashing scheme identifier, so a future scheme can coexist and re-hash on login."
+    },
+    "password_updated_at": {
+      "type": "string"
+    },
+    "failed_login_count": {
+      "type": "number",
+      "default": 0
+    },
+    "last_login_at": {
+      "type": "string"
+    },
+    "platform_user_id": {
+      "type": "string",
+      "description": "Optional explicit device mapping used ONLY by push delivery. Never grants platform access."
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "project_id",
+    "status"
+  ],
+  "rls": {
+    "read": false,
+    "create": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "system"
+      }
+    }
+  }
+}

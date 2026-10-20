@@ -1,0 +1,45 @@
+{
+  "name": "AppRole",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Project that defines this application role. Roles never cross projects."
+    },
+    "workspace_id": {
+      "type": "string"
+    },
+    "key": {
+      "type": "string",
+      "description": "Stable role key (user, admin, manager, seller, \u2026). Unique per project."
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "permissions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Permission strings of the form resource.action, with '*' wildcards (orders.*, admin.*). Evaluated SERVER-side only."
+    },
+    "system": {
+      "type": "boolean",
+      "default": false,
+      "description": "True for the built-in 'user' and 'admin' roles, which cannot be deleted."
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "project_id",
+    "key"
+  ]
+}

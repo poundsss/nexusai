@@ -1,0 +1,143 @@
+{
+  "name": "AppAnalyticsEvent",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "The generated application this event belongs to. Resolved SERVER-side from the addressed app or the executing project \u2014 never taken from a client claim \u2014 and every read is filtered by it, so one app's analytics can never be reached from another."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side from the project."
+    },
+    "event_id": {
+      "type": "string",
+      "description": "Stable public identifier of this event, minted server-side at ingestion."
+    },
+    "event_name": {
+      "type": "string",
+      "description": "The app's own event name (project-defined). The platform hardcodes no business event names."
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "page_view",
+        "session_start",
+        "session_end",
+        "user_action",
+        "conversion",
+        "error",
+        "performance",
+        "custom_event"
+      ],
+      "default": "custom_event",
+      "description": "Canonical event category. The set is fixed; the names inside it are not."
+    },
+    "event_version": {
+      "type": "number",
+      "default": 1,
+      "description": "Schema version of this event name. An event validated under version 1 stays interpretable after version 2 exists."
+    },
+    "schema_id": {
+      "type": "string",
+      "description": "The AppEventSchema row this event validated against, when the project registered one."
+    },
+    "environment": {
+      "type": "string",
+      "enum": [
+        "development",
+        "staging",
+        "production"
+      ],
+      "default": "production",
+      "description": "Environment the event came from. Every query filters by it, so production analytics never silently mixes with development or staging."
+    },
+    "app_user_id": {
+      "type": "string",
+      "description": "REFERENCE to the #29 AppUser, when the event was authenticated. Never a copy of the user record, and never a NexusAI platform user id."
+    },
+    "anonymous_id": {
+      "type": "string",
+      "description": "Project-scoped pseudonymous identifier for an unauthenticated visitor. Meaningless outside this project and never joined across projects."
+    },
+    "session_id": {
+      "type": "string",
+      "description": "AppAnalyticsSession this event belongs to, when a session was supplied."
+    },
+    "team_id": {
+      "type": "string",
+      "description": "Tenant/team the authenticated actor was acting in, when the app supplied one and membership verified."
+    },
+    "page": {
+      "type": "string",
+      "description": "Page/screen/route the event happened on."
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "client",
+        "server",
+        "queue"
+      ],
+      "default": "client",
+      "description": "Where the event was submitted from: the app's frontend, its server-side code, or a queued ingestion continuing an already-validated submission."
+    },
+    "occurred_at": {
+      "type": "string",
+      "description": "When the event happened, per the submitter, clamped server-side to a sane window."
+    },
+    "ingested_at": {
+      "type": "string",
+      "description": "When the platform accepted it. Always the server's clock."
+    },
+    "properties": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Bounded, validated, scrubbed custom properties. Primitive values only; credential-like keys are refused or redacted by project policy, and every value passes the platform's existing secret scrubber."
+    },
+    "redactions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Property keys that were suppressed or redacted, so a missing value is explainable rather than silently dropped."
+    },
+    "error_code": {
+      "type": "string"
+    },
+    "error_category": {
+      "type": "string"
+    },
+    "duration_ms": {
+      "type": "number",
+      "description": "Latency carried by a performance event."
+    },
+    "conversion_value": {
+      "type": "number",
+      "description": "Optional numeric value of a conversion event."
+    },
+    "trace_id": {
+      "type": "string",
+      "description": "The platform's EXISTING correlation id, when the submitter had one. Analytics mints no trace system of its own."
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "ingestion_key": {
+      "type": "string",
+      "description": "Caller-supplied logical identity of the submission. A repeat with the same key in the same project resolves to the FIRST event instead of creating a duplicate."
+    },
+    "consent": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Ownership/consent metadata captured at ingestion (project ownership, whether the project allows platform intelligence use). Preserved so a future learning system can honour it; nothing consumes it today."
+    }
+  },
+  "required": [
+    "project_id",
+    "event_id",
+    "event_name",
+    "event_type",
+    "environment"
+  ]
+}

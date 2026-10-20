@@ -1,0 +1,163 @@
+{
+  "name": "ApprovalRequest",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Project the proposed operation targets. Resolved SERVER-side from the authorized project, never from a client, and every read is filtered by it, so one project's approvals can never be listed, granted or spent from another."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side from the project."
+    },
+    "actor_user_id": {
+      "type": "string",
+      "description": "The authenticated user whose proposal this is. Only this actor may spend the approval, so a granted approval can never be picked up by a different caller."
+    },
+    "actor_role": {
+      "type": "string",
+      "description": "The role the actor held in the workspace WHEN the proposal was made. Recorded for audit only \u2014 the role is re-resolved at execution time, so an approval can never carry a stale grant."
+    },
+    "run_id": {
+      "type": "string",
+      "description": "AI run the proposal belongs to, when it was made on a run's behalf."
+    },
+    "tool": {
+      "type": "string",
+      "description": "The EXISTING tool the operation would execute (shared/toolRouter.ts contract name). The safety layer introduces no operation of its own."
+    },
+    "operation_classes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Deterministic classification of the proposal: read, create, edit, delete, deploy, rollback, credential_access, external_action, destructive, security_sensitive."
+    },
+    "risk_level": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "description": "Deterministic risk level derived from the requested operation and the resources it affects \u2014 never from free-form model judgment."
+    },
+    "risk_factors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "The concrete reasons the risk level is what it is, so a decision is explainable after the fact."
+    },
+    "required_capability": {
+      "type": "string",
+      "description": "The EXISTING authz capability the operation requires (rbac.ts). Re-checked against the actor's CURRENT role at execution time, so an approval can never escalate permissions."
+    },
+    "operation_fingerprint": {
+      "type": "string",
+      "description": "Hash over the contract version, tool and canonical input. Execution refuses a mismatch, so an approval granted for one operation can never be spent on another."
+    },
+    "input_summary": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Bounded, scrubbed identifiers of what the operation targets (path, name, version). Never a credential value and never full file content."
+    },
+    "decision": {
+      "type": "string",
+      "enum": [
+        "allow",
+        "require_approval",
+        "deny"
+      ],
+      "description": "The policy decision the centralized safety policy produced for this proposal."
+    },
+    "decision_code": {
+      "type": "string",
+      "description": "Deterministic code behind the decision (SAFETY_LOW_RISK, SAFETY_APPROVAL_REQUIRED, INSUFFICIENT_ROLE, SAFETY_SECRET_VALUE, \u2026)."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "PENDING",
+        "APPROVED",
+        "DENIED",
+        "EXECUTED",
+        "EXPIRED",
+        "FAILED"
+      ],
+      "default": "PENDING",
+      "description": "Lifecycle. PENDING awaits a human decision; APPROVED may be spent EXACTLY once and becomes EXECUTED; DENIED and EXPIRED are terminal and can never execute; FAILED means an approved execution ran and its own tool reported failure."
+    },
+    "expires_at": {
+      "type": "string",
+      "description": "When the approval window closes. A stale approval is refused at execution rather than silently honoured."
+    },
+    "approver_user_id": {
+      "type": "string",
+      "description": "The authenticated user who granted or refused the request. Resolved server-side from their session."
+    },
+    "approver_role": {
+      "type": "string"
+    },
+    "approver_decision": {
+      "type": "string",
+      "enum": [
+        "approved",
+        "denied"
+      ]
+    },
+    "approver_reason": {
+      "type": "string",
+      "description": "Scrubbed, bounded reason the approver gave."
+    },
+    "execution_ok": {
+      "type": "boolean",
+      "description": "Whether the approved operation's own execution succeeded. Absent until it is spent, so a pending or denied request never reads as a success."
+    },
+    "execution_summary": {
+      "type": "string",
+      "description": "Scrubbed one-line result of the execution, from the existing tool boundary's own summary."
+    },
+    "trace_id": {
+      "type": "string",
+      "description": "The platform's EXISTING correlation id of the operation. The safety layer mints no second trace system."
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "resolved_at": {
+      "type": "string"
+    },
+    "executed_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "project_id",
+    "workspace_id",
+    "actor_user_id",
+    "tool",
+    "risk_level",
+    "decision",
+    "status"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "system"
+      }
+    }
+  }
+}

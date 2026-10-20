@@ -1,0 +1,122 @@
+{
+  "name": "ProjectDependency",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Project the dependency belongs to. Every read is filtered by this field after the caller is authorized against the project, so one project can never read another's dependency state."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved SERVER-side from the authorized project \u2014 never taken from a client."
+    },
+    "package_name": {
+      "type": "string",
+      "description": "Canonical package name as it appears in the manifest and lockfile."
+    },
+    "requested_version": {
+      "type": "string",
+      "description": "The version RANGE the project asked for (exact, caret, tilde or >=). Present for a direct dependency; for a transitive one this is the range its parent required."
+    },
+    "resolved_version": {
+      "type": "string",
+      "description": "The exact version resolution picked. This \u2014 not the range \u2014 is what every runtime loads, which is what makes an install reproducible."
+    },
+    "source": {
+      "type": "string",
+      "description": "Registry the package was resolved from. The platform resolves only from its own curated registry; no arbitrary remote install is performed and no install script is executed."
+    },
+    "relation": {
+      "type": "string",
+      "enum": [
+        "direct",
+        "transitive"
+      ],
+      "default": "direct",
+      "description": "Whether the project declared this package itself, or it came in as a dependency of another package."
+    },
+    "required_by": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Which packages (or the project itself) required this dependency. Explicit, so removing a package can tell what still needs it."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "installed",
+        "outdated",
+        "conflicted",
+        "unresolved",
+        "removed",
+        "vulnerable",
+        "incompatible"
+      ],
+      "default": "installed",
+      "description": "Dependency state derived from the lockfile plus the last validation. Never a claim of safety: a package with no advisory coverage stays 'installed' with an explicit unknown vulnerability status rather than being reported as safe."
+    },
+    "integrity": {
+      "type": "string",
+      "description": "Integrity checksum recorded at resolution time. Re-checked on validation, so a lockfile edited behind the project's back is detected instead of silently loaded."
+    },
+    "runtime_target": {
+      "type": "string",
+      "description": "Runtime contract version the package declares compatibility with. A package targeting a different contract is refused before mutation."
+    },
+    "vulnerability_status": {
+      "type": "string",
+      "enum": [
+        "none_known",
+        "vulnerable",
+        "unknown"
+      ],
+      "default": "unknown",
+      "description": "'none_known' means the advisory source covers this package and lists nothing; 'unknown' means no advisory data is available and the platform makes NO safety claim; 'vulnerable' means a known advisory applies."
+    },
+    "vulnerabilities": {
+      "type": "array",
+      "description": "Known advisories that apply to the resolved version, when advisory metadata is available.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "advisory_id": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "patched_in": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "dependency_fingerprint": {
+      "type": "string",
+      "description": "Fingerprint of the whole resolved dependency graph this row belongs to. Two projects with the same fingerprint resolved identically."
+    },
+    "lockfile_version": {
+      "type": "number",
+      "default": 1
+    },
+    "source_version_number": {
+      "type": "number",
+      "description": "Project version whose manifest/lockfile this projection was synced from. The lockfile stays authoritative; this row is a queryable projection of it."
+    },
+    "installed_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "project_id",
+    "package_name",
+    "resolved_version"
+  ]
+}

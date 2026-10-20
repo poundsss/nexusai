@@ -1,0 +1,87 @@
+{
+  "name": "DeploymentArtifact",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string"
+    },
+    "version_id": {
+      "type": "string"
+    },
+    "version_number": {
+      "type": "number"
+    },
+    "checksum": {
+      "type": "string",
+      "description": "SHA-256 over the canonical artifact payload. Stable identity: rebuilding the same version yields the same checksum, so an artifact is reused rather than duplicated."
+    },
+    "payload_url": {
+      "type": "string",
+      "description": "Storage URL of the immutable artifact JSON: { client_files, functions, integrations, entities, config }. Never written again once created."
+    },
+    "file_count": {
+      "type": "number",
+      "default": 0
+    },
+    "client_file_count": {
+      "type": "number",
+      "default": 0
+    },
+    "function_names": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "integration_names": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "entity_names": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "secret_names": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Secret NAMES the artifact requires at runtime. Values are never part of an artifact."
+    },
+    "dependency_fingerprint": {
+      "type": "string",
+      "description": "The dependency fingerprint the project's lockfile pinned when this artifact was built, copied verbatim from the artifact payload's own dependency state. A queryable projection, not a second dependency model: it makes 'which packages did this deployment ship against' answerable without loading the payload, and deployment verification re-checks it against the lockfile the artifact actually ships. Absent for a project that pins no dependencies and for artifacts built before dependencies were recorded, so legacy artifacts stay valid."
+    },
+    "secret_scan": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "fail"
+      ],
+      "default": "pass"
+    },
+    "secret_scan_findings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Redacted descriptions of any credential found in client-shipped code"
+    },
+    "size_bytes": {
+      "type": "number",
+      "default": 0
+    },
+    "built_by": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "project_id",
+    "version_id",
+    "checksum"
+  ]
+}

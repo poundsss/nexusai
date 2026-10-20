@@ -1,0 +1,63 @@
+{
+  "name": "GitCommitMap",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string"
+    },
+    "workspace_id": {
+      "type": "string"
+    },
+    "repo_full_name": {
+      "type": "string"
+    },
+    "branch": {
+      "type": "string"
+    },
+    "commit_sha": {
+      "type": "string",
+      "description": "GitHub commit SHA. Independent of the internal version id \u2014 the two identify different things."
+    },
+    "version_id": {
+      "type": "string",
+      "description": "Internal ProjectVersion id this commit corresponds to"
+    },
+    "version_number": {
+      "type": "number"
+    },
+    "direction": {
+      "type": "string",
+      "enum": [
+        "export",
+        "import"
+      ],
+      "description": "Which way the correspondence was established"
+    },
+    "sync_run_id": {
+      "type": "string"
+    },
+    "actor_user_id": {
+      "type": "string"
+    },
+    "build_status": {
+      "type": "string",
+      "enum": [
+        "success",
+        "failed",
+        "skipped",
+        "unknown"
+      ],
+      "default": "unknown"
+    },
+    "file_count": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "project_id",
+    "repo_full_name",
+    "commit_sha",
+    "direction"
+  ]
+}

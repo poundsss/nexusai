@@ -1,0 +1,107 @@
+{
+  "name": "ActionPlanItem",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Project this item belongs to. Resolved SERVER-side from the authorized project; every read and mutation is filtered by this field, so one project's items can never be read or changed from another."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side from the project."
+    },
+    "user_id": {
+      "type": "string",
+      "description": "Authenticated caller the derivation is attributed to. Authorization was resolved before derivation ran."
+    },
+    "plan_id": {
+      "type": "string",
+      "description": "The persisted MarketingPlan row this item derives from. Items are append-only per plan \u2014 a re-generated plan derives its own fresh items, never rewrites the previous plan's."
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "channel"
+      ],
+      "default": "channel",
+      "description": "Deterministic derivation provenance. Items derive from the plan's channels \u2014 nothing else exists in this slice."
+    },
+    "source_key": {
+      "type": "string",
+      "description": "The channel name this item derives from. Unique per plan_id, which makes derivation idempotent: an already-derived channel is skipped, never duplicated."
+    },
+    "order": {
+      "type": "number",
+      "default": 0,
+      "description": "Derivation order (the plan's channel order), for stable display."
+    },
+    "title": {
+      "type": "string",
+      "description": "Short actionable title, e.g. \"Launch on Product Hunt\" (\u2264200 chars)."
+    },
+    "body": {
+      "type": "string",
+      "description": "Actionable detail: the channel's tactics plus budget and metric context from the plan (\u22642000 chars)."
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "must_have",
+        "medium",
+        "nice_to_have"
+      ],
+      "description": "The source channel's priority, carried for display and ordering."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "done",
+        "dismissed"
+      ],
+      "default": "open",
+      "description": "Member-controlled lifecycle: open, done (Mark done) or dismissed (Dismiss). Reopen restores an item to open. Persisted through the authorized update_item surface only."
+    },
+    "status_updated_at": {
+      "type": "string",
+      "description": "ISO timestamp of the last status change."
+    },
+    "status_updated_by": {
+      "type": "string",
+      "description": "Workspace member who last changed the status; authorization was resolved server-side."
+    },
+    "posts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "platform": {
+            "type": "string"
+          },
+          "copy": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "platform",
+          "copy"
+        ]
+      },
+      "description": "Generated social post copy for this item (Generate posts / Generate more, each 10 integration credits through the certified hold/settle ledger). Bounded at 12 posts; posts persist ONLY after the hold succeeded and generation delivered."
+    },
+    "posts_generated_at": {
+      "type": "string",
+      "description": "ISO timestamp of the last successful post generation."
+    },
+    "created_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "project_id",
+    "workspace_id",
+    "plan_id",
+    "title",
+    "status"
+  ]
+}

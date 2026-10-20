@@ -1,0 +1,86 @@
+{
+  "name": "BenchmarkTask",
+  "type": "object",
+  "properties": {
+    "benchmark_id": {
+      "type": "string",
+      "description": "Benchmark this task belongs to. Every read is filtered by this field after the caller is authorized against the benchmark's owner project."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side from the benchmark."
+    },
+    "task_key": {
+      "type": "string",
+      "description": "Stable identity of the task within the benchmark. A re-definition of the same key produces a NEW task version rather than editing the existing row."
+    },
+    "task_version": {
+      "type": "number",
+      "default": 1,
+      "description": "Monotonic version of this task key. Frozen once the benchmark is finalized, so a historical measurement always names the exact task text and fixture it used."
+    },
+    "definition": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The task itself: the goal/prompt handed to every candidate verbatim, plus its explicit success description. EXPLICITLY DEFINED FIXTURE ONLY \u2014 the harness never generates task content."
+    },
+    "initial_state": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The exact starting project state every candidate receives: the fixture's files and entity declarations. Read-only \u2014 each execution seeds its own isolated scratch project FROM this, and the fixture itself is never mutated by a run."
+    },
+    "initial_state_fingerprint": {
+      "type": "string",
+      "description": "Deterministic hash of the initial state. Recorded on every result so equivalent starting conditions across candidates are provable rather than assumed."
+    },
+    "required_capabilities": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Capabilities a candidate model must support to be eligible for this task (e.g. tools, code, long_context). A candidate that lacks one is recorded as ineligible instead of being scored as a failure."
+    },
+    "verification_criteria": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The expected verification outcome, applied IDENTICALLY to every candidate: whether the build must succeed, whether runtime verification must pass, which entities/files must exist, and the evaluation dimensions that must be measurable for the task to count as complete."
+    },
+    "category": {
+      "type": "string",
+      "description": "Task category used for per-category aggregation (e.g. crud, ui, integration, refactor)."
+    },
+    "difficulty": {
+      "type": "string",
+      "description": "Difficulty metadata (easy | medium | hard), used for reporting only \u2014 it never changes how a result is scored."
+    },
+    "time_budget_ms": {
+      "type": "number",
+      "description": "Resource budget applied equally to every candidate on this task."
+    },
+    "max_steps": {
+      "type": "number",
+      "description": "Step ceiling applied equally to every candidate on this task."
+    },
+    "checksum": {
+      "type": "string",
+      "description": "Deterministic fingerprint of the task definition, initial state, criteria and budgets. Any change produces a new task version with a new checksum, which changes the benchmark's task-set fingerprint."
+    },
+    "finalized": {
+      "type": "boolean",
+      "default": false,
+      "description": "True once the benchmark is finalized. From then on the task is immutable and every mutating path refuses; a change requires a new task version under a new benchmark version."
+    },
+    "created_by": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "benchmark_id",
+    "task_key",
+    "task_version",
+    "definition"
+  ]
+}

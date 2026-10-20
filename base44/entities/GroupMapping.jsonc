@@ -1,0 +1,41 @@
+{
+  "name": "GroupMapping",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization this mapping belongs to. Every lookup is filtered by this field."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Denormalized owning workspace for authorization checks."
+    },
+    "external_group_id": {
+      "type": "string",
+      "description": "External SSO/SCIM group id. Matched against the groups claim in a SAML assertion or the external_groups on a SCIM user."
+    },
+    "external_group_name": {
+      "type": "string"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "editor",
+        "viewer"
+      ],
+      "description": "Workspace role granted to members of this group."
+    },
+    "priority": {
+      "type": "number",
+      "default": 0,
+      "description": "When a user belongs to multiple mapped groups, the highest-priority mapping wins. Ties break by role rank (admin > editor > viewer)."
+    }
+  },
+  "required": [
+    "organization_id",
+    "workspace_id",
+    "external_group_id",
+    "role"
+  ]
+}

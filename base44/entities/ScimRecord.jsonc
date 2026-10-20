@@ -1,0 +1,72 @@
+{
+  "name": "ScimRecord",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Organization this SCIM record belongs to. Every lookup is filtered by this field."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Denormalized owning workspace for authorization checks and member provisioning."
+    },
+    "external_id": {
+      "type": "string",
+      "description": "SCIM externalId. Unique per org+resource_type; the idempotency key for provisioning \u2014 a replayed SCIM request with the same external_id updates the same record instead of creating a duplicate."
+    },
+    "resource_type": {
+      "type": "string",
+      "enum": [
+        "user",
+        "group"
+      ]
+    },
+    "email": {
+      "type": "string",
+      "description": "For users: lowercased email. Matched against verified domains at provisioning time; an email on an unverified domain is refused."
+    },
+    "display_name": {
+      "type": "string"
+    },
+    "external_groups": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "For users: external group ids the user belongs to. Drives role resolution through group mappings."
+    },
+    "mapped_role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "editor",
+        "viewer"
+      ],
+      "description": "For groups: the role this group maps to."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "suspended",
+        "deprovisioned"
+      ],
+      "default": "active",
+      "description": "Only 'active' provisions/activates a member. 'suspended' deactivates the member without removing them; 'deprovisioned' removes the membership and is terminal."
+    },
+    "workspace_member_id": {
+      "type": "string",
+      "description": "For users: the WorkspaceMember row provisioned from this SCIM record. The link is what makes a deprovision remove the membership."
+    },
+    "last_synced_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "organization_id",
+    "workspace_id",
+    "external_id",
+    "resource_type",
+    "status"
+  ]
+}

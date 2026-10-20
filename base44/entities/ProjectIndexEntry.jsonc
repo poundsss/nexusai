@@ -1,0 +1,78 @@
+{
+  "name": "ProjectIndexEntry",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Owning project. Every read is filtered by this field, so one project's index can never surface in another project's retrieval."
+    },
+    "workspace_id": {
+      "type": "string"
+    },
+    "object_type": {
+      "type": "string",
+      "enum": [
+        "file",
+        "component",
+        "page",
+        "route",
+        "entity",
+        "function",
+        "integration",
+        "config",
+        "decision"
+      ],
+      "description": "What kind of project object this entry describes."
+    },
+    "key": {
+      "type": "string",
+      "description": "Stable identity of the indexed object within the project: a file path, an entity name, a function name, an integration name, or a route path."
+    },
+    "source_path": {
+      "type": "string",
+      "description": "File the object was derived from, when it has one. Used for dependency expansion and for invalidating entries when a file is deleted or renamed."
+    },
+    "title": {
+      "type": "string"
+    },
+    "text": {
+      "type": "string",
+      "description": "Searchable representation of the object (signatures, exports, imports, field names, summary). Bounded in size; never the whole file and never a credential value."
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Structured facts used for filtering and ranking: imports, exports, entities referenced, secrets referenced by NAME, size."
+    },
+    "content_hash": {
+      "type": "string",
+      "description": "Hash of the object's source content. Unchanged hash means the entry (and its embedding) is reused instead of recomputed."
+    },
+    "version_number": {
+      "type": "number",
+      "description": "Project version this entry was indexed from. Rollback re-syncs the index and stamps the new version."
+    },
+    "embedding": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "description": "Vector representation produced by the configured embedding provider. Absent when embedding failed; the entry is still lexically searchable."
+    },
+    "embedding_dim": {
+      "type": "number"
+    },
+    "embedding_model": {
+      "type": "string"
+    },
+    "indexed_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "project_id",
+    "object_type",
+    "key",
+    "content_hash"
+  ]
+}

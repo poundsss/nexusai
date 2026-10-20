@@ -1,0 +1,85 @@
+{
+  "name": "SchemaMigration",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string"
+    },
+    "entity_name": {
+      "type": "string"
+    },
+    "from_version_id": {
+      "type": "string",
+      "description": "ProjectVersion the migration migrated FROM. Null when there was no prior version (first deploy)."
+    },
+    "to_version_id": {
+      "type": "string",
+      "description": "ProjectVersion whose entity schema the data was migrated to match."
+    },
+    "changes": {
+      "type": "array",
+      "description": "The computed field-change plan (add/remove/rename/type/required/enum) that drove this migration.",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "applied",
+        "failed",
+        "skipped",
+        "dry_run"
+      ],
+      "default": "applied",
+      "description": "applied = data transformed and committed; failed = aborted before any write (destructive change without force); skipped = already migrated for this version (idempotency); dry_run = reported only, no writes."
+    },
+    "force": {
+      "type": "boolean",
+      "default": false,
+      "description": "True when destructive changes (field removal with data, inconvertible type, invalid enum value) were applied with coercion instead of aborting."
+    },
+    "dry_run": {
+      "type": "boolean",
+      "default": false
+    },
+    "records_scanned": {
+      "type": "number",
+      "default": 0
+    },
+    "records_modified": {
+      "type": "number",
+      "default": 0
+    },
+    "records_preserved": {
+      "type": "number",
+      "default": 0,
+      "description": "Records scanned but left unchanged (already conformed to the new schema)."
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Non-fatal notices: added required field without default, force-coerced values, etc."
+    },
+    "error": {
+      "type": "string",
+      "description": "Safe, redacted reason when status is failed."
+    },
+    "applied_at": {
+      "type": "string"
+    },
+    "duration_ms": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "project_id",
+    "entity_name",
+    "to_version_id",
+    "status"
+  ]
+}

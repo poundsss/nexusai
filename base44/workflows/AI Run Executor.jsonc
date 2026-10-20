@@ -1,0 +1,271 @@
+{
+  "name": "AI Run Executor",
+  "description": "Durable background execution for AI runs: drives a queued run through its phases (plan \u2192 generate \u2192 build/repair \u2192 commit), one request per phase, independent of the browser.",
+  "trigger": {
+    "config": {
+      "trigger_type": "entity",
+      "entity_name": "AIRun",
+      "events": [
+        "create"
+      ]
+    },
+    "condition": "${ .trigger.data.status == \"QUEUED\" }"
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "ai_run_executor",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "phase_1": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "aiRunStep",
+            "args": {
+              "run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_1",
+          "x-base44": {
+            "title": "Run phase 1",
+            "description": "Planning"
+          }
+        }
+      },
+      {
+        "check_1": {
+          "switch": [
+            {
+              "when": "${ .phase_1.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "phase_2"
+            }
+          ],
+          "x-base44": {
+            "title": "More work?"
+          }
+        }
+      },
+      {
+        "phase_2": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "aiRunStep",
+            "args": {
+              "run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_2",
+          "x-base44": {
+            "title": "Run phase 2",
+            "description": "Generating files"
+          }
+        }
+      },
+      {
+        "check_2": {
+          "switch": [
+            {
+              "when": "${ .phase_2.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "phase_3"
+            }
+          ],
+          "x-base44": {
+            "title": "More work?"
+          }
+        }
+      },
+      {
+        "phase_3": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "aiRunStep",
+            "args": {
+              "run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_3",
+          "x-base44": {
+            "title": "Run phase 3",
+            "description": "Build"
+          }
+        }
+      },
+      {
+        "check_3": {
+          "switch": [
+            {
+              "when": "${ .phase_3.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "phase_4"
+            }
+          ],
+          "x-base44": {
+            "title": "More work?"
+          }
+        }
+      },
+      {
+        "phase_4": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "aiRunStep",
+            "args": {
+              "run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_4",
+          "x-base44": {
+            "title": "Run phase 4",
+            "description": "Repair or commit"
+          }
+        }
+      },
+      {
+        "check_4": {
+          "switch": [
+            {
+              "when": "${ .phase_4.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "phase_5"
+            }
+          ],
+          "x-base44": {
+            "title": "More work?"
+          }
+        }
+      },
+      {
+        "phase_5": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "aiRunStep",
+            "args": {
+              "run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_5",
+          "x-base44": {
+            "title": "Run phase 5",
+            "description": "Repair or commit"
+          }
+        }
+      },
+      {
+        "check_5": {
+          "switch": [
+            {
+              "when": "${ .phase_5.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "phase_6"
+            }
+          ],
+          "x-base44": {
+            "title": "More work?"
+          }
+        }
+      },
+      {
+        "phase_6": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "aiRunStep",
+            "args": {
+              "run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_6",
+          "x-base44": {
+            "title": "Run phase 6",
+            "description": "Repair or commit"
+          }
+        }
+      },
+      {
+        "check_6": {
+          "switch": [
+            {
+              "when": "${ .phase_6.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "phase_7"
+            }
+          ],
+          "x-base44": {
+            "title": "More work?"
+          }
+        }
+      },
+      {
+        "phase_7": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "aiRunStep",
+            "args": {
+              "run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_7",
+          "x-base44": {
+            "title": "Run phase 7",
+            "description": "Repair or commit"
+          }
+        }
+      },
+      {
+        "check_7": {
+          "switch": [
+            {
+              "when": "${ .phase_7.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "phase_8"
+            }
+          ],
+          "x-base44": {
+            "title": "More work?"
+          }
+        }
+      },
+      {
+        "phase_8": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "aiRunStep",
+            "args": {
+              "run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Run phase 8",
+            "description": "Final phase"
+          }
+        }
+      }
+    ]
+  }
+}

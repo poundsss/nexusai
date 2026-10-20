@@ -1,0 +1,153 @@
+{
+  "name": "MarketingPlan",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Project this plan belongs to. Resolved SERVER-side from the authorized project, never from a client, and every read is filtered by this field, so one project's plans can never be read from another."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side from the project."
+    },
+    "user_id": {
+      "type": "string",
+      "description": "Authenticated caller the plan generation is attributed to. Authorization was resolved before the plan ran."
+    },
+    "goal": {
+      "type": "string",
+      "description": "The launch goal the plan was generated from (\u2264400 chars), captured from the setup input."
+    },
+    "audience": {
+      "type": "string",
+      "description": "The target audience the plan was generated from (\u2264400 chars), captured from the setup input."
+    },
+    "include_competitors": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether competitor research was requested for this plan. When false, competitors is always empty."
+    },
+    "budget_mode": {
+      "type": "string",
+      "enum": [
+        "paid",
+        "organic"
+      ],
+      "default": "organic",
+      "description": "DOCUMENTED (Base44): a plan either assumes a paid monthly marketing budget or focuses on organic growth (no paid budget)."
+    },
+    "budget_monthly_amount": {
+      "type": "number",
+      "default": 0,
+      "description": "Suggested monthly marketing budget in USD. 0 when budget_mode is organic."
+    },
+    "channels": {
+      "type": "array",
+      "description": "DOCUMENTED (Base44): marketing channels ranked as Must have, Medium priority, or Nice to have, each with suggested tactics.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "must_have",
+              "medium",
+              "nice_to_have"
+            ]
+          },
+          "tactics": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "priority"
+        ]
+      }
+    },
+    "metrics": {
+      "type": "array",
+      "description": "DOCUMENTED (Base44): key metrics to track with targets. OPTIONAL structured analytics wiring per metric \u2014 event_name (the app's own recorded event), metric_type (count | conversion), window_days (documented 7 default or 30) and target_number \u2014 enables measurable current values derived on demand from the project's analytics events. A metric without structured wiring is only measured when an event name matches it deterministically (exact normalized equality with a RECORDED event); otherwise it is surfaced as not tracked, never guessed.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          },
+          "event_name": {
+            "type": "string",
+            "description": "OPTIONAL exact analytics event name this metric measures, as recorded by the published app."
+          },
+          "metric_type": {
+            "type": "string",
+            "enum": [
+              "count",
+              "conversion"
+            ],
+            "description": "OPTIONAL how the value derives: count = occurrences of event_name; conversion = occurrences whose event_type is conversion. Defaults to count."
+          },
+          "window_days": {
+            "type": "number",
+            "enum": [
+              7,
+              30
+            ],
+            "description": "OPTIONAL documented measurement window: 7 days (default) or 30 days."
+          },
+          "target_number": {
+            "type": "number",
+            "description": "OPTIONAL numeric target. Progress is shown ONLY when this is present \u2014 target strings are never parsed into numbers."
+          }
+        },
+        "required": [
+          "name",
+          "target"
+        ]
+      }
+    },
+    "strategy": {
+      "type": "string",
+      "description": "The overall strategy created for the plan."
+    },
+    "competitors": {
+      "type": "array",
+      "description": "DOCUMENTED (Base44): competitor entries with name, website, description and the market gap identified for the app. Empty when competitor research was not included.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "website": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "market_gap": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      }
+    },
+    "generated_at": {
+      "type": "string",
+      "description": "ISO timestamp of generation, denormalized for provenance."
+    }
+  },
+  "required": [
+    "project_id",
+    "workspace_id",
+    "goal",
+    "audience"
+  ]
+}

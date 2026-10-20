@@ -1,0 +1,59 @@
+{
+  "name": "ViralityState",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Project this social content flow state belongs to. Every read and mutation is filtered by this field server-side. ONE row per project \u2014 the documented contract exposes only 'the app's' state; the one-row invariant is enforced with a post-create dedup."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side from the authorized project."
+    },
+    "analysis_text": {
+      "type": "string",
+      "description": "One-sentence analysis of the app, shown above the questions (documented analysis_text)."
+    },
+    "questions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "default": [],
+      "description": "The 2-3 questions from the flow start (documented ViralityQuestion shape: id, question, type select|text_input, options [{label, description}], placeholder). Questions are regenerated per start \u2014 never assumed to be a fixed set."
+    },
+    "answers": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "default": {},
+      "description": "Answers keyed by question id (documented answers shape). A restart replaces them."
+    },
+    "social_url": {
+      "type": "string",
+      "description": "HTTPS social profile URL submitted for voice matching (documented social_url)."
+    },
+    "strategy_text": {
+      "type": "string",
+      "description": "The current content strategy (documented strategy_text)."
+    },
+    "generating_action": {
+      "type": "string",
+      "description": "In-flight generation marker (NEXUSAI-DERIVED storage for the documented generating stage): 'plan' while a content plan is being built. Cleared on completion/failure; a marker older than the staleness bound is healed by the next state/generate call."
+    },
+    "generating_started_at": {
+      "type": "string",
+      "description": "When the in-flight generation started \u2014 the staleness marker for the generating stage."
+    },
+    "last_error": {
+      "type": "string",
+      "description": "Truncated safe error of the last failed generation attempt, for observability."
+    }
+  },
+  "required": [
+    "project_id",
+    "workspace_id"
+  ]
+}

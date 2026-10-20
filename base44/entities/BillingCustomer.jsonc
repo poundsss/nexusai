@@ -1,0 +1,93 @@
+{
+  "name": "BillingCustomer",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string",
+      "description": "Account this billing customer belongs to. One customer per workspace per provider; every billing lookup is filtered by this field so a provider id can never be resolved into another workspace."
+    },
+    "provider": {
+      "type": "string",
+      "default": "manual",
+      "description": "Payment provider holding this customer (manual | stripe). Provider-specific identity lives here and nowhere else, so the credit ledger stays provider-agnostic."
+    },
+    "provider_customer_id": {
+      "type": "string",
+      "description": "The provider's own customer id. Mapped, never trusted as authorization: a webhook naming this id is still verified by signature and resolved through this row."
+    },
+    "email": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD"
+    },
+    "billing_state": {
+      "type": "string",
+      "enum": [
+        "active",
+        "delinquent",
+        "suspended",
+        "closed"
+      ],
+      "default": "active",
+      "description": "Account standing. Derived from validated billing events (failed payments, disputes, admin action) \u2014 never from a raw provider status string."
+    },
+    "payment_status": {
+      "type": "string",
+      "enum": [
+        "none",
+        "valid",
+        "failing",
+        "expired",
+        "disputed"
+      ],
+      "default": "none",
+      "description": "State of the customer's payment instrument. Card brand/last4 are the only instrument details ever stored; full card data and provider secrets never touch this app."
+    },
+    "card_brand": {
+      "type": "string"
+    },
+    "card_last4": {
+      "type": "string"
+    },
+    "delinquent_since": {
+      "type": "string"
+    },
+    "last_payment_at": {
+      "type": "string"
+    },
+    "last_failure_reason": {
+      "type": "string",
+      "description": "Safe, redacted reason the most recent payment failed."
+    },
+    "created_by": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "workspace_id",
+    "provider"
+  ],
+  "rls": {
+    "read": false,
+    "create": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "system"
+      }
+    }
+  }
+}

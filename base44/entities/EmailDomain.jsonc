@@ -1,0 +1,71 @@
+{
+  "name": "EmailDomain",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "NexusAI project this email-domain configuration mirrors. Every read and mutation is filtered by this field, so one project's configuration can never be read or changed from another."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side from the authorized project."
+    },
+    "domain": {
+      "type": "string",
+      "description": "The domain email sending is enabled for, exactly as the Base44 management API returned it."
+    },
+    "sender_name": {
+      "type": "string",
+      "description": "Name recipients see in the From line, verbatim from the API."
+    },
+    "from_email": {
+      "type": "string",
+      "description": "Address mail is sent from, verbatim from the API."
+    },
+    "email_domain_id": {
+      "type": "string",
+      "description": "The Base44-side identity of the configuration (email_domain_id / id), verbatim from the API."
+    },
+    "status": {
+      "type": "string",
+      "description": "DOCUMENTED (Base44) setup state, stored VERBATIM from the API's `status` / `configuration_status` \u2014 active, pending_user_dns_configuration, pending_domain_verification, failed_* \u2014 never inferred, defaulted or invented here. Only `active` sends mail."
+    },
+    "dns_records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "default": [],
+      "description": "The API's DNS records (name / status / ttl / type / value), stored and returned VERBATIM \u2014 never generated, modified or defaulted by this app."
+    },
+    "last_check": {
+      "type": "string",
+      "description": "When Base44 last checked the domain's records, verbatim from the configure/retry response."
+    },
+    "provider_id": {
+      "type": "string",
+      "description": "DNS provider the domain is managed through, verbatim from the API."
+    },
+    "external": {
+      "type": "boolean",
+      "default": false,
+      "description": "True when the domain was brought by the user rather than bought through Base44, verbatim from the API."
+    },
+    "enabled_at": {
+      "type": "string",
+      "description": "When the domain was enabled, verbatim from the API's list response."
+    },
+    "synced_at": {
+      "type": "string",
+      "description": "When this mirror last synced from the management API."
+    }
+  },
+  "required": [
+    "project_id",
+    "workspace_id",
+    "domain",
+    "email_domain_id",
+    "status"
+  ]
+}

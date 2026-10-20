@@ -1,0 +1,201 @@
+{
+  "name": "Project",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "logo_url": {
+      "type": "string",
+      "description": "Public URL of the project's logo image, used as the published app's browser favicon and home-screen icon. Set SERVER-side only through the authorized project-logo surface (project.write), which validates PNG/JPEG, \u22645 MB and \u22641024\u00d71024 px and stores the bytes through the existing Core.UploadPublicFile primitive. Absent means no logo (the published runtime falls back to the platform default favicon). A public storage URL only \u2014 never a credential or signed platform token."
+    },
+    "badge_hidden": {
+      "type": "boolean",
+      "default": false,
+      "description": "Platform Badge visibility (DOCUMENTED Base44: a project-level setting that hides the 'Made with Base44' attribution badge on the published app). Written SERVER-side only through the authorized badge surface (project.write); hiding the badge is Starter+ gated (tier_rank \u2265 3, active subscription) and re-checked by the published runtime, so a downgraded plan re-shows the badge. The published runtime ALSO auto-hides the badge for private apps (visibility='private'), independent of this flag. Default false means the badge is shown (the free-plan default). Existing projects keep the default and their published apps are unchanged."
+    },
+    "auto_approve": {
+      "type": "boolean",
+      "default": false,
+      "description": "Builder Auto approve (DOCUMENTED Base44: a project/app-scoped setting exposed in the Builder's More options menu that, when on, lets most Build-mode AI steps that would otherwise pause for approval run automatically; steps that still need something from the user continue to ask). Written SERVER-side only through the authorized builder-settings surface (project.write). Applied by the safety engine ONLY in Build (default) mode: the lowest approval-gated risk tier above 'low' (medium) executes WITHOUT creating an ApprovalRequest, recorded as an auditable auto-approved decision. Low-risk behavior is unchanged; high, critical, deny and forbidden operations are untouched and stay fail-closed. The exact Base44 partition of 'most steps' vs 'steps that still ask' is UNKNOWN, so NexusAI auto-approves ONLY the medium tier. Default false means existing approval behavior is unchanged."
+    },
+    "custom_instructions": {
+      "type": "string",
+      "description": "Builder Custom Instructions (DOCUMENTED Base44: project/app-scoped free-text guidance, editable in the Builder's More options menu, sent to the Build agent on every Build-mode AI turn). Written SERVER-side only through the authorized builder-settings surface (project.write). The full value is stored; only the first 10,000 characters are injected into the Build-mode prompt (see prompts.customInstructionsBlock). Empty means no injection. Not applied to Discuss or Agent runs. The Base44 UI is hidden while working on a branch (Freeze Files and Custom Instructions apply to the main app). Precedence relative to system/developer/user instructions is UNKNOWN, so the block is appended without overriding safety controls."
+    },
+    "design_system_id": {
+      "type": "string",
+      "description": "Builder Design System selection (Bolt-style project-scoped setting): the id of the selected design-system preset from the static registry (base44/shared/designSystemPresets.ts), written SERVER-side only through the authorized builder-settings surface (project.write) and validated against that registry. Null (the default) means no selection \u2014 the run pipeline uses the project's existing design behavior unchanged. A selection adds guidance (component patterns, tokens, implementation rules) to NEW Build output only; it never rewrites existing files."
+    },
+    "framework": {
+      "type": "string",
+      "default": "preact-htm"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "building",
+        "ready",
+        "error",
+        "archived"
+      ],
+      "default": "draft",
+      "description": "Lifecycle. 'archived' is a tombstone written through the project.delete capability (owner/admin only): the row keeps its identity and audit trail but the public runtime refuses to serve it. The Danger Zone 'Delete app' action ALSO sets 'archived' but pairs it with restorable_until/previous_status/deleted_at so it is restorable for 30 days; a project archived through the legacy archiveProject path carries no restorable_until and stays a permanent tombstone (its existing behavior is unchanged)."
+    },
+    "version_count": {
+      "type": "number",
+      "default": 0
+    },
+    "last_build_status": {
+      "type": "string",
+      "enum": [
+        "none",
+        "success",
+        "failed"
+      ],
+      "default": "none"
+    },
+    "slug": {
+      "type": "string",
+      "description": "Stable public identifier for the project's URLs. Unique per platform; one slug resolves to exactly one project. Production is served at /app/<slug>, staging at /app/<slug>--staging. NEVER copied by a clone or fork \u2014 a copy is new source code, not a second claim on the original's public identity."
+    },
+    "production_deployment_id": {
+      "type": "string",
+      "description": "The single deployment currently serving production. Preview changes and staging deployments never touch this \u2014 only an explicit production deployment or promotion does. Unpublish/Delete do NOT clear this pointer: the app stops serving through the status/unpublished gates, and republish/restore resume serving the same LIVE deployment without redeploying."
+    },
+    "production_version_number": {
+      "type": "number",
+      "description": "Version number currently live in production, which may lag the project's latest version"
+    },
+    "staging_deployment_id": {
+      "type": "string",
+      "description": "The single deployment currently serving staging. Independent of production: a staging deployment can never change what production serves."
+    },
+    "staging_version_number": {
+      "type": "number",
+      "description": "Version number currently live in staging"
+    },
+    "rls_enabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, the public runtime enforces per-end-user row-level isolation on this app's data: every record is stamped with the creator's id and reads/writes are restricted to that user. Anonymous apps (the default) keep open, shared data. Builder/workspace admin access through the builder is unaffected."
+    },
+    "auth_settings": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Deployed-app end-user auth settings, written SERVER-side only through the authorized settings surface: which social sign-in providers are enabled and the Google custom OAuth client_id (a PUBLIC identifier \u2014 the client SECRET lives ONLY in ProjectSecret as GOOGLE_OAUTH_CLIENT_SECRET and never in this field). Never a credential value."
+    },
+    "visibility": {
+      "type": "string",
+      "enum": [
+        "public",
+        "private",
+        "workspace"
+      ],
+      "default": "public",
+      "description": "App Visibility \u2014 who can open the published app and whether sign-in is required. 'public': anyone, no sign-in. 'private': only authenticated invited app users (sign-in required). 'workspace': only authenticated app users who are members of the owning workspace (sign-in required). Enforced at the single public-serving choke point (assertPublicServing) alongside the existing workspace-suspension and project-archive gates. Written SERVER-side only through the authorized auth-settings surface; the auth action stays reachable so a private/workspace app can be opened after login. 'public_login_required' is deliberately NOT offered (its Base44 availability/semantics are UNKNOWN)."
+    },
+    "unpublished": {
+      "type": "boolean",
+      "default": false,
+      "description": "Danger Zone 'Unpublish' toggle. When true the public runtime refuses to serve the app with an offline notice (503 APP_UNPUBLISHED) while the project, data, settings, custom domains and the production deployment pointer all remain intact \u2014 republishing (setting this back to false) resumes serving the same LIVE deployment without redeploying. Distinct from 'archived' (Delete): an unpublished project is NOT deleted and keeps its lifecycle status. Written SERVER-side only through the authorized danger-zone surface (deploy.manage capability)."
+    },
+    "deleted_at": {
+      "type": "string",
+      "description": "When the Danger Zone 'Delete app' action was invoked. Present only while the project is in the restorable trash (status='archived' paired with restorable_until). Absent on a project archived through the legacy archiveProject path, which stays a permanent tombstone."
+    },
+    "restorable_until": {
+      "type": "string",
+      "description": "The 30-day restore window expiry (ISO) for a Danger Zone deletion. Restore is honored only before this instant; after it the project is no longer restorable and stays a permanent archived tombstone (no purge sweep is implemented \u2014 the documented 30-day boundary is the restore cutoff, not an auto-delete trigger). Absent on a legacy archiveProject tombstone, which was never restorable."
+    },
+    "previous_status": {
+      "type": "string",
+      "description": "The project's lifecycle status immediately before a Danger Zone deletion, so Restore returns the project to the state it was in (draft/ready/...). Cleared on restore. Absent on a legacy archiveProject tombstone."
+    },
+    "transfer_pending": {
+      "type": "boolean",
+      "default": false,
+      "description": "Danger Zone 'Transfer Ownership' (DOCUMENTED Base44). When true, an ownership transfer to an OUTSIDE recipient is in progress: the project stays in place and editable until the recipient accepts. The recipient is identified by transfer_recipient_email and must accept within transfer_expires_at (7 days from initiation). Written SERVER-side only through the authorized transfer surface (workspace.manage = owner-only on the source). Distinct from 'archived'/'unpublished'."
+    },
+    "transfer_recipient_email": {
+      "type": "string",
+      "description": "Lowercased recipient email for a pending Transfer Ownership. The authenticated user whose email matches this field is the ONLY user who may accept; everyone else is refused. Cleared on accept, decline or expiry."
+    },
+    "transfer_initiated_at": {
+      "type": "string",
+      "description": "ISO timestamp when the owner initiated the pending transfer. Cleared on accept, decline or expiry."
+    },
+    "transfer_expires_at": {
+      "type": "string",
+      "description": "ISO timestamp (initiation + 7 days) after which the pending transfer can no longer be accepted; an expired transfer is declined-by-default and leaves the project and data unchanged. Cleared on accept, decline, or expiry."
+    },
+    "transfer_initiated_by": {
+      "type": "string",
+      "description": "User id of the source owner who initiated the transfer. The owner may also decline/cancel a pending transfer. Cleared on accept."
+    },
+    "transfer_accepted_by": {
+      "type": "string",
+      "description": "User id of the recipient who accepted the transfer. Stamped once at accept (audit provenance); never set for a declined/expired transfer."
+    },
+    "transfer_accepted_at": {
+      "type": "string",
+      "description": "ISO timestamp when the recipient accepted the transfer and the project moved to the recipient-selected workspace. Stamped once at accept."
+    },
+    "origin": {
+      "type": "string",
+      "enum": [
+        "scaffold",
+        "clone",
+        "fork",
+        "template"
+      ],
+      "default": "scaffold",
+      "description": "How this project came into existence. 'scaffold' is a new blank project; 'clone' copied another project's current state; 'fork' copied one immutable version of a project; 'template' was materialized from a published marketplace template artifact. Stamped SERVER-side at creation and never taken from a client."
+    },
+    "origin_project_id": {
+      "type": "string",
+      "description": "For a clone or fork: the project it was copied from. Lineage only \u2014 it grants the copy no access to the source, and deleting the source does not affect the copy."
+    },
+    "origin_version_number": {
+      "type": "number",
+      "description": "For a fork: the exact source version number the fork copied, so the fork's provenance stays meaningful after the source moves on. For a clone: the source project's version count at copy time."
+    },
+    "origin_listing_id": {
+      "type": "string",
+      "description": "For a template project: the MarketplaceListing it was created from."
+    },
+    "origin_listing_version_id": {
+      "type": "string",
+      "description": "For a template project: the exact immutable MarketplaceVersion whose checksum-verified artifact produced this project."
+    }
+  },
+  "required": [
+    "workspace_id",
+    "name"
+  ],
+  "rls": {
+    "read": false,
+    "create": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "system"
+      }
+    }
+  }
+}

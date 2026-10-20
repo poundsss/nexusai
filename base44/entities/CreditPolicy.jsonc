@@ -1,0 +1,53 @@
+{
+  "name": "CreditPolicy",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string",
+      "description": "Workspace the policy applies to. Absent/null means the platform default policy."
+    },
+    "policy_version": {
+      "type": "string",
+      "description": "Frozen onto every charge, so changing the policy never rewrites what past operations cost."
+    },
+    "credits_per_usd": {
+      "type": "number",
+      "default": 100
+    },
+    "markup_multiplier": {
+      "type": "number",
+      "default": 1.4,
+      "description": "Applied to real provider cost to produce the user-facing charge. Provider cost and user charge are deliberately different concepts."
+    },
+    "minimum_charge_credits": {
+      "type": "number",
+      "default": 1
+    },
+    "rounding": {
+      "type": "string",
+      "enum": [
+        "ceil",
+        "round",
+        "floor"
+      ],
+      "default": "ceil"
+    },
+    "model_multipliers": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Per-model multipliers keyed by model_id."
+    },
+    "operation_multipliers": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Per-operation-type multipliers keyed by operation_type."
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "policy_version"
+  ]
+}

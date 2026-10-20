@@ -1,0 +1,30 @@
+{
+  "name": "AeoProbe",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Project the probe belongs to. Every read and mutation is filtered by this field server-side."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side from the authorized project."
+    },
+    "question": {
+      "type": "string",
+      "description": "The assistant-style question whose answer is checked for mentions of the project (10-300 chars)."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "paused"
+      ],
+      "default": "active"
+    }
+  },
+  "required": [
+    "project_id",
+    "question"
+  ]
+}

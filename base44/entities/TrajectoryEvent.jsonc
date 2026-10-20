@@ -1,0 +1,91 @@
+{
+  "name": "TrajectoryEvent",
+  "type": "object",
+  "properties": {
+    "trajectory_id": {
+      "type": "string",
+      "description": "Episode this event belongs to. Every read is filtered by this field together with the project, so events can never be read across projects."
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "workspace_id": {
+      "type": "string"
+    },
+    "trace_id": {
+      "type": "string",
+      "description": "The run's existing correlation id, so an event is joinable with the platform's trace, audit, MCP, function and build records instead of restating them."
+    },
+    "sequence": {
+      "type": "number",
+      "description": "Position of the event in the episode. Allocated from the trajectory's event count, so the history has a stable order independent of write timing."
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "task_started",
+        "context_loaded",
+        "model_selected",
+        "plan_recorded",
+        "phase_started",
+        "phase_completed",
+        "tool_call",
+        "retry",
+        "fallback",
+        "build_result",
+        "runtime_result",
+        "repair_attempt",
+        "mutation_recorded",
+        "outcome_recorded",
+        "user_outcome",
+        "finalized",
+        "correction"
+      ],
+      "description": "Which boundary of the episode this event records."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ok",
+        "error",
+        "cancelled"
+      ],
+      "default": "ok"
+    },
+    "phase": {
+      "type": "string"
+    },
+    "attempt": {
+      "type": "number",
+      "default": 1,
+      "description": "Which attempt of the logical step this event is. A retry keeps the episode and increments this, so retry behaviour is visible rather than looking like duplicated work."
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Bounded, scrubbed structured metadata for the event. Passed through the platform's existing secret scrubber, so no password, API key, OAuth token, project secret or MCP/GitHub credential can be stored. Never a prompt-level credential, raw header or private reasoning trace."
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "Stable key of the logical event. A worker that re-executes a phase resolves the existing event by this key instead of appending a duplicate, which is what keeps the history exactly-once under retries and worker recovery."
+    },
+    "is_correction": {
+      "type": "boolean",
+      "default": false,
+      "description": "True when the event was appended after the episode was sealed. Corrections extend history and bump the trajectory revision; they never rewrite an earlier event."
+    },
+    "at": {
+      "type": "string",
+      "description": "When the event occurred, preserved independently of the row's creation time so ordering stays stable."
+    }
+  },
+  "required": [
+    "trajectory_id",
+    "run_id",
+    "project_id",
+    "event_type"
+  ]
+}

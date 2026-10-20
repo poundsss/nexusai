@@ -1,0 +1,123 @@
+{
+  "name": "DatasetItem",
+  "type": "object",
+  "properties": {
+    "dataset_id": {
+      "type": "string",
+      "description": "Dataset this item belongs to. Every read is filtered by this field after the caller is authorized against the dataset's scope, so one dataset's items can never be read through another."
+    },
+    "dataset_version": {
+      "type": "number",
+      "description": "Version of the dataset the item was built for, denormalized so an exported item is self-describing."
+    },
+    "dataset_type": {
+      "type": "string",
+      "enum": [
+        "sft",
+        "preference",
+        "evaluation"
+      ]
+    },
+    "item_key": {
+      "type": "string",
+      "description": "Deterministic identity of the example (its source episode, or the ordered pair for a preference item). Unique within a dataset: a duplicate is detected and excluded rather than shipped twice."
+    },
+    "item_checksum": {
+      "type": "string",
+      "description": "Hash of the item's transformed payload. Feeds the dataset checksum, so altering an item invalidates the dataset it belongs to."
+    },
+    "trajectory_id": {
+      "type": "string",
+      "description": "Sealed episode this example was derived from. READ-only lineage \u2014 the trajectory is never written back to."
+    },
+    "evaluation_id": {
+      "type": "string",
+      "description": "Judge evaluation that supplied the authoritative quality signal. Required for every item; an item without it fails validation instead of being finalized."
+    },
+    "reward_id": {
+      "type": "string",
+      "description": "Reward record that supplied the normalized outcome signal, where the dataset type requires one (preference always; SFT when a reward bound was applied). Absent by design for evaluation items, which carry no training reward."
+    },
+    "rejected_trajectory_id": {
+      "type": "string",
+      "description": "For a preference item: the episode that lost the comparison. The preferred side is carried in trajectory_id, so both sides keep full lineage."
+    },
+    "rejected_evaluation_id": {
+      "type": "string"
+    },
+    "rejected_reward_id": {
+      "type": "string"
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Source project. Present whenever recording it is permitted by the dataset's scope, and always checked against that scope during validation so a foreign project's example cannot sit inside a dataset."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Source workspace, resolved server-side."
+    },
+    "source_version_id": {
+      "type": "string",
+      "description": "Immutable ProjectVersion the episode produced \u2014 the reference a consumer resolves to recover exactly what the example was built from. Project contents are never copied into the item."
+    },
+    "source_version_number": {
+      "type": "number"
+    },
+    "source_run_id": {
+      "type": "string"
+    },
+    "source_trace_id": {
+      "type": "string",
+      "description": "The operation's existing correlation id, carried through verbatim so an item stays joinable with the platform's own execution trail."
+    },
+    "evaluator_version": {
+      "type": "string",
+      "description": "Evaluator version behind the item's quality signal, so the example is attributable to the exact judge that produced it."
+    },
+    "reward_policy_version": {
+      "type": "string"
+    },
+    "eligibility_policy_version": {
+      "type": "string",
+      "description": "Policy version that admitted this item. Stored per item, so an item remains explainable even outside its dataset row."
+    },
+    "transformation_version": {
+      "type": "string",
+      "description": "Transform version that shaped the payload. Two items with the same source and the same transform version are byte-identical."
+    },
+    "inclusion_reason": {
+      "type": "string",
+      "description": "Why this example was admitted, in the policy's own terms \u2014 enough to reproduce the decision rather than just its result."
+    },
+    "exclusion_reason": {
+      "type": "string",
+      "description": "Set only on a recorded near-miss; an included item never carries one."
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The training/evaluation example itself, in a provider-neutral structured format. Built from an explicit field ALLOWLIST and passed through the platform's existing secret scrubber, so no credential, private memory, hidden chain-of-thought or unrelated project data can enter it."
+    },
+    "labels": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Authoritative outcome/quality metadata read from the evaluation and reward records (never inferred here). Absent for evaluation items, which must not ship training-only labels."
+    },
+    "lineage": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The full chain in one inspectable object: dataset \u2192 version \u2192 item \u2192 trajectory \u2192 evaluation \u2192 reward \u2192 source project/version, with the policy and transform versions that produced it."
+    },
+    "created_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "dataset_id",
+    "dataset_type",
+    "item_key",
+    "trajectory_id",
+    "transformation_version",
+    "eligibility_policy_version"
+  ]
+}

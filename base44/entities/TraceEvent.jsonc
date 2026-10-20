@@ -1,0 +1,97 @@
+{
+  "name": "TraceEvent",
+  "type": "object",
+  "properties": {
+    "trace_id": {
+      "type": "string",
+      "description": "The ONE correlation id of the top-level operation this event belongs to. Created once where the operation enters the platform (an AI run enqueue, a job enqueue, a function call, a preview session) and then carried unchanged through every background phase, worker hand-off and retry \u2014 so a failure in a tool, an MCP server or a generated function is still attributable to the operation that caused it. Never regenerated on retry."
+    },
+    "span_id": {
+      "type": "string",
+      "description": "Identity of this single event within the trace."
+    },
+    "parent_span_id": {
+      "type": "string",
+      "description": "The span that caused this one (run phase \u2192 tool call \u2192 MCP call). Lets the trail be read as a tree, not just a list."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, denormalized so a diagnostic query can be isolated without joining."
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Project the event belongs to. Every diagnostic read is filtered by this field after the caller's project authorization, so one project's trail can never be read from another."
+    },
+    "run_id": {
+      "type": "string",
+      "description": "AIRun this event belongs to, when the operation is a builder run."
+    },
+    "job_id": {
+      "type": "string",
+      "description": "BackgroundJob that executed this event, when it ran on a worker."
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "ai_run",
+        "ai_run_phase",
+        "ai_run_step",
+        "tool_call",
+        "mcp_call",
+        "function_exec",
+        "background_job",
+        "deployment",
+        "frontend_error",
+        "diagnostic_query"
+      ],
+      "description": "Which execution boundary this event records. The existing per-subsystem logs (AIRun.tool_log, MCPInvocation, FunctionInvocation, AuditLog, Build logs) remain authoritative for their own detail; this row exists to correlate them."
+    },
+    "name": {
+      "type": "string",
+      "description": "Low-cardinality operation name (phase name, tool name, function name, job type)."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "running",
+        "ok",
+        "error",
+        "cancelled"
+      ],
+      "default": "ok"
+    },
+    "attempt": {
+      "type": "number",
+      "default": 1,
+      "description": "Which attempt of this logical step this event is. A retry keeps the trace_id and increments this, which is what makes retry behaviour visible instead of looking like duplicate work."
+    },
+    "error_code": {
+      "type": "string"
+    },
+    "error_message": {
+      "type": "string",
+      "description": "Safe, redacted failure message. Passed through the shared scrubber, so no secret, token or credential value can be stored here."
+    },
+    "duration_ms": {
+      "type": "number"
+    },
+    "at": {
+      "type": "string",
+      "description": "When the event occurred, preserved independently of the row's own creation time so the trail keeps a stable ordering."
+    },
+    "reference_id": {
+      "type": "string",
+      "description": "Id of the authoritative record this event points at (MCPInvocation, FunctionInvocation, Build, ProjectVersion). The detail stays in that record; this is the correlation handle."
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Bounded, scrubbed diagnostic context (counts, paths, model name, status codes). Never a prompt, credential, token or raw payload."
+    }
+  },
+  "required": [
+    "trace_id",
+    "event_type",
+    "name"
+  ]
+}

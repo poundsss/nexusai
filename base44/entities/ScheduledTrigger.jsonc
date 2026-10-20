@@ -1,0 +1,106 @@
+{
+  "name": "ScheduledTrigger",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string",
+      "description": "Unique trigger name per project"
+    },
+    "function_name": {
+      "type": "string",
+      "description": "Generated backend function to execute on schedule"
+    },
+    "cron": {
+      "type": "string",
+      "description": "5-field cron expression (minute hour day-of-month month day-of-week). Evaluated in the trigger's timezone when set. Used when interval_seconds and one_time_at are not set."
+    },
+    "interval_seconds": {
+      "type": "number",
+      "description": "Simple fixed interval in seconds. Alternative to cron for cadences cron cannot express."
+    },
+    "one_time_at": {
+      "type": "string",
+      "description": "One-time fire time (ISO, UTC). DOCUMENTED (Base44): a one-time schedule fires once and then ends. Takes precedence over cron/interval when set."
+    },
+    "ends_type": {
+      "type": "string",
+      "enum": [
+        "never",
+        "on",
+        "after"
+      ],
+      "default": "never",
+      "description": "DOCUMENTED (Base44): when a recurring schedule stops \u2014 never, on ends_on_date (inclusive), or after ends_after_count runs."
+    },
+    "ends_on_date": {
+      "type": "string",
+      "description": "End date (ISO, UTC), inclusive. Required when ends_type is on."
+    },
+    "ends_after_count": {
+      "type": "number",
+      "description": "Number of executed runs after which the schedule ends. Required when ends_type is after."
+    },
+    "timezone": {
+      "type": "string",
+      "default": "UTC",
+      "description": "IANA timezone the cron expression is evaluated in. Intervals and one-time dates are timezone-independent."
+    },
+    "enabled": {
+      "type": "boolean",
+      "default": true
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Static request body passed to the function as ctx.request.body. Never carries secrets or credentials."
+    },
+    "consecutive_failures": {
+      "type": "number",
+      "default": 0,
+      "description": "Consecutive failed/timeout runs; reset by any success. At 5 the trigger pauses automatically (DOCUMENTED) and the builder is notified."
+    },
+    "run_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Executed runs so far; drives ends_type=after."
+    },
+    "paused_reason": {
+      "type": "string",
+      "description": "Why the trigger was disabled: completed (one-time fired), schedule_ended, or consecutive_failures."
+    },
+    "last_run_at": {
+      "type": "string"
+    },
+    "next_run_at": {
+      "type": "string",
+      "description": "Next due time (ISO). Null/absent until first computed by the scheduler."
+    },
+    "last_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "success",
+        "failed",
+        "skipped",
+        "timeout",
+        "running"
+      ],
+      "default": "pending"
+    },
+    "last_error": {
+      "type": "string"
+    },
+    "last_run_id": {
+      "type": "string",
+      "description": "Reference to the most recent ScheduledRun"
+    }
+  },
+  "required": [
+    "project_id",
+    "name",
+    "function_name"
+  ]
+}

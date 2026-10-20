@@ -1,0 +1,125 @@
+{
+  "name": "ViralityPlanPost",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Project the post belongs to. Every read and mutation is filtered by this field server-side, so one project's plan posts can never be read or changed from another."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side from the authorized project."
+    },
+    "plan_id": {
+      "type": "string",
+      "description": "The content plan this post belongs to. Only posts of the project's CURRENT plan are mutable."
+    },
+    "post_id": {
+      "type": "string",
+      "description": "Documented SocialPost.id \u2014 the post_id the refine/update/image endpoints take."
+    },
+    "platform": {
+      "type": "string",
+      "description": "Documented Platform: x, instagram, tiktok, linkedin, reddit or facebook."
+    },
+    "angle": {
+      "type": "string",
+      "description": "Documented PostAngle: pain_point, feature_demo, social_proof, trending_hook, user_story or before_after (the scheduled post's hook)."
+    },
+    "angle_label": {
+      "type": "string",
+      "description": "Documented human-readable label for the angle."
+    },
+    "post_number": {
+      "type": "number",
+      "description": "Documented position of this post within its platform's set, starting at 1."
+    },
+    "total_posts": {
+      "type": "number",
+      "description": "Documented number of posts generated for this platform."
+    },
+    "suggested_day": {
+      "type": "number",
+      "description": "Documented suggested publishing day, counted from the start of the campaign."
+    },
+    "rationale": {
+      "type": "string",
+      "description": "Documented reason the post works for its platform and angle."
+    },
+    "content": {
+      "type": "string",
+      "description": "Documented ready-to-publish post text. Replaced (sanitized) by the manual update; rewritten by the single-post refine."
+    },
+    "image_prompt": {
+      "type": "string",
+      "description": "Documented prompt used to generate the post image."
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Documented URL of the generated post image, or null until one lands (inline for the first platform, background-pollable for the rest)."
+    },
+    "image_status": {
+      "type": "string",
+      "enum": [
+        "none",
+        "pending",
+        "ready",
+        "failed"
+      ],
+      "default": "none",
+      "description": "NEXUSAI-DERIVED image lifecycle (the documented contract exposes only image_url and polling): none = no image planned, pending = generating in the background, ready = image_url set, failed = generation failed."
+    },
+    "image_error": {
+      "type": "string",
+      "description": "Truncated safe error when image generation failed."
+    },
+    "hashtags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Documented suggested hashtags, without the leading #."
+    },
+    "post_title": {
+      "type": "string",
+      "description": "Documented title for platforms that use one (Reddit, LinkedIn)."
+    },
+    "suggested_subreddits": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Documented subreddit suggestions for a Reddit post, empty otherwise."
+    },
+    "launch_comment": {
+      "type": "string",
+      "description": "Documented first comment to post under the main post."
+    },
+    "option_label": {
+      "type": "string",
+      "description": "Documented label for this post when the platform's mode is selection."
+    },
+    "best_for_context": {
+      "type": "string",
+      "description": "Documented note on when to prefer this selection option."
+    },
+    "best_time_reason": {
+      "type": "string",
+      "description": "The planner-written reason a suggested time was picked (documented on the scheduled post for plan-generated posts)."
+    },
+    "refine_started_at": {
+      "type": "string",
+      "description": "In-flight refine marker (NEXUSAI-DERIVED storage for the documented 409 on editing a post while its refinement is in flight); a marker older than the staleness bound is healed."
+    }
+  },
+  "required": [
+    "project_id",
+    "workspace_id",
+    "plan_id",
+    "post_id",
+    "platform",
+    "content"
+  ]
+}

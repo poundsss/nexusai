@@ -1,0 +1,43 @@
+{
+  "name": "AppTeam",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Project the team belongs to. A team is the generated app's tenant boundary and never spans projects."
+    },
+    "workspace_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "archived"
+      ],
+      "default": "active"
+    },
+    "app_role": {
+      "type": "string",
+      "description": "OPTIONAL application role key (from the project's AppRole list, e.g. user/admin) assigned to this group for app-access (group access). Validated SERVER-side against the project's existing roles on write; absent means no app role is assigned to the group. NEXUSAI-DERIVED storage for the documented Base44 'share the app with workspace groups and assign each group a role' behavior \u2014 Base44's exact placement/permission semantics are UNKNOWN, so this field stores the assignment only and does NOT drive runtime permission resolution (the certified roles.manage / users.manage checks are unchanged)."
+    },
+    "created_by": {
+      "type": "string",
+      "description": "app_user_id of the creator."
+    },
+    "created_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "project_id",
+    "name",
+    "status"
+  ]
+}

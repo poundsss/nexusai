@@ -1,0 +1,174 @@
+{
+  "name": "BenchmarkResult",
+  "type": "object",
+  "properties": {
+    "benchmark_id": {
+      "type": "string",
+      "description": "Benchmark this result belongs to. Every read is filtered by this field after the caller is authorized against the benchmark's owner project, so one workspace can never read another's measurements."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side."
+    },
+    "benchmark_version": {
+      "type": "number",
+      "description": "Benchmark version this result belongs to, denormalized so an exported result is self-describing."
+    },
+    "task_id": {
+      "type": "string"
+    },
+    "task_key": {
+      "type": "string"
+    },
+    "task_version": {
+      "type": "number"
+    },
+    "task_category": {
+      "type": "string"
+    },
+    "task_difficulty": {
+      "type": "string"
+    },
+    "candidate_id": {
+      "type": "string"
+    },
+    "candidate_name": {
+      "type": "string"
+    },
+    "candidate_version": {
+      "type": "string"
+    },
+    "model_id": {
+      "type": "string"
+    },
+    "provider": {
+      "type": "string"
+    },
+    "execution_path": {
+      "type": "string",
+      "description": "The real execution path this attempt ran through: 'run' (AI run pipeline) or 'agent' (agent loop, which delegates to that same pipeline)."
+    },
+    "run_key": {
+      "type": "string",
+      "description": "Deterministic identity of this measurement: benchmark version + task key/version + candidate configuration checksum + environment fingerprint. Repeated execution resolves the SAME run key instead of creating a second result, which is what makes a rebuild idempotent rather than corrupting the result set."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "PENDING",
+        "RUNNING",
+        "COMPLETED",
+        "FAILED",
+        "SKIPPED",
+        "INELIGIBLE"
+      ],
+      "default": "PENDING",
+      "description": "Execution status. SKIPPED marks an execution the harness deliberately did not run (an existing terminal result for the same run key). INELIGIBLE marks a candidate that does not support the task's required capabilities \u2014 recorded, never scored as a model failure."
+    },
+    "benchmark_project_id": {
+      "type": "string",
+      "description": "The ISOLATED scratch project this attempt executed in, seeded from the task fixture. Never a user or production project, and never the fixture itself."
+    },
+    "initial_state_fingerprint": {
+      "type": "string",
+      "description": "Fingerprint of the starting state this attempt actually received. Identical across candidates of the same task, which is how equivalent initial conditions are proven."
+    },
+    "run_id": {
+      "type": "string",
+      "description": "The real AIRun (or the builder run of an agent attempt) that executed the task. Authoritative for its own execution detail; referenced, not copied."
+    },
+    "agent_run_id": {
+      "type": "string",
+      "description": "The real AgentRun, for candidates on the agent execution path."
+    },
+    "trace_id": {
+      "type": "string",
+      "description": "The execution's existing correlation id, carried through verbatim \u2014 the harness mints no second trace."
+    },
+    "trajectory_id": {
+      "type": "string",
+      "description": "Sealed episode reference (#18). READ-only lineage."
+    },
+    "evaluation_id": {
+      "type": "string",
+      "description": "Judge evaluation reference (#19) that supplied every quality signal in this result."
+    },
+    "reward_id": {
+      "type": "string",
+      "description": "Reward reference (#20) where one was available. Absent is normal and never scored as zero."
+    },
+    "build_id": {
+      "type": "string",
+      "description": "Authoritative Build record reference."
+    },
+    "version_id": {
+      "type": "string",
+      "description": "Immutable ProjectVersion the attempt produced, when it produced one."
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The SEPARATE measured metrics for this attempt: task_success, build_success, runtime_success, regression, repair_count, latency_ms, judge dimension scores, reward score, files/entities changed and tool-call counts. Null means 'not measurable', never zero."
+    },
+    "usage": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Model/provider usage and cost metadata WHEN AVAILABLE (tokens, credits charged, provider cost, model actually used after any router fallback). Absent rather than fabricated when the execution reported none."
+    },
+    "retries": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Retry accounting read from the existing execution records (the harness adds no second retry system): retry_count, final_attempt, and whether the retry changed the outcome."
+    },
+    "failure_class": {
+      "type": "string",
+      "enum": [
+        "none",
+        "model_provider_failure",
+        "timeout",
+        "tool_failure",
+        "build_failure",
+        "runtime_failure",
+        "authorization_failure",
+        "infrastructure_failure",
+        "benchmark_fixture_failure"
+      ],
+      "default": "none",
+      "description": "Explicit failure classification. Kept distinct so an infrastructure, fixture or authorization failure is never reported as a model failure."
+    },
+    "failure_detail": {
+      "type": "string",
+      "description": "Scrubbed failure detail. Passed through the platform's existing secret scrubber, so no credential can enter a benchmark result."
+    },
+    "scored": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this result participates in the model's success rates. Infrastructure, fixture and authorization failures, ineligible candidates and skipped executions are recorded but NOT scored, so environment problems cannot distort a model comparison."
+    },
+    "result_checksum": {
+      "type": "string",
+      "description": "Deterministic fingerprint of the result's measured content. Feeds the benchmark checksum, so altering a result invalidates the benchmark it belongs to."
+    },
+    "reproducibility": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Everything needed to reproduce this single measurement: benchmark version, task-set version, task version, evaluator version, reward policy version, candidate version and config checksum, runtime/environment version, tool configuration fingerprint and dataset fingerprint where applicable."
+    },
+    "started_at": {
+      "type": "string"
+    },
+    "completed_at": {
+      "type": "string"
+    },
+    "latency_ms": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "benchmark_id",
+    "task_id",
+    "candidate_id",
+    "run_key",
+    "status"
+  ]
+}

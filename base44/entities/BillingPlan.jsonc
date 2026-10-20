@@ -1,0 +1,121 @@
+{
+  "name": "BillingPlan",
+  "type": "object",
+  "properties": {
+    "code": {
+      "type": "string",
+      "description": "Stable plan code, e.g. pro_monthly."
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "price_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD"
+    },
+    "interval": {
+      "type": "string",
+      "enum": [
+        "one_time",
+        "monthly",
+        "yearly"
+      ],
+      "default": "monthly",
+      "description": "Billing period length. Drives period keys and recurring credit grants."
+    },
+    "included_credits": {
+      "type": "number",
+      "default": 0,
+      "description": "Credits granted per interval. Granted only through a validated billing event, never directly by a payment provider callback."
+    },
+    "included_integration_credits": {
+      "type": "number",
+      "default": 0,
+      "description": "Integration-pool credits granted per interval, alongside included_credits (message pool). Granted through the same validated billing event."
+    },
+    "credit_options": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "description": "OPTIONAL selectable credit allowances (P-8.8, Elite parity): [{ code, message_credits, integration_credits }]. A caller may only NAME an option by its code \u2014 the amounts are resolved server-side from this list, so no client-supplied volume is ever trusted. Absent means the plan's fixed included_credits apply. Base44 publishes that Elite credits are selectable but not the exact amounts/prices (UNKNOWN); the rows here are this platform's own ladder, anchored on the verified default."
+    },
+    "trial_days": {
+      "type": "number",
+      "default": 0,
+      "description": "Trial length. A trialing subscription holds entitlements but has not been paid for, so trial credits are granted once and never re-granted on conversion."
+    },
+    "tier_rank": {
+      "type": "number",
+      "default": 0,
+      "description": "Relative plan weight. An upgrade is a move to a higher rank (effective immediately), a downgrade a move to a lower one (effective at period end) \u2014 so the direction is derived, never taken from the client."
+    },
+    "visibility": {
+      "type": "string",
+      "enum": [
+        "public",
+        "custom",
+        "enterprise",
+        "hidden"
+      ],
+      "default": "public",
+      "description": "Who may self-serve this plan. Custom/enterprise plans exist for negotiated contracts and cannot be self-subscribed."
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Hard resource limits (projects, seats, custom_domains, deployments_per_day, marketplace_installs)."
+    },
+    "usage_limits": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Usage ceilings enforced through the budget engine (monthly_credits, credits_per_run, concurrent_runs)."
+    },
+    "model_access": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Model ids or quality tiers this plan may route to. Empty means every active catalog model. Enforced server-side at routing time, not in the UI."
+    },
+    "overage_policy": {
+      "type": "string",
+      "enum": [
+        "block",
+        "allow_overage",
+        "auto_topup"
+      ],
+      "default": "block",
+      "description": "What happens when included credits run out: block refuses new operations, allow_overage lets purchased credits be spent, auto_topup requests another purchase. Work already delivered is always charged regardless."
+    },
+    "entitlements": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Feature entitlements this plan unlocks (seats, custom domains, advanced models, sso, scim, budget ceilings)."
+    },
+    "provider": {
+      "type": "string",
+      "default": "none",
+      "description": "Payment provider this plan is mirrored in (none until one is configured). The platform stays provider-agnostic: plan identity lives here, not in the provider."
+    },
+    "provider_price_id": {
+      "type": "string"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "code",
+    "name"
+  ]
+}

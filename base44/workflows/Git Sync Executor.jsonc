@@ -1,0 +1,246 @@
+{
+  "name": "Git Sync Executor",
+  "description": "Durably executes a GitHub export or import in the background by repeatedly invoking the githubSyncStep worker until the operation reaches a terminal state.",
+  "trigger": {
+    "config": {
+      "trigger_type": "entity",
+      "entity_name": "GitSyncRun",
+      "events": [
+        "create"
+      ]
+    },
+    "condition": "${ .trigger.data.status == \"QUEUED\" }"
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "git_sync_executor",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "sync_step_1": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "githubSyncStep",
+            "args": {
+              "sync_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_1",
+          "x-base44": {
+            "title": "Sync step 1",
+            "description": "Advance the operation"
+          }
+        }
+      },
+      {
+        "check_1": {
+          "switch": [
+            {
+              "when": "${ .sync_step_1.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "pause_1"
+            }
+          ],
+          "x-base44": {
+            "title": "Finished?"
+          }
+        }
+      },
+      {
+        "pause_1": {
+          "wait": "PT5S",
+          "then": "sync_step_2",
+          "x-base44": {
+            "title": "Brief pause"
+          }
+        }
+      },
+      {
+        "sync_step_2": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "githubSyncStep",
+            "args": {
+              "sync_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_2",
+          "x-base44": {
+            "title": "Sync step 2"
+          }
+        }
+      },
+      {
+        "check_2": {
+          "switch": [
+            {
+              "when": "${ .sync_step_2.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "pause_2"
+            }
+          ],
+          "x-base44": {
+            "title": "Finished?"
+          }
+        }
+      },
+      {
+        "pause_2": {
+          "wait": "PT8S",
+          "then": "sync_step_3",
+          "x-base44": {
+            "title": "Brief pause"
+          }
+        }
+      },
+      {
+        "sync_step_3": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "githubSyncStep",
+            "args": {
+              "sync_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_3",
+          "x-base44": {
+            "title": "Sync step 3"
+          }
+        }
+      },
+      {
+        "check_3": {
+          "switch": [
+            {
+              "when": "${ .sync_step_3.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "pause_3"
+            }
+          ],
+          "x-base44": {
+            "title": "Finished?"
+          }
+        }
+      },
+      {
+        "pause_3": {
+          "wait": "PT10S",
+          "then": "sync_step_4",
+          "x-base44": {
+            "title": "Brief pause"
+          }
+        }
+      },
+      {
+        "sync_step_4": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "githubSyncStep",
+            "args": {
+              "sync_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_4",
+          "x-base44": {
+            "title": "Sync step 4"
+          }
+        }
+      },
+      {
+        "check_4": {
+          "switch": [
+            {
+              "when": "${ .sync_step_4.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "pause_4"
+            }
+          ],
+          "x-base44": {
+            "title": "Finished?"
+          }
+        }
+      },
+      {
+        "pause_4": {
+          "wait": "PT15S",
+          "then": "sync_step_5",
+          "x-base44": {
+            "title": "Brief pause"
+          }
+        }
+      },
+      {
+        "sync_step_5": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "githubSyncStep",
+            "args": {
+              "sync_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_5",
+          "x-base44": {
+            "title": "Sync step 5"
+          }
+        }
+      },
+      {
+        "check_5": {
+          "switch": [
+            {
+              "when": "${ .sync_step_5.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "pause_5"
+            }
+          ],
+          "x-base44": {
+            "title": "Finished?"
+          }
+        }
+      },
+      {
+        "pause_5": {
+          "wait": "PT20S",
+          "then": "sync_step_6",
+          "x-base44": {
+            "title": "Brief pause"
+          }
+        }
+      },
+      {
+        "sync_step_6": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "githubSyncStep",
+            "args": {
+              "sync_run_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Sync step 6",
+            "description": "Final attempt; the recovery sweep resumes anything still unfinished"
+          }
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,145 @@
+{
+  "name": "MobileBuild",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string",
+      "description": "Account this build belongs to. The plan's daily mobile-build ceiling is counted per workspace here."
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "deployment_id": {
+      "type": "string",
+      "description": "The LIVE deployment whose artifact this build packages."
+    },
+    "artifact_id": {
+      "type": "string",
+      "description": "The IMMUTABLE DeploymentArtifact this build is pinned to, frozen at request time. The build never reads the project's mutable working files \u2014 a later edit cannot change an in-flight or finished build."
+    },
+    "platform": {
+      "type": "string",
+      "enum": [
+        "ios",
+        "android"
+      ],
+      "description": "Target native platform this build packages for."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "QUEUED",
+        "BUILDING",
+        "SIGNING",
+        "READY",
+        "FAILED",
+        "CANCELLED"
+      ],
+      "default": "QUEUED",
+      "description": "Build lifecycle. Terminal states (READY, FAILED, CANCELLED) are never overwritten."
+    },
+    "artifact_uri": {
+      "type": "string",
+      "description": "Immutable PRIVATE-storage reference of the produced binary package, written once at the BUILDING\u2192SIGNING transition and never rewritten. Reachable only through short-lived signed download URLs."
+    },
+    "checksum": {
+      "type": "string",
+      "description": "Identity of the source artifact the package is derived from (the DeploymentArtifact's checksum), copied at request time so the build always resolves to exactly what was deployed and verified."
+    },
+    "package_checksum": {
+      "type": "string",
+      "description": "SHA-256 of the packaged binary bundle's canonical bytes. Deterministic: the same source artifact packages to the same checksum, verified against what storage actually serves before the phase is committed."
+    },
+    "package_size_bytes": {
+      "type": "number",
+      "description": "Size of the packaged binary bundle in bytes."
+    },
+    "version_number": {
+      "type": "number",
+      "description": "Project version the pinned artifact serves \u2014 version metadata stored with the package at build time."
+    },
+    "version_name": {
+      "type": "string",
+      "description": "OPTIONAL human-facing release version (e.g. 1.0.0) for the release this build feeds. Pinned at request time exactly like the artifact, so a later edit cannot change a finished build's release identity."
+    },
+    "version_code": {
+      "type": "number",
+      "description": "OPTIONAL monotonic machine version code for the release this build feeds, pinned at request time."
+    },
+    "release_notes": {
+      "type": "string",
+      "description": "OPTIONAL release notes stored with the build and carried onto the release created from it."
+    },
+    "minimum_os_version": {
+      "type": "string",
+      "description": "OPTIONAL minimum OS version the packaged app requires, pinned at request time."
+    },
+    "signed_at": {
+      "type": "string",
+      "description": "When the workspace's signing credential produced the signed artifact metadata (Phase 2: no store signing yet)."
+    },
+    "signing_secret_name": {
+      "type": "string",
+      "description": "IDENTITY of the signing credential used (name only \u2014 a credential VALUE never appears on a build row, in logs or in any response)."
+    },
+    "failure_code": {
+      "type": "string",
+      "description": "ARTIFACT_ERROR | MISSING_SIGNING_CREDENTIALS | WORKER_LOST | BUILD_ERROR"
+    },
+    "failure_summary": {
+      "type": "string"
+    },
+    "lease_token": {
+      "type": "string",
+      "description": "Identifies the single worker currently advancing this build; exactly one worker may hold it."
+    },
+    "lease_expires_at": {
+      "type": "string",
+      "description": "When the current worker's lease expires; an expired lease is reclaimable, so a dead worker never strands the build."
+    },
+    "heartbeat_at": {
+      "type": "string"
+    },
+    "recovery_count": {
+      "type": "number",
+      "default": 0,
+      "description": "How many times a lost worker was recovered from the persisted checkpoint. Bounded, so a repeatedly dying worker ends terminal instead of retrying forever."
+    },
+    "created_by": {
+      "type": "string",
+      "description": "Authenticated user who requested this build; authorization was resolved at request time."
+    },
+    "started_at": {
+      "type": "string"
+    },
+    "completed_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "workspace_id",
+    "project_id",
+    "deployment_id",
+    "artifact_id",
+    "platform",
+    "status"
+  ],
+  "rls": {
+    "read": false,
+    "create": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "system"
+      }
+    }
+  }
+}

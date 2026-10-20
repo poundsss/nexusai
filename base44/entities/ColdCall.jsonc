@@ -1,0 +1,77 @@
+{
+  "name": "ColdCall",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string"
+    },
+    "workspace_id": {
+      "type": "string"
+    },
+    "customer_id": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "Scheduling member, reauthorized before execution."
+    },
+    "script": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "scheduled",
+        "dialing",
+        "failed",
+        "canceled",
+        "outcome_unknown"
+      ],
+      "default": "scheduled"
+    },
+    "blocker_code": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string",
+      "description": "No summary without real provider results."
+    },
+    "script_request_key": {
+      "type": "string"
+    },
+    "call_job_id": {
+      "type": "string"
+    },
+    "scheduled_at": {
+      "type": "string"
+    },
+    "dialed_at": {
+      "type": "string"
+    },
+    "completed_at": {
+      "type": "string"
+    },
+    "attempts": {
+      "type": "number",
+      "default": 0
+    },
+    "retryable": {
+      "type": "boolean",
+      "default": false
+    },
+    "attempt_log": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "default": []
+    }
+  },
+  "required": [
+    "project_id",
+    "workspace_id",
+    "customer_id",
+    "status"
+  ]
+}

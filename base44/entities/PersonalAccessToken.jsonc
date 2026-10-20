@@ -1,0 +1,93 @@
+{
+  "name": "PersonalAccessToken",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string",
+      "description": "Workspace the token was issued from. Management is scoped to this workspace; a token can never be read or revoked from another."
+    },
+    "name": {
+      "type": "string",
+      "description": "Human label chosen at creation."
+    },
+    "token_hash": {
+      "type": "string",
+      "description": "SHA-256 of the raw token. The raw value exists ONCE, in the issue response, and is never persisted, logged or returned afterwards."
+    },
+    "token_prefix": {
+      "type": "string",
+      "description": "Short display prefix for identification in the UI. Never a usable credential."
+    },
+    "app_scope": {
+      "type": "string",
+      "enum": [
+        "all",
+        "project"
+      ],
+      "default": "all",
+      "description": "DOCUMENTED (Base44): a token reaches all apps the account may access, or exactly one app."
+    },
+    "project_id": {
+      "type": "string",
+      "description": "The single app a project-scoped token may reach. Null for all-apps tokens."
+    },
+    "full_access": {
+      "type": "boolean",
+      "default": false,
+      "description": "DOCUMENTED (Base44): full access vs read-only. The Phase 13A surface is GET-only, so both scopes read; write surfaces (not in scope) must enforce this flag server-side."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "revoked"
+      ],
+      "default": "active"
+    },
+    "expires_at": {
+      "type": "string",
+      "description": "Optional expiry (ISO). An expired token fails closed at authentication."
+    },
+    "created_by": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "last_used_at": {
+      "type": "string",
+      "description": "Throttled audit metadata only \u2014 never used for authorization."
+    },
+    "revoked_at": {
+      "type": "string"
+    },
+    "revoked_by": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "workspace_id",
+    "name",
+    "token_hash",
+    "app_scope",
+    "status"
+  ],
+  "rls": {
+    "read": false,
+    "create": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "system"
+      }
+    }
+  }
+}

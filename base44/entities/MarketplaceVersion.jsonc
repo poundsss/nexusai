@@ -1,0 +1,82 @@
+{
+  "name": "MarketplaceVersion",
+  "type": "object",
+  "properties": {
+    "listing_id": {
+      "type": "string",
+      "description": "Listing this version belongs to. Every lookup is filtered by this field so one listing's versions can never be confused with another's."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, denormalized for authorization checks. Only the owning workspace may publish or yank a version."
+    },
+    "version_number": {
+      "type": "number",
+      "description": "Monotonic per-listing version number. Drives the install pin and the 'latest' pointer."
+    },
+    "version_label": {
+      "type": "string",
+      "description": "Human-readable semver-ish label (e.g. 1.2.0). Distinct from the monotonic number so a re-publish of the same label is still a new immutable version."
+    },
+    "artifact_uri": {
+      "type": "string",
+      "description": "Immutable storage reference to the version's packaged artifact. The artifact is content-addressed by checksum, so a re-publish of changed content is a new version, never a silent overwrite."
+    },
+    "artifact_checksum": {
+      "type": "string",
+      "description": "Stable content hash of the artifact. The same listing state always produces the same checksum, which is what makes a re-publish detectable and a yank safe."
+    },
+    "manifest": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The full version manifest: entry points, config schema, dependencies, capabilities requested, compatibility, build settings. Frozen at publish time so an install always gets exactly what was reviewed."
+    },
+    "changelog": {
+      "type": "string"
+    },
+    "compatibility": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Per-version compatibility overrides. Merged with the listing's compatibility at install time."
+    },
+    "capabilities": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Permissions this version requests. Frozen at publish time; an install records the subset the user consented to, and a later version requesting more requires re-consent."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "published",
+        "yanked"
+      ],
+      "default": "pending",
+      "description": "Only 'published' is installable. 'yanked' is a soft-remove: existing installs keep working but no new installs may pin this version, and it never silently becomes the current version."
+    },
+    "published_at": {
+      "type": "string"
+    },
+    "published_by": {
+      "type": "string"
+    },
+    "yanked_at": {
+      "type": "string"
+    },
+    "yanked_reason": {
+      "type": "string"
+    },
+    "install_count": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "listing_id",
+    "workspace_id",
+    "version_number",
+    "status"
+  ]
+}

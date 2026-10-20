@@ -1,0 +1,94 @@
+{
+  "name": "TaskTemplate",
+  "type": "object",
+  "properties": {
+    "template_key": {
+      "type": "string",
+      "description": "Stable identity of the template LINEAGE. A template_key plus workspace identifies a family, not one template: changing any template-defining input produces the NEXT version under the same key rather than rewriting the previous one."
+    },
+    "version": {
+      "type": "number",
+      "default": 1,
+      "description": "Monotonic version within template_key + workspace. Assigned server-side at creation and never reused, so a task generated from version 1 stays reproducible after version 2 exists."
+    },
+    "description": {
+      "type": "string",
+      "description": "What kind of app-building work this template generates. Scrubbed before storage."
+    },
+    "category": {
+      "type": "string",
+      "description": "Which family of app-building work the template generates (crud_data_modeling, ui_feature, auth_rbac, api_integration, schema_migration, debugging_repair, multi_step_workflow, data_query, architecture). Validated against the generator's category registry, so an unknown category is refused rather than silently producing an empty task."
+    },
+    "difficulty": {
+      "type": "string",
+      "description": "Default difficulty (easy | medium | hard | expert). Difficulty maps to an EXPLICIT knob set (entity count, component count, operation count, dependency depth, constraint count, validation-criteria count) which is recorded on every generated task, so complexity is never raised without being written down."
+    },
+    "required_capabilities": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Capabilities a model must declare to be eligible for tasks from this template. Carried onto the generated task and into the exported BenchmarkTask, where #23 already treats a missing capability as ineligibility rather than a quality failure."
+    },
+    "generation_parameters": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The parameter contract of the template: which variation knobs a caller may set (names, counts, schema sizes, feature combinations, constraints, difficulty) and their defaults. A parameter outside this contract is refused, so generation stays reproducible from the recorded seed and parameter set."
+    },
+    "acceptance_criteria_spec": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Which MACHINE-CHECKABLE check types the generated task must contain and the minimum number of checks. Natural-language success text is generated alongside them but never substitutes for them."
+    },
+    "invariants_spec": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Which invariant types the generated task must assert (no duplicate records, required relation exists, authorized role required, valid state transition, migration preserves fields, endpoint returns expected shape). Explicit and machine-checkable by construction."
+    },
+    "fixture_requirements": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "What the generated fixture must contain: initial project files, seed entities, seed data rows, required configuration and test inputs. Fixtures are synthetic; nothing here may reference a real user or production project."
+    },
+    "expected_outcome_type": {
+      "type": "string",
+      "description": "The class of result a correct solution produces (feature_implemented, schema_migrated, bug_repaired, workflow_implemented, integration_implemented, authorization_enforced, query_implemented, architecture_refactored)."
+    },
+    "generator_version": {
+      "type": "string",
+      "description": "Version of the generator contract this template was authored against. Recorded on every generated task, so a task remains attributable to the exact generator that produced it."
+    },
+    "checksum": {
+      "type": "string",
+      "description": "Deterministic fingerprint of everything that DEFINES the template. Two templates with the same value are the same definition; any change produces a new version with a new checksum."
+    },
+    "finalized": {
+      "type": "boolean",
+      "default": false,
+      "description": "True once the template is finalized. From that moment it is immutable and every mutating path refuses: a change requires a NEW version."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved SERVER-side from the authorized owner project \u2014 never taken from a client."
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Owner project the template is authorized against. Every read re-authorizes the caller against this project, so one workspace can never read or generate from another's templates."
+    },
+    "created_by": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "finalized_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "template_key",
+    "version",
+    "category",
+    "generator_version"
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "name": "CustomDomain",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string"
+    },
+    "workspace_id": {
+      "type": "string"
+    },
+    "hostname": {
+      "type": "string",
+      "description": "Fully-qualified hostname the app answers on, lowercase and without scheme or path (e.g. app.acme.com). Unique across the platform: one hostname resolves to exactly one project and environment."
+    },
+    "environment": {
+      "type": "string",
+      "enum": [
+        "staging",
+        "production"
+      ],
+      "default": "production",
+      "description": "Which environment this hostname serves. A production domain can never resolve to a staging deployment."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending_verification",
+        "active",
+        "error",
+        "removed"
+      ],
+      "default": "pending_verification",
+      "description": "Only an 'active' domain is servable by the public runtime. A pending or failed domain resolves to nothing, so an unverified hostname can never be pointed at someone else's app."
+    },
+    "verification_method": {
+      "type": "string",
+      "enum": [
+        "dns_txt"
+      ],
+      "default": "dns_txt"
+    },
+    "verification_host": {
+      "type": "string",
+      "description": "The DNS name that must carry the TXT record, e.g. _nexus-verify.app.acme.com"
+    },
+    "verification_token": {
+      "type": "string",
+      "description": "Random per-domain challenge value the owner must publish in DNS. Proves control of the hostname; not a credential for anything else."
+    },
+    "verified_at": {
+      "type": "string"
+    },
+    "last_checked_at": {
+      "type": "string"
+    },
+    "last_error": {
+      "type": "string",
+      "description": "Safe reason the most recent verification attempt failed."
+    },
+    "is_primary": {
+      "type": "boolean",
+      "default": false,
+      "description": "The canonical hostname for its environment. At most one primary per project + environment."
+    },
+    "added_by": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "project_id",
+    "hostname",
+    "environment",
+    "status"
+  ]
+}

@@ -1,0 +1,124 @@
+{
+  "name": "RoutingPolicy",
+  "type": "object",
+  "properties": {
+    "policy_version": {
+      "type": "string",
+      "description": "Deterministic identity of ONE immutable routing policy: contract version + weights + thresholds + the evidence snapshot it was derived from. Two identical policies resolve the same version instead of appending a second, conflicting record."
+    },
+    "contract_version": {
+      "type": "string",
+      "description": "Version of the scoring contract this policy was authored against. Frozen at creation, so a later change to the scoring function never silently reinterprets a historical policy or a historical routing decision."
+    },
+    "version": {
+      "type": "number",
+      "default": 1,
+      "description": "Monotonic lineage number within a scope. A change is always a NEW version \u2014 an existing policy is never edited."
+    },
+    "scope": {
+      "type": "string",
+      "enum": [
+        "platform",
+        "project"
+      ],
+      "default": "platform",
+      "description": "Authorization scope. A platform policy is created only by a platform admin; a project policy is authorized through the platform's existing project path and can never influence another project's routing."
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Project the policy belongs to when scope is 'project'. Resolved SERVER-side from the authorized project, never taken from a client."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side from the authorized project."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "DRAFT",
+        "ACTIVE",
+        "SUPERSEDED",
+        "ROLLED_BACK"
+      ],
+      "default": "DRAFT",
+      "description": "Lifecycle. At most ONE ACTIVE policy exists per scope; activating a new version SUPERSEDES the previous one rather than mutating it, which is what makes rollback a pointer change instead of a rewrite."
+    },
+    "weights": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Deterministic scoring weights per dimension: quality, reliability, tool_call_success, latency, cost, capability_match, health. Immutable once the policy exists."
+    },
+    "thresholds": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Hard gates applied BEFORE scoring: min_evidence_samples, min_reliability, latency_reference_ms, max_expected_credits, tier priors used when a dimension has no measured evidence."
+    },
+    "model_priors": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Per-model evidence snapshot the policy was derived from, keyed by model_id, each dimension carrying its own basis ('candidate_evaluation', 'benchmark_result' or 'catalog_tier_prior') and sample count. A dimension with no evidence is null \u2014 never a default score."
+    },
+    "skill_profiles": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "RESERVED extension point for a future skill system: a map of model_id \u2192 { skill_strategy_id, weight_overrides }. The scorer already reads it, so a model-specific skill profile can participate later without redesigning the decision shape. Empty until a skill system exists."
+    },
+    "evidence_sources": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Which persisted evidence layers produced this policy. Only 'benchmark_result' (#38) and 'candidate_evaluation' (#39) are admissible: raw production telemetry may never mutate routing behaviour."
+    },
+    "evidence_snapshot": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "What the evidence read actually saw: record counts per source, models covered, and the ids the priors were computed from. Makes a policy's derivation auditable rather than asserted."
+    },
+    "evidence_checksum": {
+      "type": "string",
+      "description": "Content hash over the evidence snapshot and the derived priors. Re-checked at activation, so evidence altered behind a policy's back blocks activation instead of shipping silently."
+    },
+    "checksum": {
+      "type": "string",
+      "description": "Content hash over the whole immutable policy definition (weights, thresholds, priors)."
+    },
+    "parent_policy_version": {
+      "type": "string",
+      "description": "The policy version this one was derived from, for lineage."
+    },
+    "superseded_by": {
+      "type": "string",
+      "description": "The policy version that replaced this one when it stopped being ACTIVE."
+    },
+    "rollback_of": {
+      "type": "string",
+      "description": "Set when this activation was a rollback: the policy version that was rolled back FROM. A rollback re-activates an existing immutable version; it never rewrites one."
+    },
+    "notes": {
+      "type": "string"
+    },
+    "trace_id": {
+      "type": "string",
+      "description": "The platform's EXISTING correlation id of the operation that created this policy. This layer mints no second trace system."
+    },
+    "created_by": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "activated_at": {
+      "type": "string"
+    },
+    "superseded_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "policy_version",
+    "contract_version",
+    "scope",
+    "status"
+  ]
+}

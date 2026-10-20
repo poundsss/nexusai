@@ -1,0 +1,51 @@
+{
+  "name": "AuditLog",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string"
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "Authenticated actor, stamped server-side. App users cannot write this entity at all, so an entry always reflects what the server did."
+    },
+    "action": {
+      "type": "string"
+    },
+    "resource": {
+      "type": "string"
+    },
+    "resource_id": {
+      "type": "string"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "workspace_id",
+    "action"
+  ],
+  "rls": {
+    "read": false,
+    "create": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "system"
+      }
+    }
+  }
+}

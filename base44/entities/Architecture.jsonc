@@ -1,0 +1,125 @@
+{
+  "name": "Architecture",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "number",
+      "default": 1,
+      "description": "Version of the architecture representation this record was written in. Frozen at creation, so a later change to the graph shape never silently reinterprets a historical architecture."
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Project this architecture describes. Every read is filtered by this field after the caller is authorized against the project, so one project can never read another's architecture."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved SERVER-side from the authorized project \u2014 never taken from a client."
+    },
+    "version": {
+      "type": "number",
+      "default": 1,
+      "description": "Monotonic architecture version within the project. Assigned server-side and never reused, so a historical architecture stays inspectable while a new reconciliation lands beside it."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "DRAFT",
+        "FINALIZED",
+        "SUPERSEDED",
+        "FAILED"
+      ],
+      "default": "DRAFT",
+      "description": "Lifecycle. DRAFT is the only mutable state. FINALIZED is the immutable, readable architecture: its nodes and edges refuse every mutating path. SUPERSEDED marks a version replaced by a later reconciliation (including the loser of a concurrent reconciliation). FAILED marks a reconciliation that could not complete."
+    },
+    "source_project_version": {
+      "type": "number",
+      "description": "The authoritative ProjectVersion number the architecture was derived FROM. Architecture is a derived layer: this is the pointer back to the version that remains the real source of truth."
+    },
+    "source_version_id": {
+      "type": "string",
+      "description": "Immutable ProjectVersion record the architecture was derived from, where one exists. Reference only \u2014 project contents are never copied into the graph."
+    },
+    "architecture_fingerprint": {
+      "type": "string",
+      "description": "Deterministic hash over every node and edge (their keys, types, provenance state and content). Rebuilding from the same authoritative project state must reproduce this value, which is what makes reconciliation idempotent and a real change detectable."
+    },
+    "extraction_version": {
+      "type": "string",
+      "description": "Version of the extraction/reconciliation contract that produced the graph. Part of the fingerprint, so a graph built by a different extractor is never mistaken for the same architecture."
+    },
+    "parent_architecture_id": {
+      "type": "string",
+      "description": "The previous finalized architecture version this one was derived from, making the version history a chain rather than unrelated rows."
+    },
+    "node_count": {
+      "type": "number",
+      "default": 0
+    },
+    "edge_count": {
+      "type": "number",
+      "default": 0
+    },
+    "domains": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Domain keys present in the graph, so a caller can pick a domain summary without loading the graph."
+    },
+    "counts": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Node counts per node type and edge counts per relationship type, plus provenance-state counts. Summary metadata for bounded retrieval; the node and edge rows stay authoritative."
+    },
+    "diff_summary": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "What changed against the parent version: added / removed / changed node and edge keys, bounded. Reference metadata only."
+    },
+    "consistency": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Result of the last consistency check for this version: overall classification (valid | warning | error) and per-issue findings. Recorded, never auto-repaired \u2014 architecture never silently changes production state."
+    },
+    "sources": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Which authoritative systems were read during reconciliation and how many facts each contributed (files, entities, relations, functions, routes, integrations, workflows, permissions, secrets metadata, memory decisions)."
+    },
+    "trace_id": {
+      "type": "string",
+      "description": "The operation's existing correlation id, carried through verbatim \u2014 architecture reconciliation mints no second trace system."
+    },
+    "run_id": {
+      "type": "string",
+      "description": "AI run or agent run the reconciliation was performed on behalf of, when there was one."
+    },
+    "finalized": {
+      "type": "boolean",
+      "default": false,
+      "description": "True once FINALIZED. From that moment the architecture, its nodes and its edges are immutable: a change requires a NEW version."
+    },
+    "error": {
+      "type": "string",
+      "description": "Scrubbed reason a reconciliation did not complete."
+    },
+    "created_by": {
+      "type": "string",
+      "description": "Authenticated caller the reconciliation is attributed to, stamped server-side."
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "finalized_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "project_id",
+    "workspace_id",
+    "version",
+    "status",
+    "architecture_fingerprint",
+    "extraction_version"
+  ]
+}

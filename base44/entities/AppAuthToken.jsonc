@@ -1,0 +1,74 @@
+{
+  "name": "AppAuthToken",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string"
+    },
+    "app_user_id": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "password_reset",
+        "email_verification",
+        "oauth_state",
+        "delegated_oauth_state",
+        "channel_activation"
+      ],
+      "description": "Single-use secret class. channel_activation (P-9.10A): the Telegram deep-link start code binding one chat to the issuing app user; the raw code exists only in the returned connect URL, never in storage, logs or audit rows."
+    },
+    "token_hash": {
+      "type": "string",
+      "description": "SHA-256 of the single-use secret. The secret is delivered once (email / redirect) and never stored or logged."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "used",
+        "expired",
+        "revoked"
+      ]
+    },
+    "expires_at": {
+      "type": "string"
+    },
+    "used_at": {
+      "type": "string"
+    },
+    "data": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Bounded, scrubbed context (e.g. the OAuth provider and redirect for a state token). For a delegated_oauth_state, carries the provider_id, redirect_uri and PKCE verifier; the verifier is a per-flow secret stored here server-side and never logged or returned. For a channel_activation, carries { channel, agent } \u2014 never the raw activation code."
+    },
+    "created_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "project_id",
+    "kind",
+    "token_hash",
+    "status"
+  ],
+  "rls": {
+    "read": false,
+    "create": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "system"
+      }
+    }
+  }
+}

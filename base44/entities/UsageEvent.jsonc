@@ -1,0 +1,70 @@
+{
+  "name": "UsageEvent",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string"
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string"
+    },
+    "model": {
+      "type": "string"
+    },
+    "provider": {
+      "type": "string"
+    },
+    "input_tokens": {
+      "type": "number",
+      "default": 0
+    },
+    "output_tokens": {
+      "type": "number",
+      "default": 0
+    },
+    "tokens_estimated": {
+      "type": "boolean",
+      "default": true,
+      "description": "True when the provider returned no usage data and token counts were estimated from character length"
+    },
+    "tool_calls": {
+      "type": "number",
+      "default": 0
+    },
+    "duration_ms": {
+      "type": "number"
+    },
+    "estimated_cost": {
+      "type": "number",
+      "default": 0,
+      "description": "Estimated provider cost in USD"
+    }
+  },
+  "required": [
+    "workspace_id"
+  ],
+  "rls": {
+    "read": false,
+    "create": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "system"
+      }
+    }
+  }
+}

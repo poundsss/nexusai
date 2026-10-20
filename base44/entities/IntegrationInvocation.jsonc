@@ -1,0 +1,149 @@
+{
+  "name": "IntegrationInvocation",
+  "type": "object",
+  "properties": {
+    "invocation_id": {
+      "type": "string",
+      "description": "Stable public identifier of ONE logical integration call, minted server-side by the observer. A logical call is the whole operation the generated code asked for, so the retry engine performing three HTTP attempts still produces exactly one invocation_id with attempts=3 \u2014 never three records."
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Project whose integration was called. Resolved SERVER-side from the executing project record, never from a client or from generated code, and every read is filtered by it, so one project can never see another's integration history."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side from the project."
+    },
+    "integration_name": {
+      "type": "string",
+      "description": "The project's own integration name (the integrations/<name>.json document). The platform hardcodes no provider names."
+    },
+    "integration_id": {
+      "type": "string",
+      "description": "The ProjectFile record id of the integration document, when the execution knew it."
+    },
+    "integration_type": {
+      "type": "string",
+      "enum": [
+        "http",
+        "openapi",
+        "mcp"
+      ],
+      "default": "http",
+      "description": "Which adapter executed the call."
+    },
+    "operation": {
+      "type": "string",
+      "description": "The operation name declared on the integration."
+    },
+    "host": {
+      "type": "string",
+      "description": "Hostname actually addressed. Host only \u2014 never a full URL with query parameters, because an api_key integration may carry its credential in the query string."
+    },
+    "method": {
+      "type": "string",
+      "description": "HTTP method, or 'MCP' for a JSON-RPC tool call."
+    },
+    "tool": {
+      "type": "string",
+      "description": "Remote MCP tool name, for an mcp-adapter call."
+    },
+    "ok": {
+      "type": "boolean",
+      "default": true
+    },
+    "status": {
+      "type": "number",
+      "description": "Final upstream HTTP status. 0 means the call never got a response (timeout or network failure)."
+    },
+    "attempts": {
+      "type": "number",
+      "default": 1,
+      "description": "Total HTTP attempts the existing retry engine spent on this ONE logical call."
+    },
+    "latency_ms": {
+      "type": "number",
+      "default": 0,
+      "description": "Wall-clock duration of the whole logical call, including every retry and any OAuth2 token exchange it triggered."
+    },
+    "error_code": {
+      "type": "string",
+      "description": "The integration error vocabulary code (AUTH_FAILURE, TIMEOUT, UPSTREAM_FAILURE, INVALID_INPUT, PLATFORM_FAILURE, QUOTA_EXCEEDED, \u2026). Absent on success."
+    },
+    "error_category": {
+      "type": "string",
+      "enum": [
+        "validation",
+        "authorization",
+        "not_found",
+        "rate_limit",
+        "quota",
+        "timeout",
+        "upstream",
+        "internal"
+      ],
+      "description": "Coarse classification of the failure, so an upstream outage is never counted as a platform defect."
+    },
+    "retryable": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this failure was a property of the moment AND the operation was safe to repeat. A non-idempotent write, a validation failure and an authorization failure are never marked retryable."
+    },
+    "scrubbed_error_message": {
+      "type": "string",
+      "description": "Caller-safe failure message. Passed through the execution's own secret redactor and then the platform's credential scrubber, so no key, token or authorization header can enter it. Never a stack trace."
+    },
+    "failure_kind": {
+      "type": "string",
+      "description": "The adapter's own finer-grained reason (timeout, network, rate_limited, secret_not_set, missing_parameter, tool_error, disabled, quota_exceeded, \u2026)."
+    },
+    "rate_limit_state": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Rate-limit posture WHEN KNOWN \u2014 recorded only from what the upstream actually said (a 429 and any Retry-After hint it carried). Absent when the platform has no such signal; absence is never reported as 'not limited'."
+    },
+    "breaker_state": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Circuit-breaker posture WHEN KNOWN. No integration breaker exists yet, so this stays absent rather than claiming a healthy upstream."
+    },
+    "quota_state": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Per-project integration quota posture WHEN KNOWN \u2014 recorded only from what the quota layer actually resolved (allowed, used, remaining, window bounds, and a refusal's reason). Absent when the call had no quota state (quota disabled or a storage read failure); absence is never reported as 'unlimited'."
+    },
+    "secret_names": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "NAMES of the project secrets this call consumed, for credential-use accounting. Names only \u2014 a value can never be written here."
+    },
+    "trace_id": {
+      "type": "string",
+      "description": "The platform's EXISTING correlation id, carried in from the execution verbatim. Integration observability mints no trace system of its own."
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "function_name": {
+      "type": "string",
+      "description": "Generated backend function the call was made from."
+    },
+    "trigger": {
+      "type": "string"
+    },
+    "started_at": {
+      "type": "string"
+    },
+    "completed_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "project_id",
+    "invocation_id",
+    "integration_name",
+    "operation"
+  ]
+}

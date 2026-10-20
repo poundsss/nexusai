@@ -1,0 +1,193 @@
+{
+  "name": "WorkflowDefinition",
+  "type": "object",
+  "properties": {
+    "workflow_key": {
+      "type": "string",
+      "description": "Stable identity of the workflow LINEAGE within its project. A key plus project identifies a family, not one definition: editing a finalized workflow produces the NEXT version under the same key rather than rewriting the previous one."
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable workflow name. Unique per project together with the version."
+    },
+    "description": {
+      "type": "string"
+    },
+    "version": {
+      "type": "number",
+      "default": 1,
+      "description": "Monotonic version within workflow_key + project. Assigned SERVER-side and never reused, so a run that started on version 1 stays reproducible after version 2 exists."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "DRAFT",
+        "FINALIZED",
+        "SUPERSEDED"
+      ],
+      "default": "DRAFT",
+      "description": "Lifecycle. DRAFT is the only state in which steps, trigger or timeouts may change. FINALIZED is immutable and is the ONLY state a run may execute against. SUPERSEDED marks a finalized version replaced by a later finalized one \u2014 its existing runs keep executing it, they never switch definitions."
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Project the workflow belongs to. Every read is filtered by this field after the caller is authorized against the project, so one project can never read or trigger another's workflows."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved SERVER-side from the authorized project \u2014 never taken from a client."
+    },
+    "trigger": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "What starts the workflow, expressed only in terms of trigger mechanisms the platform ALREADY owns: a verified webhook delivery, the existing scheduled-trigger sweep, an application event dispatched by the project's own server-side code, an application/database record event, a new conversation with a deployed in-app agent, the project's successful production LIVE publication (app_publish), or a successfully settled payment or refund (app_payment). The workflow layer introduces no second trigger infrastructure."
+    },
+    "trigger_type": {
+      "type": "string",
+      "enum": [
+        "webhook",
+        "schedule",
+        "app_event",
+        "entity_event",
+        "agent_conversation",
+        "app_publish",
+        "app_payment",
+        "manual"
+      ],
+      "default": "manual",
+      "description": "Indexed projection of trigger.type, so event dispatch is a narrow query rather than a full scan. app_publish fires from the successful production LIVE publication; app_payment fires from a successfully settled payment or refund in the billing processor."
+    },
+    "trigger_event": {
+      "type": "string",
+      "description": "Indexed projection of the event name a webhook/app/entity trigger listens for."
+    },
+    "scheduled_trigger_id": {
+      "type": "string",
+      "description": "For a scheduled workflow: the EXISTING ScheduledTrigger row registered through the platform's own scheduling primitive. The workflow engine runs no scheduler of its own."
+    },
+    "steps": {
+      "type": "array",
+      "description": "The ordered step definitions. A step is CONFIGURATION only \u2014 it names a primitive, an existing backend function, a deterministic condition, a durable delay, a queued job or a terminal outcome. No step carries executable code, so a workflow definition can never introduce arbitrary code execution.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "description": "primitive | function | condition | delay | enqueue_job | complete | fail"
+          },
+          "description": {
+            "type": "string"
+          },
+          "primitive": {
+            "type": "string"
+          },
+          "primitive_version": {
+            "type": "string"
+          },
+          "function_name": {
+            "type": "string"
+          },
+          "input": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Step input template. String values of the form '$.path' are resolved from the run's own bounded context; nothing else is interpolated."
+          },
+          "condition": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Deterministic comparison over the run context ({ left, op, right }). Evaluated by the engine with no model involved."
+          },
+          "if_true": {
+            "type": "string"
+          },
+          "if_false": {
+            "type": "string"
+          },
+          "delay_ms": {
+            "type": "number"
+          },
+          "next": {
+            "type": "string"
+          },
+          "on_error": {
+            "type": "string",
+            "description": "Explicit branch taken when this step fails terminally, instead of failing the whole run."
+          },
+          "max_attempts": {
+            "type": "number"
+          },
+          "timeout_ms": {
+            "type": "number"
+          },
+          "error_code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "output": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      }
+    },
+    "entry_step": {
+      "type": "string",
+      "description": "Step the run starts at. Validated to exist before the version can finalize."
+    },
+    "on_failure": {
+      "type": "string",
+      "description": "Optional compensation hook: the step a terminally failed run continues at so the workflow can define explicit compensating actions. The run still ends FAILED \u2014 the hook never converts a failure into a success."
+    },
+    "timeout_ms": {
+      "type": "number",
+      "description": "Workflow-level wall-clock budget. Exceeding it is a deterministic terminal failure (WORKFLOW_TIMEOUT), never an indefinite hang."
+    },
+    "step_defaults": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Default per-step attempt budget and timeout applied to steps that do not state their own."
+    },
+    "contract_version": {
+      "type": "string",
+      "description": "Version of the workflow engine contract this definition was authored against."
+    },
+    "definition_checksum": {
+      "type": "string",
+      "description": "Deterministic fingerprint of everything that DEFINES the workflow (trigger, steps, entry, hooks, timeouts). Two definitions with the same value are the same workflow; any change produces a new version with a new checksum."
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The last validation report: referenced primitives and functions, step reference resolution, condition structure, trigger validity and cycle detection. Stored so a refusal to finalize is explainable."
+    },
+    "finalized": {
+      "type": "boolean",
+      "default": false,
+      "description": "True once FINALIZED. From that moment every mutating path refuses: a change requires a NEW version."
+    },
+    "created_by": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    },
+    "finalized_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "workflow_key",
+    "name",
+    "version",
+    "status",
+    "project_id",
+    "workspace_id"
+  ]
+}

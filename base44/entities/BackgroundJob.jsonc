@@ -1,0 +1,142 @@
+{
+  "name": "BackgroundJob",
+  "type": "object",
+  "properties": {
+    "queue": {
+      "type": "string",
+      "default": "default",
+      "description": "Logical queue this job belongs to. Concurrency, lease length and retry budget are configured per queue, so a slow queue can never starve a fast one."
+    },
+    "job_type": {
+      "type": "string",
+      "description": "Handler key. A worker only runs job types present in its registry, so an unknown or forged job_type is dead-lettered instead of executed."
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Handler input. Data only \u2014 never a credential, and never code to execute."
+    },
+    "priority": {
+      "type": "number",
+      "default": 0,
+      "description": "Higher runs first within a queue. Ties break by age, so nothing can be starved indefinitely by a flood of same-priority work."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "leased",
+        "succeeded",
+        "failed",
+        "dead_letter",
+        "cancelled"
+      ],
+      "default": "pending",
+      "description": "Lifecycle state. Only 'leased' work is executing, and exactly one worker may hold a lease at a time. 'dead_letter' is terminal-with-evidence: the job stopped retrying but is retained for inspection and replay."
+    },
+    "available_at": {
+      "type": "string",
+      "description": "Earliest time the job may be claimed. Drives scheduled delays and exponential retry backoff; a job is invisible to workers until this passes."
+    },
+    "attempts": {
+      "type": "number",
+      "default": 0,
+      "description": "Completed execution attempts, including attempts lost to a crashed worker. Compared against max_attempts to decide retry vs dead-letter."
+    },
+    "max_attempts": {
+      "type": "number",
+      "default": 5,
+      "description": "Retry budget. Bounded on purpose: a permanently failing job must stop consuming capacity rather than retry forever."
+    },
+    "lease_token": {
+      "type": "string",
+      "description": "Identifies the single worker currently allowed to advance this job. Every progress write is checked against it, so a worker whose lease expired and was reclaimed cannot complete or fail the job behind the new owner's back."
+    },
+    "lease_expires_at": {
+      "type": "string",
+      "description": "When the current lease lapses. A lapsed lease means the worker is presumed dead and the job becomes reclaimable, which is what makes worker loss recoverable rather than a permanent stall."
+    },
+    "heartbeat_at": {
+      "type": "string",
+      "description": "Last progress signal from the leaseholder."
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "Logical identity of the work. Enqueuing the same key while an equivalent job is still pending or running returns the existing job instead of duplicating the work."
+    },
+    "workspace_id": {
+      "type": "string"
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "trace_id": {
+      "type": "string",
+      "description": "Correlates this job's logs and metrics with the request that enqueued it."
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Handler output for a succeeded job. Bounded in size; large artifacts belong in storage with a URL here."
+    },
+    "last_error": {
+      "type": "string",
+      "description": "Safe, redacted reason the most recent attempt failed."
+    },
+    "error_code": {
+      "type": "string",
+      "description": "Stable classification of the failure: HANDLER_ERROR | UNKNOWN_JOB_TYPE | NON_RETRYABLE | WORKER_LOST | ATTEMPTS_EXHAUSTED | CANCELLED."
+    },
+    "attempt_log": {
+      "type": "array",
+      "description": "Per-attempt history, so a dead-lettered job explains itself without needing the original logs.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "attempt": {
+            "type": "number"
+          },
+          "error": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "worker_id": {
+            "type": "string"
+          },
+          "at": {
+            "type": "string"
+          },
+          "duration_ms": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "worker_id": {
+      "type": "string",
+      "description": "Identity of the worker that most recently held the lease."
+    },
+    "cancel_requested": {
+      "type": "boolean",
+      "default": false,
+      "description": "Cooperative cancellation. Honoured before an attempt starts and at handler checkpoints; a job already mid-flight is never killed mid-write."
+    },
+    "started_at": {
+      "type": "string"
+    },
+    "completed_at": {
+      "type": "string"
+    },
+    "duration_ms": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "queue",
+    "job_type",
+    "status"
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "name": "Job Queue Worker",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "job_queue_worker",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "drain": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "jobWorker"
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Drain the background job queue",
+            "description": "Reclaim lost leases, enqueue recurring housekeeping (retention, blob, verification, log and dead-letter sweeps), then execute due jobs within a wall-clock budget"
+          }
+        }
+      }
+    ]
+  },
+  "description": "Every 5 minutes, reclaims jobs whose worker stopped reporting, enqueues recurring maintenance (cache purge, rate-limit window cleanup, lease reaping, credit reconciliation, retention enforcement, staging blob release, orphan verification cleanup, log pruning, dead-letter expiry) and executes due background jobs with bounded retries and dead-lettering.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "*/5 * * * *",
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  }
+}

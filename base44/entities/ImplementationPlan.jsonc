@@ -1,0 +1,157 @@
+{
+  "name": "ImplementationPlan",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Project the plan belongs to. Every read is filtered by this field after the caller is authorized against the project."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side from the authorized project."
+    },
+    "architecture_id": {
+      "type": "string",
+      "description": "The architecture version the plan was written against. A plan is only meaningful together with the graph it references."
+    },
+    "architecture_version": {
+      "type": "number"
+    },
+    "architecture_fingerprint": {
+      "type": "string",
+      "description": "Fingerprint of the architecture at planning time, so a plan built against a stale graph is detectable rather than silently applied."
+    },
+    "goal": {
+      "type": "string",
+      "description": "What the change is meant to achieve, in the requester's terms. Scrubbed before storage."
+    },
+    "assumptions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "What the plan takes for granted. Kept explicit so a wrong assumption is visible instead of buried in prose."
+    },
+    "affected_domains": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "planned_changes": {
+      "type": "array",
+      "description": "The ordered changes. Every change REFERENCES an architecture node rather than only free-form text, so the plan is machine-checkable against the graph.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "order": {
+            "type": "number"
+          },
+          "node_key": {
+            "type": "string",
+            "description": "Architecture node this change targets. Validated against the referenced architecture version; an unresolvable reference is refused."
+          },
+          "node_id": {
+            "type": "string"
+          },
+          "node_type": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string",
+            "description": "create | modify | delete | migrate | verify"
+          },
+          "description": {
+            "type": "string"
+          },
+          "migration_required": {
+            "type": "boolean",
+            "default": false
+          },
+          "validation": {
+            "type": "string",
+            "description": "How this individual change is verified."
+          }
+        }
+      }
+    },
+    "dependency_order": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Node keys in the order the changes must be applied, derived from the dependency graph rather than asserted in prose."
+    },
+    "migration_requirements": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Schema/data migrations the plan requires. Recorded here; migrations are still executed by the existing migration system."
+    },
+    "risk_level": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "default": "low",
+      "description": "Risk classification derived from the impact analysis of the referenced nodes."
+    },
+    "risk_factors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "validation_requirements": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "The verification surfaces that must pass for the plan to be considered done (build, runtime checks, affected pages/functions)."
+    },
+    "impact": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Bounded impact analysis snapshot for the planned changes: directly and transitively affected node keys, high-risk dependencies and likely affected files/entities/functions. Derived, read-only."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "DRAFT",
+        "READY",
+        "CONSUMED",
+        "SUPERSEDED"
+      ],
+      "default": "READY",
+      "description": "Plan lifecycle. READY means it validated against the architecture and may be consumed by the EXISTING Agent Loop; this layer never executes a plan itself."
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The validation report for the plan: node reference resolution, dependency-order completeness, and whether the architecture is still current."
+    },
+    "trace_id": {
+      "type": "string",
+      "description": "Existing correlation id of the operation that produced the plan, carried through verbatim."
+    },
+    "run_id": {
+      "type": "string",
+      "description": "AI run or agent run the plan was produced for, when there was one."
+    },
+    "created_by": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "project_id",
+    "workspace_id",
+    "architecture_id",
+    "goal"
+  ]
+}

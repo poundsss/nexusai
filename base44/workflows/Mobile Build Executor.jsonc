@@ -1,0 +1,183 @@
+{
+  "name": "Mobile Build Executor",
+  "description": "Drives a native mobile build in the background: package the pinned immutable artifact, then run the deterministic Phase-1 signing placeholder, then READY. Each invocation advances one phase and persists it, so a lost worker resumes from its checkpoint instead of leaving the build half-done.",
+  "trigger": {
+    "config": {
+      "trigger_type": "entity",
+      "entity_name": "MobileBuild",
+      "events": [
+        "create"
+      ]
+    },
+    "condition": "${ .trigger.data.status == \"QUEUED\" }"
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "mobile_build_executor",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "phase_1": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "mobileBuildStep",
+            "args": {
+              "build_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_1",
+          "x-base44": {
+            "title": "Advance build 1"
+          }
+        }
+      },
+      {
+        "check_1": {
+          "switch": [
+            {
+              "when": "${ .phase_1.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_1"
+            }
+          ],
+          "x-base44": {
+            "title": "More work?"
+          }
+        }
+      },
+      {
+        "wait_1": {
+          "wait": "PT5S",
+          "then": "phase_2"
+        }
+      },
+      {
+        "phase_2": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "mobileBuildStep",
+            "args": {
+              "build_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_2",
+          "x-base44": {
+            "title": "Advance build 2"
+          }
+        }
+      },
+      {
+        "check_2": {
+          "switch": [
+            {
+              "when": "${ .phase_2.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_2"
+            }
+          ]
+        }
+      },
+      {
+        "wait_2": {
+          "wait": "PT5S",
+          "then": "phase_3"
+        }
+      },
+      {
+        "phase_3": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "mobileBuildStep",
+            "args": {
+              "build_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_3",
+          "x-base44": {
+            "title": "Advance build 3"
+          }
+        }
+      },
+      {
+        "check_3": {
+          "switch": [
+            {
+              "when": "${ .phase_3.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_3"
+            }
+          ]
+        }
+      },
+      {
+        "wait_3": {
+          "wait": "PT8S",
+          "then": "phase_4"
+        }
+      },
+      {
+        "phase_4": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "mobileBuildStep",
+            "args": {
+              "build_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "check_4",
+          "x-base44": {
+            "title": "Advance build 4"
+          }
+        }
+      },
+      {
+        "check_4": {
+          "switch": [
+            {
+              "when": "${ .phase_4.done == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_4"
+            }
+          ]
+        }
+      },
+      {
+        "wait_4": {
+          "wait": "PT8S",
+          "then": "phase_5"
+        }
+      },
+      {
+        "phase_5": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "mobileBuildStep",
+            "args": {
+              "build_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Advance build 5 (final)",
+            "description": "Anything unfinished is picked up by the recovery sweep"
+          }
+        }
+      }
+    ]
+  }
+}

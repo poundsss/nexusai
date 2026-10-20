@@ -1,0 +1,77 @@
+{
+  "name": "MobileRuntimeSession",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string",
+      "description": "Account the session belongs to. The bearer token is scoped to this workspace and its one project; a token minted in one workspace can never resolve an app of another."
+    },
+    "project_id": {
+      "type": "string",
+      "description": "THE one project this session unlocks the mobile runtime for. The runtime derives the target project from the token itself, so a bearer request can never address another project or workspace."
+    },
+    "token_hash": {
+      "type": "string",
+      "description": "SHA-256 of the raw short-lived ACCESS token. Only the hash is ever stored \u2014 the raw token exists once, in the mint response, and nowhere else (not in logs, audit rows or responses)."
+    },
+    "refresh_hash": {
+      "type": "string",
+      "description": "SHA-256 of the raw REFRESH token. Rotated on every refresh through a compare-and-set on the previous hash, so a replayed refresh token is refused."
+    },
+    "expires_at": {
+      "type": "string",
+      "description": "When the access token expires. Deliberately short-lived; a native client refreshes before expiry."
+    },
+    "refresh_expires_at": {
+      "type": "string",
+      "description": "When the current refresh token expires. Past this instant the session is dead and a new one must be minted by an authorized member."
+    },
+    "revoked_at": {
+      "type": "string",
+      "description": "When the session was revoked. A revoked session never resolves again, and every revocation is audited."
+    },
+    "revoke_reason": {
+      "type": "string",
+      "description": "Safe reason the session was revoked, for audit only."
+    },
+    "created_by": {
+      "type": "string",
+      "description": "Workspace member who minted the session; the deploy.manage capability was resolved server-side at mint time."
+    },
+    "last_used_at": {
+      "type": "string",
+      "description": "Last time the access token resolved (throttled writes). Audit metadata only \u2014 never used for authorization decisions."
+    },
+    "rotation_count": {
+      "type": "number",
+      "default": 0,
+      "description": "How many times the token pair was rotated. Each refresh retires the previous pair entirely."
+    }
+  },
+  "required": [
+    "workspace_id",
+    "project_id",
+    "token_hash",
+    "refresh_hash",
+    "expires_at",
+    "created_by"
+  ],
+  "rls": {
+    "read": false,
+    "create": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "system"
+      }
+    }
+  }
+}

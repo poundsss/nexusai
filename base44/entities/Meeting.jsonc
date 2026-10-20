@@ -1,0 +1,44 @@
+{
+  "name": "Meeting",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Meeting name shown on the list row."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "scheduled",
+        "recording",
+        "done"
+      ],
+      "default": "scheduled",
+      "description": "scheduled \u2192 Scheduled badge + Join; recording \u2192 Recording badge; done \u2192 Notes editor."
+    },
+    "starts_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the meeting starts (ISO)."
+    },
+    "participants": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Participant initials for the avatar stack, e.g. AF, BN."
+    },
+    "meet_url": {
+      "type": "string",
+      "description": "Join link (Google Meet or Teams URL) opened by the Join action."
+    },
+    "notes": {
+      "type": "string",
+      "description": "Notes and action items captured by the notetaker."
+    }
+  },
+  "required": [
+    "title",
+    "status"
+  ]
+}

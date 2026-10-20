@@ -1,0 +1,44 @@
+{
+  "name": "Reap Stale AI Runs",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "reap_stale_ai_runs",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "reap": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "reapStaleRuns"
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Reap stale runs, recover agents",
+            "description": "Terminate runs with no heartbeat; resume agents whose worker was lost"
+          }
+        }
+      }
+    ]
+  },
+  "description": "Every 5 minutes, marks AI runs that stopped reporting progress as STALE, and recovers agent runs whose lease expired: resumes them from the persisted checkpoint, or makes them terminal when recovery is no longer safe.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "*/5 * * * *",
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  }
+}

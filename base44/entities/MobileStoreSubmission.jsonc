@@ -1,0 +1,138 @@
+{
+  "name": "MobileStoreSubmission",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string",
+      "description": "Account this store submission belongs to. Every read is workspace-scoped, so one workspace can never see or mutate another's submissions."
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Project whose app this submission publishes. Authorization (deploy.manage) is resolved server-side against this project on creation and on every lifecycle action."
+    },
+    "mobile_release_id": {
+      "type": "string",
+      "description": "The FINISHED (READY) mobile release this submission publishes. The release's immutable package is the submission's payload \u2014 the submission never re-packages anything."
+    },
+    "platform": {
+      "type": "string",
+      "enum": [
+        "ios",
+        "android"
+      ],
+      "description": "Native platform this submission targets; determines the store (ios \u2192 App Store, android \u2192 Google Play)."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "DRAFT",
+        "VALIDATING",
+        "UPLOADING",
+        "SUBMITTED",
+        "RELEASED",
+        "FAILED",
+        "CANCELLED"
+      ],
+      "default": "DRAFT",
+      "description": "Submission lifecycle. DRAFT = created from a READY release. VALIDATING = pre-upload checks (release checksum, signing, store credentials, package metadata). UPLOADING = the package is being pushed through the provider adapter. SUBMITTED = the store accepted the upload. Terminal states (SUBMITTED, RELEASED, FAILED, CANCELLED) are never overwritten \u2014 re-publishing creates a NEW submission."
+    },
+    "store": {
+      "type": "string",
+      "enum": [
+        "app_store",
+        "google_play"
+      ],
+      "description": "Destination store, derived from the platform at creation."
+    },
+    "external_submission_id": {
+      "type": "string",
+      "description": "The store's own submission identity, written ONCE as soon as the adapter accepts the upload (before the terminal SUBMITTED write). A worker retry that finds it set skips the upload entirely, and the adapter's idempotency key replays to the same identity anyway."
+    },
+    "version_name": {
+      "type": "string",
+      "description": "Human-facing release version copied from the release at creation. Never rewritten \u2014 a submission's version identity is frozen with its payload."
+    },
+    "version_code": {
+      "type": "number",
+      "description": "Monotonic machine version code copied from the release at creation."
+    },
+    "checksum": {
+      "type": "string",
+      "description": "SHA-256 of the released package's canonical bytes, copied ONCE from the release at creation. Rollback protection: the previous submission's checksum is preserved exactly and never rewritten."
+    },
+    "failure_code": {
+      "type": "string",
+      "description": "RELEASE_NOT_FOUND | RELEASE_NOT_READY | RELEASE_CHECKSUM_MISMATCH | SIGNING_INCOMPLETE | INVALID_PACKAGE_METADATA | STORE_NOT_CONFIGURED | STORE_AUTH_FAILED | UPLOAD_ERROR | WORKER_LOST | CANCELLED | SUPERSEDED_BY_CONCURRENT_REQUEST"
+    },
+    "failure_message": {
+      "type": "string"
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "Content-scoped identity of this submission: derived from the release id and the release checksum, so a re-created submission for the same release replays to the SAME store identity instead of uploading a duplicate."
+    },
+    "cancel_requested": {
+      "type": "boolean",
+      "default": false,
+      "description": "Durable cancellation intent, honoured by the worker only before the store accepts the upload. Once a submission is SUBMITTED it is history \u2014 history is never rewritten."
+    },
+    "lease_token": {
+      "type": "string",
+      "description": "Identifies the single worker currently advancing this submission; exactly one worker may hold it."
+    },
+    "lease_expires_at": {
+      "type": "string",
+      "description": "When the current worker's lease expires; an expired lease is reclaimable, so a dead worker never strands the submission."
+    },
+    "heartbeat_at": {
+      "type": "string"
+    },
+    "recovery_count": {
+      "type": "number",
+      "default": 0,
+      "description": "How many times a lost worker was recovered from the persisted checkpoint. Bounded, so a repeatedly dying worker ends terminal instead of retrying forever."
+    },
+    "created_by": {
+      "type": "string",
+      "description": "Authenticated workspace member who created the submission; the deploy.manage capability was resolved server-side at creation time."
+    },
+    "started_at": {
+      "type": "string"
+    },
+    "submitted_at": {
+      "type": "string",
+      "description": "When the store accepted the upload (UPLOADING \u2192 SUBMITTED)."
+    },
+    "completed_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "workspace_id",
+    "project_id",
+    "mobile_release_id",
+    "platform",
+    "status",
+    "store",
+    "idempotency_key",
+    "created_by"
+  ],
+  "rls": {
+    "read": false,
+    "create": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "system"
+      }
+    }
+  }
+}

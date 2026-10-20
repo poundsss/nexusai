@@ -1,0 +1,137 @@
+{
+  "name": "PackageCacheEntry",
+  "type": "object",
+  "properties": {
+    "cache_key": {
+      "type": "string",
+      "description": "Content-addressed identity of ONE validated package artifact: a deterministic hash over the package name, the exact version and the registry-provided integrity. Two projects resolving the same package@version with the same integrity address the same entry; any change to name, version or integrity produces a DIFFERENT key, so a cached artifact can never stand in for different content."
+    },
+    "package_name": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string",
+      "description": "The exact resolved version this artifact is. Never a range."
+    },
+    "integrity": {
+      "type": "string",
+      "description": "The integrity metadata the registry published for this artifact (Subresource-Integrity form, e.g. sha512-\u2026). Part of the cache key."
+    },
+    "content_sha512": {
+      "type": "string",
+      "description": "The digest the platform itself computed over the bytes it downloaded. Re-checked against `integrity` on every cache hit, so an entry whose recorded content no longer matches its integrity is REFUSED rather than reused."
+    },
+    "size_bytes": {
+      "type": "number"
+    },
+    "registry_source": {
+      "type": "string",
+      "description": "Registry host the artifact was fetched from. Only an allowlisted HTTPS host can ever appear here."
+    },
+    "tarball_url": {
+      "type": "string"
+    },
+    "exports": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Named exports extracted from the artifact's own entry module inside the verified archive. This is what the existing build engine links imports against \u2014 derived from validated content, never guessed."
+    },
+    "exports_source": {
+      "type": "string",
+      "enum": [
+        "artifact",
+        "unknown"
+      ],
+      "default": "unknown",
+      "description": "'artifact' means the exports were parsed from the verified package content; 'unknown' means the archive did not expose a parseable entry module and no export claim is made."
+    },
+    "license": {
+      "type": "string",
+      "description": "License identifier the package declares, when it declares one. Absent stays absent \u2014 never defaulted to a permissive license."
+    },
+    "license_status": {
+      "type": "string",
+      "enum": [
+        "allowed",
+        "denied",
+        "unknown"
+      ],
+      "default": "unknown",
+      "description": "Policy classification of the declared license. 'unknown' means the package declared none or declared one the policy does not classify \u2014 it is NOT an approval."
+    },
+    "install_scripts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Lifecycle script names the package declares (preinstall, install, postinstall, prepare, \u2026). Recorded as METADATA only: the platform never executes them."
+    },
+    "install_scripts_blocked": {
+      "type": "boolean",
+      "default": true,
+      "description": "Always true. Lifecycle scripts are blocked by policy and no package script is ever executed with platform privileges; this field records that the block was applied to this artifact."
+    },
+    "file_count": {
+      "type": "number"
+    },
+    "entry_module": {
+      "type": "string",
+      "description": "Path inside the archive the exports were parsed from."
+    },
+    "advisory_status": {
+      "type": "string",
+      "enum": [
+        "vulnerable",
+        "none_known",
+        "unavailable"
+      ],
+      "default": "unavailable",
+      "description": "Advisory posture recorded at validation time. 'unavailable' means the advisory source could not be consulted and the platform makes NO safety claim; it is never treated as 'none_known'."
+    },
+    "verified_at": {
+      "type": "string",
+      "description": "When the artifact's bytes were downloaded and verified against the registry integrity."
+    },
+    "last_used_at": {
+      "type": "string",
+      "description": "Last time a resolution reused this entry. Drives the maintenance sweep's unused-entry policy."
+    },
+    "use_count": {
+      "type": "number",
+      "default": 1
+    },
+    "supply_chain_version": {
+      "type": "string",
+      "description": "Version of the supply-chain contract that validated this artifact, so an entry validated under older rules is identifiable."
+    },
+    "module_status": {
+      "type": "string",
+      "enum": [
+        "ready",
+        "unsupported"
+      ],
+      "description": "B5: whether the verified archive's reachable ES module files were kept for browser delivery. Absent on entries created before B5; such entries are re-downloaded once."
+    },
+    "module_bundle_uri": {
+      "type": "string",
+      "description": "B5: PRIVATE storage handle of the module bundle (JSON of reachable ESM files). Server-side only \u2014 never returned to any client, log or artifact."
+    },
+    "module_bundle_sha256": {
+      "type": "string",
+      "description": "B5: SHA-256 of the stored module bundle, re-checked on every read before module text is produced."
+    },
+    "module_error": {
+      "type": "string",
+      "description": "B5: why the archive could not be kept as browser modules (unsupported format, missing file, size cap)."
+    }
+  },
+  "required": [
+    "cache_key",
+    "package_name",
+    "version",
+    "integrity",
+    "content_sha512"
+  ]
+}

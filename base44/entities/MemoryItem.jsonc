@@ -1,0 +1,156 @@
+{
+  "name": "MemoryItem",
+  "type": "object",
+  "properties": {
+    "scope": {
+      "type": "string",
+      "enum": [
+        "user",
+        "project",
+        "platform"
+      ],
+      "description": "Which of the three memory scopes this item belongs to. The scope is resolved SERVER-side from the authenticated caller and the project it authorized \u2014 never taken from a client \u2014 so a caller cannot write user memory for someone else, project memory into another workspace, or platform knowledge without the controlled admin path."
+    },
+    "memory_type": {
+      "type": "string",
+      "enum": [
+        "fact",
+        "decision",
+        "preference",
+        "constraint",
+        "pattern",
+        "observation"
+      ],
+      "description": "What KIND of knowledge this is. Deliberately not collapsed into one generic 'fact': a decision carries its own reason, source and timestamp, a constraint bounds what may be built, and an observation is explicitly weaker evidence than a verified fact."
+    },
+    "statement": {
+      "type": "string",
+      "description": "The memory itself, in one scrubbed sentence. Passed through the existing credential redaction before storage; a statement that still looks like a credential is REFUSED rather than stored."
+    },
+    "reason": {
+      "type": "string",
+      "description": "Why the memory holds \u2014 for a decision, the reason/context that justified it. Preserved separately from the statement so a decision never degrades into a bare assertion."
+    },
+    "subject_key": {
+      "type": "string",
+      "description": "Stable identifier of WHAT the memory is about (e.g. 'db.primary_store', 'ui.date_format'). Two active memories in the same scope with the same subject and different statements are a CONFLICT, which is how contradiction is detected instead of silently overwritten."
+    },
+    "logical_key": {
+      "type": "string",
+      "description": "Deterministic identity of the logical memory: scope + type + scope ids + subject (or the normalized statement). At most ONE active item exists per logical key, which is what makes writes idempotent and prevents duplicate active memories."
+    },
+    "user_id": {
+      "type": "string",
+      "description": "Owning user, for user-scope memory. Always the authenticated caller, stamped server-side. Never set on platform knowledge."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side from the authorized project. Never set on platform knowledge."
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Project this memory is isolated to, for project-scope memory. Every read is filtered by this field after the caller is authorized against the project, so one project can never read another's memory. Never set on platform knowledge."
+    },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "user_input",
+        "project_state",
+        "system_observation",
+        "platform_knowledge"
+      ],
+      "description": "The class of evidence behind the memory: something the user explicitly stated, verified project configuration/state, an authorized system observation, or approved platform knowledge. Arbitrary model output is NOT an allowed source, so a generated sentence cannot become verified memory."
+    },
+    "source_reference": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Where the evidence lives: the run, version, entity, file path, agent run or admin actor it came from. A memory with no source reference is not accepted \u2014 provenance is mandatory, not decorative."
+    },
+    "confidence": {
+      "type": "number",
+      "default": 0.5,
+      "description": "How strongly the memory is believed, 0..1. Clamped by verification state server-side, so an inferred or unverified memory can never present itself with verified-level confidence."
+    },
+    "verification": {
+      "type": "string",
+      "enum": [
+        "verified",
+        "user_stated",
+        "inferred",
+        "unverified"
+      ],
+      "default": "unverified",
+      "description": "Trust state, kept SEPARATE from both provenance and confidence. 'verified' is only reachable from verified project state, approved platform knowledge or an explicit server-side verification \u2014 a low-confidence or inferred memory never becomes verified silently."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "superseded",
+        "archived",
+        "expired",
+        "conflicted"
+      ],
+      "default": "active",
+      "description": "Lifecycle. Only 'active' is returned as usable memory. 'superseded' and 'conflicted' rows are retained for provenance and history; 'archived' and 'expired' are excluded from retrieval but remain inspectable until retention removes them."
+    },
+    "conflicts_with_memory_id": {
+      "type": "string",
+      "description": "The memory this one contradicts. Set on BOTH sides when a conflict is detected without an explicit resolution, so a contradiction is recorded rather than resolved by whoever wrote last."
+    },
+    "conflict_note": {
+      "type": "string",
+      "description": "Scrubbed statement of what the conflict is, so the disagreement stays inspectable."
+    },
+    "revision": {
+      "type": "number",
+      "default": 1,
+      "description": "Position in the logical memory's history. A correction is a NEW revision that supersedes the previous record; history is never rewritten in place."
+    },
+    "supersedes_memory_id": {
+      "type": "string",
+      "description": "The memory this revision replaces, making the history a chain."
+    },
+    "superseded_by_memory_id": {
+      "type": "string",
+      "description": "The later revision that replaced this one, so history can be walked forward as well as back."
+    },
+    "trace_id": {
+      "type": "string",
+      "description": "Existing correlation id of the operation that produced or corrected this memory. The memory layer reuses the platform's trace system and mints no second one."
+    },
+    "run_id": {
+      "type": "string",
+      "description": "AI run or agent run the write is attributable to, when there was one."
+    },
+    "hits": {
+      "type": "number",
+      "default": 0,
+      "description": "How many times the memory has been retrieved, used only as a deterministic ranking tiebreaker."
+    },
+    "verified_at": {
+      "type": "string",
+      "description": "When the memory was last verified against authoritative state. Absent for anything that was never verified \u2014 never back-filled to imply freshness the platform cannot prove."
+    },
+    "expires_at": {
+      "type": "string",
+      "description": "When the memory stops being usable. A past expiry excludes it from retrieval even while its row is still present, so stale memory cannot leak into an AI run."
+    },
+    "last_used_at": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "scope",
+    "memory_type",
+    "statement",
+    "source_type",
+    "logical_key"
+  ]
+}

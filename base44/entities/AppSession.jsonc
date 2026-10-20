@@ -1,0 +1,88 @@
+{
+  "name": "AppSession",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Project the session was issued FOR. A token is only ever resolved together with the project the request is addressed to, so a session from one app is meaningless in another."
+    },
+    "workspace_id": {
+      "type": "string"
+    },
+    "app_user_id": {
+      "type": "string"
+    },
+    "token_hash": {
+      "type": "string",
+      "description": "SHA-256 of the session token. The token itself is never stored, so a storage leak cannot resume live sessions."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "revoked",
+        "expired",
+        "rotated"
+      ],
+      "default": "active",
+      "description": "Only 'active' validates. 'rotated' marks a token replaced by refresh \u2014 presenting it again is a replay and is refused."
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "expires_at": {
+      "type": "string"
+    },
+    "last_seen_at": {
+      "type": "string"
+    },
+    "revoked_at": {
+      "type": "string"
+    },
+    "revoke_reason": {
+      "type": "string"
+    },
+    "rotated_from": {
+      "type": "string",
+      "description": "The session this one replaced on refresh, so a rotation chain is auditable."
+    },
+    "rotation_count": {
+      "type": "number",
+      "default": 0
+    },
+    "ip_hash": {
+      "type": "string",
+      "description": "Hashed client IP \u2014 security metadata, never the raw address."
+    },
+    "user_agent": {
+      "type": "string"
+    },
+    "trace_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "project_id",
+    "app_user_id",
+    "token_hash",
+    "status"
+  ],
+  "rls": {
+    "read": false,
+    "create": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "system"
+      }
+    }
+  }
+}

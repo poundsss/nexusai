@@ -1,0 +1,52 @@
+{
+  "name": "MarketplaceReview",
+  "type": "object",
+  "properties": {
+    "listing_id": {
+      "type": "string"
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Workspace that wrote the review. One review per workspace per listing; the workspace is the review identity so a user cannot inflate ratings by posting many."
+    },
+    "user_id": {
+      "type": "string"
+    },
+    "rating": {
+      "type": "number",
+      "description": "1-5 integer rating. Validated server-side; out-of-range values are rejected, never clamped silently."
+    },
+    "title": {
+      "type": "string"
+    },
+    "body": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "visible",
+        "hidden",
+        "removed"
+      ],
+      "default": "visible",
+      "description": "Only 'visible' counts toward the listing's rating. 'hidden' is a trust action pending review; 'removed' is a terminal moderation action."
+    },
+    "verified_install": {
+      "type": "boolean",
+      "default": false,
+      "description": "True only when the reviewing workspace has an active install of this listing. Unverified reviews are allowed but flagged, and never weigh equally in trust scoring."
+    },
+    "helpful_count": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "listing_id",
+    "workspace_id",
+    "user_id",
+    "rating",
+    "status"
+  ]
+}

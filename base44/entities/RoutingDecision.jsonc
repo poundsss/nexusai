@@ -1,0 +1,138 @@
+{
+  "name": "RoutingDecision",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Project the routed operation belongs to. Resolved SERVER-side, and every read is filtered by it, so one project can never read another's routing history."
+    },
+    "workspace_id": {
+      "type": "string"
+    },
+    "run_id": {
+      "type": "string",
+      "description": "The AIRun (or agent run) this decision routed, when the caller knew it."
+    },
+    "trace_id": {
+      "type": "string",
+      "description": "The platform's EXISTING correlation id of the operation being routed, carried verbatim."
+    },
+    "policy_version": {
+      "type": "string",
+      "description": "The immutable routing policy version that produced this decision. A decision is only reproducible against the exact policy it names."
+    },
+    "contract_version": {
+      "type": "string",
+      "description": "Scoring contract version the decision was computed under."
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "automatic",
+        "explicit"
+      ],
+      "default": "automatic",
+      "description": "'explicit' means the user selected the model themselves: it was validated for availability, health, capability and budget, and never silently substituted. 'automatic' means the deterministic scorer chose it from persisted evidence."
+    },
+    "selected_model_id": {
+      "type": "string"
+    },
+    "selected_provider": {
+      "type": "string"
+    },
+    "selected_score": {
+      "type": "number",
+      "description": "Total weighted score of the winner. Null for an explicit selection, which is not scored against alternatives."
+    },
+    "score_components": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The winner's per-dimension component values, weights and evidence basis. This is what makes a routing choice explainable after the fact rather than a black box."
+    },
+    "candidates": {
+      "type": "array",
+      "description": "Every model considered, in ranked order, each with its component values, expected cost/latency and evidence basis.",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "model_id": {
+            "type": "string"
+          },
+          "score": {
+            "type": "number"
+          },
+          "expected_credits": {
+            "type": "number"
+          },
+          "expected_latency_ms": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "rejected": {
+      "type": "array",
+      "description": "Every model excluded and the concrete reason (capability, inactive, unhealthy, credit budget, latency budget, plan restriction, missing evidence). An exclusion is always stated, never implicit.",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "model_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "reason_code": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "requirements": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The routing inputs actually used: task type, complexity, context/project size, tool and structured-output requirements, latency and cost budgets."
+    },
+    "budgets": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The ceilings enforced: credit budget, provider cost budget, latency budget and any plan/workspace model restriction."
+    },
+    "override_reason": {
+      "type": "string",
+      "description": "Why the automatic choice was not used: the user's explicit selection, or a policy-level constraint that forced the outcome."
+    },
+    "fallback_reason": {
+      "type": "string",
+      "description": "Recorded AFTER execution when the gateway's existing fallback chain moved the work to another model: which model failed, with which retryable error code."
+    },
+    "fallback_model_id": {
+      "type": "string",
+      "description": "The model that actually served the request when a fallback occurred. Absent means the selected model served it."
+    },
+    "skill_strategy": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "RESERVED (model + skill strategy) pair. Today: { strategy_id: null, source: 'none' }. Structured now so a future skill system participates in the same decision record without redesign."
+    },
+    "evidence_basis": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Which persisted evidence layers informed this decision and how many samples each contributed. A dimension with no evidence says so instead of implying a measurement."
+    },
+    "deterministic_key": {
+      "type": "string",
+      "description": "Hash over policy version + requirements + budgets + eligible model set. The same inputs under the same policy always reproduce the same ranking, so a routing choice is checkable rather than probabilistic."
+    },
+    "created_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "policy_version",
+    "mode",
+    "selected_model_id"
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "name": "IntegrationQuota",
+  "type": "object",
+  "properties": {
+    "quota_key": {
+      "type": "string",
+      "description": "Deterministic identity of ONE quota: project + integration. Two projects using the same integration name hold DIFFERENT quotas, and two integrations inside one project are counted separately \u2014 so one project's usage can never consume another's allowance."
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Project the quota belongs to. Resolved SERVER-side from the executing project record, never from a client or from generated code, and every read is filtered by it together with the integration name."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, resolved server-side from the project."
+    },
+    "integration_name": {
+      "type": "string",
+      "description": "The project's own integration name. The platform hardcodes no provider names."
+    },
+    "used": {
+      "type": "number",
+      "default": 0,
+      "description": "Logical integration calls consumed inside the CURRENT window. One logical invocation consumes exactly one unit however many internal retry attempts it spent, and a call refused before execution began (circuit breaker OPEN) consumes none."
+    },
+    "allowed": {
+      "type": "number",
+      "description": "Calls permitted per window, as resolved from bounded server-side configuration. A project may tune it, but only inside the platform's limits \u2014 an unbounded allowance is not representable."
+    },
+    "window_ms": {
+      "type": "number",
+      "description": "Length of the quota window. Bounded by server-side configuration limits."
+    },
+    "window_start": {
+      "type": "string",
+      "description": "When the current window opened."
+    },
+    "window_end": {
+      "type": "string",
+      "description": "When the current window expires. An expired window rolls forward on the next call \u2014 usage resets deterministically with no cleanup job and no second scheduler."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ok",
+        "exhausted"
+      ],
+      "default": "ok",
+      "description": "'ok' means the current window still has allowance. 'exhausted' means every further call in this window is refused BEFORE the upstream is contacted, until the window rolls forward."
+    },
+    "refusals": {
+      "type": "number",
+      "default": 0,
+      "description": "Calls refused because the quota was exhausted \u2014 the requests it prevented. Never counted as usage."
+    },
+    "windows": {
+      "type": "number",
+      "default": 1,
+      "description": "How many windows this quota has rolled through. Diagnostics only."
+    },
+    "writer_token": {
+      "type": "string",
+      "description": "Token of the last writer. Written and then re-read: a concurrent writer that finds another token knows it lost and re-applies its own consumption onto the winner's state, so two simultaneous calls can never both slip through the same last unit."
+    },
+    "version": {
+      "type": "number",
+      "default": 0,
+      "description": "Monotonic write counter, for optimistic concurrency."
+    },
+    "trace_id": {
+      "type": "string",
+      "description": "The platform's EXISTING correlation id of the operation that last changed this state. The quota layer mints no second one."
+    },
+    "last_consumed_at": {
+      "type": "string"
+    },
+    "last_refused_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "quota_key",
+    "project_id",
+    "integration_name",
+    "status"
+  ]
+}

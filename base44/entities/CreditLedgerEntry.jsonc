@@ -1,0 +1,110 @@
+{
+  "name": "CreditLedgerEntry",
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string",
+      "description": "Account the movement belongs to. Every balance derivation is filtered by this field, so one workspace's ledger can never affect another's balance."
+    },
+    "user_id": {
+      "type": "string",
+      "description": "Actor the movement is attributed to."
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "operation_id": {
+      "type": "string",
+      "description": "AIOperation this movement settles, when it is AI usage."
+    },
+    "billing_event_id": {
+      "type": "string",
+      "description": "BillingEvent this movement settles, when it is money."
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "ai_charge",
+        "purchase",
+        "promotional",
+        "refund",
+        "adjustment",
+        "admin_adjustment",
+        "expiration",
+        "reservation",
+        "reservation_release",
+        "void"
+      ]
+    },
+    "credit_type": {
+      "type": "string",
+      "enum": [
+        "message",
+        "integration"
+      ],
+      "default": "message",
+      "description": "Credit pool this movement belongs to: message (AI Builder/Agent) or integration (live-app usage). Entries without it are treated as message."
+    },
+    "amount": {
+      "type": "number",
+      "default": 0,
+      "description": "Signed credit delta: negative spends, positive adds. The balance is the SUM of this column \u2014 the ledger is authoritative and the cached workspace balance is only a projection of it."
+    },
+    "reserved_delta": {
+      "type": "number",
+      "default": 0,
+      "description": "Signed change to held (reserved) credits. Reservations reduce spendable credits without moving the balance, which is what stops concurrent operations from overspending one budget."
+    },
+    "balance_before": {
+      "type": "number",
+      "default": 0
+    },
+    "balance_after": {
+      "type": "number",
+      "default": 0
+    },
+    "unit": {
+      "type": "string",
+      "default": "credit"
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "Uniqueness key for the movement. A replayed request, webhook or retry with the same key is answered with the existing entry instead of moving credits again."
+    },
+    "reason": {
+      "type": "string"
+    },
+    "voided": {
+      "type": "boolean",
+      "default": false,
+      "description": "True only for a loser of a duplicate-key race, which is excluded from balance derivation. Entries are otherwise immutable and never deleted."
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "workspace_id",
+    "event_type",
+    "idempotency_key"
+  ],
+  "rls": {
+    "read": false,
+    "create": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "system"
+      }
+    }
+  }
+}

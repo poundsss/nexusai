@@ -1,0 +1,37 @@
+{
+  "name": "PageRedirect",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "The app (project) this redirect belongs to. Every read and mutation is filtered by this field server-side, so one app's redirects can never be read or changed from another. Path-level redirects are per-app: they apply to the app's published site regardless of which verified domain served the request."
+    },
+    "workspace_id": {
+      "type": "string",
+      "description": "Owning workspace, denormalized at creation. The custom-domains plan entitlement is re-checked against this workspace on every write."
+    },
+    "source_path": {
+      "type": "string",
+      "description": "The path visitors request, normalized: starts with `/`, no query string or fragment, trailing slash stripped, percent-escapes decoded. An excluded path (auth paths, /sitemap.xml, /robots.txt, /favicon.ico, /link_preview.png, /manifest.json, /llms.txt, /.well-known and descendants) is rejected at create time. Must differ from target_path."
+    },
+    "target_path": {
+      "type": "string",
+      "description": "Where the visitor is sent. Either an internal app path normalized the same way as source_path, or an absolute `https://` URL kept verbatim. No query string or fragment; the visitor's own query string is carried over at redirect time."
+    },
+    "match_type": {
+      "type": "string",
+      "enum": [
+        "single",
+        "prefix"
+      ],
+      "default": "single",
+      "description": "single = redirect that exact path; prefix = redirect it and everything under it, keeping the remainder of the path (works for external targets too)."
+    }
+  },
+  "required": [
+    "project_id",
+    "source_path",
+    "target_path",
+    "match_type"
+  ]
+}

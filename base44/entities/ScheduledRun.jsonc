@@ -1,0 +1,67 @@
+{
+  "name": "ScheduledRun",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string"
+    },
+    "trigger_id": {
+      "type": "string"
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "Dedup key: ${trigger_id}:${scheduled_at}. One run per (trigger, due time)."
+    },
+    "function_name": {
+      "type": "string"
+    },
+    "scheduled_at": {
+      "type": "string",
+      "description": "The due time this run corresponds to (ISO)"
+    },
+    "started_at": {
+      "type": "string"
+    },
+    "completed_at": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "running",
+        "success",
+        "failed",
+        "timeout",
+        "skipped"
+      ],
+      "default": "running"
+    },
+    "duration_ms": {
+      "type": "number",
+      "default": 0
+    },
+    "error": {
+      "type": "string",
+      "description": "Safe, redacted message when status is failed/timeout"
+    },
+    "result_preview": {
+      "type": "string",
+      "description": "Truncated, redacted preview of the function response body"
+    },
+    "lease_token": {
+      "type": "string",
+      "description": "Identifies the single sweep advancing this run"
+    },
+    "lease_expires_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "project_id",
+    "trigger_id",
+    "idempotency_key",
+    "function_name",
+    "scheduled_at",
+    "status"
+  ]
+}

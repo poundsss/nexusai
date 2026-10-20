@@ -1,0 +1,73 @@
+{
+  "name": "LegalDocument",
+  "type": "object",
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "tos",
+        "privacy_policy",
+        "dpa",
+        "acceptable_use",
+        "subprocessor_list",
+        "cookie_policy"
+      ],
+      "description": "Document class. Each class has at most one active version; a new version retires the previous active one."
+    },
+    "version": {
+      "type": "string",
+      "description": "Human-readable version label (e.g. 2026-01-15-v1). Unique per type."
+    },
+    "title": {
+      "type": "string"
+    },
+    "content_url": {
+      "type": "string",
+      "description": "Public URL to the document content. The document itself is versioned and immutable; this URL is the source of truth for what was accepted."
+    },
+    "content_checksum": {
+      "type": "string",
+      "description": "SHA-256 of the document content at publish time. A change to the content without a new version is detectable, so an acceptance record always refers to the exact text that was agreed to."
+    },
+    "effective_date": {
+      "type": "string",
+      "description": "When this version becomes binding. Before this date it is not offered for acceptance."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "active",
+        "retired"
+      ],
+      "default": "draft",
+      "description": "Only 'active' is offered for acceptance. Publishing a new version retires the previous one; a retired version is retained for audit (who accepted what) but never offered again."
+    },
+    "required_for": {
+      "type": "string",
+      "enum": [
+        "all",
+        "paid",
+        "enterprise",
+        "eu_residents"
+      ],
+      "default": "all",
+      "description": "Who must accept this document. 'eu_residents' gates on GDPR jurisdiction; 'enterprise' gates on enterprise plan; 'paid' on any paid plan."
+    },
+    "published_by": {
+      "type": "string"
+    },
+    "published_at": {
+      "type": "string"
+    },
+    "retired_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "type",
+    "version",
+    "title",
+    "status"
+  ]
+}

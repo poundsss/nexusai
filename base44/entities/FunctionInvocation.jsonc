@@ -1,0 +1,93 @@
+{
+  "name": "FunctionInvocation",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string"
+    },
+    "function_name": {
+      "type": "string"
+    },
+    "trigger": {
+      "type": "string",
+      "enum": [
+        "frontend",
+        "webhook",
+        "webhook_retry",
+        "scheduled",
+        "workflow",
+        "test",
+        "function"
+      ],
+      "default": "frontend",
+      "description": "'function' (G-B): a service-role invoke \u2014 one backend function calling another with no caller identity."
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "The EXPLICIT execution identity this invocation ran as: { kind: app_user | system | service | anonymous, app_user_id, session_id, source }. Recorded server-side from the resolved session or the trigger, never from the request body, so who a function acted as is always auditable."
+    },
+    "method": {
+      "type": "string"
+    },
+    "status": {
+      "type": "number"
+    },
+    "ok": {
+      "type": "boolean",
+      "default": true
+    },
+    "error_class": {
+      "type": "string"
+    },
+    "error_message": {
+      "type": "string",
+      "description": "Safe message with every secret value redacted"
+    },
+    "duration_ms": {
+      "type": "number"
+    },
+    "request_id": {
+      "type": "string"
+    },
+    "trace_id": {
+      "type": "string",
+      "description": "Correlation id of the operation that caused this execution \u2014 an AI run's runtime verification, a preview call, a webhook or a background job. Carried in from the caller, never minted per attempt, so a failure inside a generated function stays attributable to the operation that triggered it."
+    },
+    "run_id": {
+      "type": "string",
+      "description": "AIRun this execution belongs to, when the call was made on a run's behalf."
+    },
+    "logs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Function log lines, secret values redacted"
+    },
+    "external_calls": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string"
+          },
+          "status": {
+            "type": "number"
+          },
+          "duration_ms": {
+            "type": "number"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "project_id",
+    "function_name"
+  ]
+}

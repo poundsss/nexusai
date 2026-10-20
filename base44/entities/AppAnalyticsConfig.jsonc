@@ -1,0 +1,62 @@
+{
+  "name": "AppAnalyticsConfig",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Project this configuration governs. One row per project."
+    },
+    "workspace_id": {
+      "type": "string"
+    },
+    "enabled": {
+      "type": "boolean",
+      "default": true
+    },
+    "require_registered_schemas": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, only event names with an active registered AppEventSchema may be ingested."
+    },
+    "credential_policy": {
+      "type": "string",
+      "enum": [
+        "reject",
+        "redact"
+      ],
+      "default": "reject",
+      "description": "What happens to a credential-like property (password, token, api key, authorization, \u2026). 'reject' refuses the whole event; 'redact' drops the value and records the key in the event's redactions. Neither ever stores the value."
+    },
+    "suppressed_properties": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Property keys the project explicitly wants dropped at ingestion (configurable PII suppression)."
+    },
+    "retention_days": {
+      "type": "number",
+      "default": 90,
+      "description": "Project-level analytics retention, applied by the EXISTING Scheduled Maintenance sweep. 0 means keep indefinitely."
+    },
+    "allow_platform_intelligence": {
+      "type": "boolean",
+      "default": false,
+      "description": "Explicit consent flag recorded on every event. Nothing feeds analytics into Trajectory/Dataset/training today; this preserves the project's decision for any future learning system, which must honour it."
+    },
+    "operator_permissions": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Optional overrides of the analytics permission keys (analytics.read / analytics.export / analytics.manage) an app user must hold. Ordinary end-users hold none of them unless the app grants them."
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "project_id"
+  ]
+}
